@@ -32,3 +32,27 @@ export interface TitleProps {
   subtitle?: string;
   align?: "center" | "left";
 }
+
+export interface CarData {
+  id: string;
+  name: string;
+  brand: string;
+  type: string;
+  price_per_day: number;
+  image_url: {
+    main: string;
+    gallery: string[];
+  };
+  transmission: "Automatic" | "Manual";
+  fuel_type: "Petrol" | "Diesel" | "Electric" | "Hybrid";
+  seats: number;
+  description: string;
+  is_available: boolean;
+  created_at?: string;
+}
+
+export interface Car1 {
+  id: string;
+  name: string;
+  images: string[];
+}
