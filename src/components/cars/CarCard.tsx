@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Users, Fuel, Gauge, ArrowRight } from "lucide-react";
 import { Car } from "@/types";
+import { ChevronRight } from "lucide-react";
 
 interface CarCardProps {
   car: Car;
@@ -9,52 +9,48 @@ interface CarCardProps {
 
 export default function CarCard({ car }: CarCardProps) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border bg-white p-4 transition-all hover:shadow-xl">
-      <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-xl">
-        <Image
-          src={
-            car.image_url ||
-            "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80"
-          }
-          alt={car.name}
-          fill
-          className="object-cover transition-transform group-hover:scale-105"
-        />
-        <div className="absolute top-2 right-2 rounded-full bg-white/90 px-3 py-1 text-sm font-bold text-blue-600 backdrop-blur-sm">
-          ${car.price_per_day}/day
+    <div className="group w-full">
+      {/* IMAGE PART */}
+      <Link
+        href={`/cars/${car.is_available}`}
+        className="
+          relative block overflow-hidden
+          rounded-[20px] sm:rounded-[30px]
+          transition-transform duration-300 ease-out
+          md:group-hover:scale-[1.02]
+        "
+      >
+        {/* Image */}
+        <div className="relative w-full overflow-hidden max-w-full aspect-3/2">
+          <Image
+            src={car.image_url}
+            alt={car.name}
+            fill
+            priority
+            className="object-cover transition-transform duration-500 ease-out md:group-hover:scale-105"
+          />
         </div>
-      </div>
+      </Link>
 
-      <div className="space-y-4">
+      {/* BOTTOM PART */}
+      <div className="px-2.5 pt-6">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">
-            {car.brand} {car.name}
-          </h3>
-          <p className="text-sm text-gray-500">{car.type}</p>
-        </div>
-
-        <div className="flex justify-between border-y border-gray-100 py-3 text-sm text-gray-600">
-          <div className="flex items-center space-x-1.5">
-            <Users className="h-4 w-4 text-blue-500" />
-            <span>{car.seats} Seats</span>
+          <div className="flex justify-between items-center">
+            <h3 className="text-[18px] font-medium leading-7">{car.name}</h3>
+            <a
+              href=""
+              className="flex items-center text-base text-[#b8b8b8] hover:text-white"
+            >
+              <span>Learn More</span>
+              <ChevronRight className="h-5 w-5 " />
+            </a>
           </div>
-          <div className="flex items-center space-x-1.5">
-            <Fuel className="h-4 w-4 text-blue-500" />
-            <span>{car.fuel_type}</span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <Gauge className="h-4 w-4 text-blue-500" />
-            <span>{car.transmission}</span>
+          <div>
+            <p className="text-base text-[#b8b8b8]">
+              from {``} <span>${car.price_per_day}/day</span>
+            </p>
           </div>
         </div>
-
-        <Link
-          href={`/cars/${car.id}`}
-          className="flex w-full items-center justify-center space-x-2 rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
-        >
-          <span>Rent Now</span>
-          <ArrowRight className="h-4 w-4" />
-        </Link>
       </div>
     </div>
   );

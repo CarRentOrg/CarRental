@@ -2,55 +2,8 @@ import Link from "next/link";
 import { Search, Calendar, MapPin, ChevronRight, Users } from "lucide-react";
 import CarCard from "@/components/cars/CarCard";
 import { Car } from "@/types";
-
-// Mock data for featured cars
-const FEATURED_CARS: Car[] = [
-  {
-    id: "1",
-    name: "Model 3",
-    brand: "Tesla",
-    type: "Luxury",
-    price_per_day: 95,
-    image_url:
-      "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80",
-    transmission: "Automatic",
-    fuel_type: "Electric",
-    seats: 5,
-    description:
-      "The Tesla Model 3 is designed for electric performance, with dual motor AWD, quick acceleration, long range and fast charging.",
-    is_available: true,
-  },
-  {
-    id: "2",
-    name: "911 Carrera",
-    brand: "Porsche",
-    type: "Sports",
-    price_per_day: 250,
-    image_url:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80",
-    transmission: "Automatic",
-    fuel_type: "Petrol",
-    seats: 4,
-    description:
-      "The 911 has been the heart of the Porsche brand for decades. A sports car legend that is as versatile as it is timeless.",
-    is_available: true,
-  },
-  {
-    id: "3",
-    name: "Range Rover Sport",
-    brand: "Land Rover",
-    type: "SUV",
-    price_per_day: 180,
-    image_url:
-      "https://images.unsplash.com/photo-1606611013016-969c19ba27bb?auto=format&fit=crop&q=80",
-    transmission: "Automatic",
-    fuel_type: "Petrol",
-    seats: 5,
-    description:
-      "Range Rover Sport is the most dynamic Range Rover. It is a powerful, refined SUV with an assertive design.",
-    is_available: true,
-  },
-];
+import Title from "@/components/shared/title";
+import FeaturedSection from "@/components/_sections/FeaturedSection";
 
 export default function Home() {
   return (
@@ -122,33 +75,7 @@ export default function Home() {
       </section>
 
       {/* Featured Cars Section */}
-      <section className="bg-gray-50 py-24">
-        <div className="container mx-auto px-4">
-          <div className="mb-12 flex items-end justify-between">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
-                Featured Cars
-              </h2>
-              <p className="text-gray-600">
-                Explore our most popular rental choices
-              </p>
-            </div>
-            <Link
-              href="/cars"
-              className="group flex items-center space-x-1 font-semibold text-blue-600 hover:text-blue-700"
-            >
-              <span>View all cars</span>
-              <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {FEATURED_CARS.map((car) => (
-              <CarCard key={car.id} car={car} />
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeaturedSection />
 
       {/* Why Choose Us Section */}
       <section className="bg-white py-24">
