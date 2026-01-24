@@ -1,38 +1,47 @@
 import Link from 'next/link';
-import { Car, Search, Menu, User } from 'lucide-react';
+import { Car, Instagram, Phone, MessageCircle } from 'lucide-react';
 
 export default function Header() {
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
-            <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                <Link href="/" className="flex items-center space-x-2">
-                    <Car className="h-8 w-8 text-blue-600" />
-                    <span className="text-xl font-bold tracking-tight text-gray-900">
-                        Car<span className="text-blue-600">Rent</span>
+        <header className="fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 bg-transparent backdrop-blur-md">
+            <div className="container mx-auto flex h-20 items-center justify-between px-6 lg:px-12">
+                {/* Logo */}
+                <Link href="/" className="flex items-center gap-2 group">
+                    <div className="flex items-center justify-center p-2 rounded-lg bg-white/10 backdrop-blur-sm group-hover:bg-white/20 transition-colors">
+                        <Car className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-xl font-bold tracking-tight text-white">
+                        Luxerra
                     </span>
                 </Link>
 
-                <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-600">
-                    <Link href="/" className="transition-colors hover:text-blue-600">Home</Link>
-                    <Link href="/cars" className="transition-colors hover:text-blue-600">Browse Cars</Link>
-                    <Link href="/about" className="transition-colors hover:text-blue-600">About Us</Link>
-                    <Link href="/contact" className="transition-colors hover:text-blue-600">Contact</Link>
+                {/* Centered Navigation */}
+                <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+                    {['Cars', 'Rental Terms', 'News'].map((item) => (
+                        <Link
+                            key={item}
+                            href={`/${item.toLowerCase().replace(' ', '-')}`}
+                            className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                        >
+                            {item}
+                        </Link>
+                    ))}
                 </nav>
 
-                <div className="flex items-center space-x-4">
-                    <button className="p-2 text-gray-600 hover:text-blue-600 md:hidden">
-                        <Search className="h-5 w-5" />
-                    </button>
+                {/* Right Side Actions */}
+                <div className="flex items-center gap-6">
+                    <div className="hidden lg:flex items-center gap-4 text-gray-300">
+                        <a href="#" className="hover:text-white transition-colors"><Instagram className="h-5 w-5" /></a>
+                        <a href="#" className="hover:text-white transition-colors"><MessageCircle className="h-5 w-5" /></a>
+                        <a href="#" className="hover:text-white transition-colors"><Phone className="h-5 w-5" /></a>
+                    </div>
+
                     <Link
-                        href="/admin"
-                        className="hidden items-center space-x-2 rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-200 md:flex"
+                        href="/cars"
+                        className="hidden sm:inline-flex items-center justify-center rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-black transition-transform hover:scale-105 active:scale-95"
                     >
-                        <User className="h-4 w-4" />
-                        <span>Admin</span>
+                        Book Now
                     </Link>
-                    <button className="p-2 text-gray-600 hover:text-blue-600 md:hidden">
-                        <Menu className="h-6 w-6" />
-                    </button>
                 </div>
             </div>
         </header>

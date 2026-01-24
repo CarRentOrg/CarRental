@@ -4,17 +4,17 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Image as ImageIcon, Info, Sliders, DollarSign } from 'lucide-react';
+import { ArrowLeft, Save, Image as ImageIcon, Info, Sliders, DollarSign, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 const carSchema = z.object({
     name: z.string().min(1, 'Model name is required'),
     brand: z.string().min(1, 'Brand is required'),
     type: z.string().min(1, 'Type is required'),
-    pricePerDay: z.string().transform((val) => Number(val)),
+    pricePerDay: z.string().min(1, 'Price is required'),
     transmission: z.enum(['Automatic', 'Manual']),
     fuelType: z.enum(['Petrol', 'Diesel', 'Electric', 'Hybrid']),
-    seats: z.string().transform((val) => Number(val)),
+    seats: z.string().min(1, 'Seats is required'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
     imageUrl: z.string().url('Invalid image URL').optional().or(z.literal('')),
 });
