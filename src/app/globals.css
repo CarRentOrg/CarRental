@@ -5,6 +5,15 @@
   --background: #000;
   --foreground: #ffffff;
   --secondary-foreground: #b8b8b8;
+  --primary-color: #171717;
+  --text-primary: #fff;
+  --text-secondary: #b8b8b8;
+
+  --bg-base: #000;
+  --bg-soft: #0e0e0e;
+  --bg-card: #171717;
+  --bg-float: #212121;
+
   --font-inter-display: "Inter Display", sans-serif;
 }
 

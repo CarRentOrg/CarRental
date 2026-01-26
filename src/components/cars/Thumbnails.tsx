@@ -82,10 +82,9 @@ export default function ThumbnailImageGallery({
       {images.length > 1 && (
         <div
           className="
-            grid w-full gap-3
-            grid-cols-4
-            sm:grid-cols-5
-            md:grid-cols-6
+            grid w-full gap-4
+            grid-cols-[repeat(4,minmax(80px,1fr))]
+            sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]
           "
         >
           {images.map((img, i) => (
