@@ -6,7 +6,7 @@ import Button from "../shared/button";
 
 const FeaturedSection = () => {
   return (
-    <section className="py-24 px-2 sm:px-10 mx-auto w-full">
+    <section className="py-24 sm:px-10 mx-auto w-full px-6">
       <div className="text-center md:mb-20 mb-10">
         <Title title={"Choose Your Ride"} align={"center"} />
       </div>

@@ -18,10 +18,13 @@ import {
   Wallet,
   Plus,
   ChevronRight,
+  Bluetooth,
 } from "lucide-react";
 import { Car, Car1 } from "@/types";
 
 import ThumbnailImageGallery from "@/components/cars/Thumbnails";
+import Returnbutton from "@/components/shared/returnbutton";
+import { BOOKING_STEPS } from "@/constants";
 
 const carDaTa: Car1 = {
   id: "gt3rs",
@@ -68,45 +71,23 @@ const faqs = [
 ];
 
 // Steps data
-const bookingSteps = [
-  {
-    number: "01",
-    title: "Choose your car",
-    description: "Pick the premium model that suits your style and plans.",
-  },
-  {
-    number: "02",
-    title: "Contact Us",
-    description: "Reach out and reserve your dates.",
-  },
-  {
-    number: "03",
-    title: "Confirm & Secure",
-    description: "Send documents, pay deposit and we'll handle the rest.",
-  },
-  {
-    number: "04",
-    title: "Drive Away",
-    description: "We deliver the car to your desired location.",
-  },
-];
 
 // This would typically come from a DB call in a real app
 const getCarById = (id: string): Car | undefined => {
   const cars: Car[] = [
     {
-      id: "1",
-      name: "Model 3",
-      brand: "Tesla",
-      type: "Luxury",
-      price_per_day: 95,
+      id: "2",
+      name: "LX 570",
+      brand: "Lexus",
+      type: "Luxury SUV",
+      price_per_day: 180,
       image_url:
-        "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1669691101370-9ee9ee0782dc?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bHg1NzB8ZW58MHx8MHx8fDA%3D",
       transmission: "Automatic",
-      fuel_type: "Electric",
-      seats: 5,
+      fuel_type: "Petrol",
+      seats: 7,
       description:
-        "The Tesla Model 3 is built from the ground up as an electric vehicle. With a dual motor All-Wheel Drive system, the Model 3 provides superior traction and control in all-weather conditions. This premium sedan combines high performance with a sleek, minimalist interior, featuring a massive touchscreen interface for all control functions.",
+        "The Lexus LX 570 features a 5.7L V8 engine with around 383 hp and 4WD luxury performance with premium leather interior and advanced safety suite.",
       is_available: true,
     },
   ];
@@ -125,18 +106,11 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white py-24 px-2 sm:px-10 mx-auto w-full">
+    <div className="min-h-screen bg-black text-white py-20 px-2 sm:px-10 mx-auto w-full">
       {/* Header Navigation */}
-      <div className="pt-8 pb-6">
-        <div className="px-6 lg:px-12">
-          <Link
-            href="/cars"
-            className="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors duration-300 group"
-          >
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform duration-300" />
-            <span>Back to results</span>
-          </Link>
-        </div>
+
+      <div className="px-6 lg:px-12 pb-6">
+        <Returnbutton href="/cars" text="Back to results" />
       </div>
 
       {/* Main Content */}
@@ -147,7 +121,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
             <ThumbnailImageGallery images={carDaTa.images} alt={carDaTa.name} />
 
             {/* Rental Rates Section */}
-            <div className="pt-12">
+            {/* <div className="pt-12">
               <h2 className="text-3xl font-light tracking-tight mb-8">
                 Rental Rates
               </h2>
@@ -164,33 +138,8 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Right Column - Car Details */}
-          <div className="space-y-10">
-            {/* Car Title */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="px-3 py-1.5 bg-neutral-800/60 backdrop-blur-sm text-neutral-300 text-xs font-medium rounded-full uppercase tracking-wider border border-neutral-700/50">
-                  {car.type}
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <Star className="h-4 w-4 text-white fill-white" />
-                  <span className="text-sm font-medium text-white">4.9</span>
-                  <span className="text-sm text-neutral-500">
-                    (120 reviews)
-                  </span>
-                </div>
-              </div>
-              <h1 className="text-5xl lg:text-6xl font-light tracking-tight leading-tight">
-                {car.brand} <br />
-                <span className="font-medium">{car.name}</span>
-              </h1>
-            </div>
-
-            {/* Stats Grid - Glass Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            </div> */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
               {[
                 {
                   icon: Users,
@@ -204,113 +153,76 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                 },
                 { icon: Fuel, title: car.fuel_type, subtitle: "Fuel Type" },
                 { icon: Zap, title: "520 HP", subtitle: "Performance" },
+                {
+                  icon: Bluetooth,
+                  title: "Bluetooth",
+                  subtitle: "Capacity",
+                },
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="group relative p-6 rounded-2xl bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500 hover:bg-neutral-900/70"
+                  className="group relative p-4 rounded-2xl bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500 hover:bg-neutral-900/70"
                 >
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <item.icon className="h-5 w-5 text-neutral-400 mb-4" />
-                  <p className="text-lg font-medium text-white">{item.title}</p>
-                  <p className="text-sm text-neutral-500">{item.subtitle}</p>
+                  <p className="text-base font-medium text-white">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-neutral-500">{item.subtitle}</p>
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* About Section */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-medium flex items-center gap-3">
-                <Info className="h-5 w-5 text-neutral-500" />
-                <span>About this car</span>
-              </h3>
-              <p className="text-neutral-400 leading-relaxed font-light">
-                {car.description}
-              </p>
-            </div>
-
-            {/* Premium Features */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-medium">Premium Features</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  "Bluetooth Connectivity",
-                  "GPS Navigation System",
-                  "Reverse Camera",
-                  "Keyless Entry",
-                  "Heated Seats",
-                  "Child Seat Support",
-                  "Leather Interior",
-                  "Premium Sound System",
-                ].map((feature, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 text-neutral-300 font-light"
-                  >
-                    <div className="h-1.5 w-1.5 bg-white rounded-full" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
+          {/* Right Column - Car Details */}
+          <div className="space-y-6">
+            {/* Car Title */}
+            <div className="flex items-center gap-8 mb-3">
+              <h1 className="text-5xl lg:text-6xl font-light tracking-tight leading-tight">
+                {car.brand} {""}
+                <span className="font-medium">{car.name}</span>
+              </h1>
+              <div className="flex flex-col items-start gap-3">
+                <div className="flex items-center gap-1.5">
+                  <Star className="h-4 w-4 text-white fill-white" />
+                  <span className="text-sm font-medium text-white">4.9</span>
+                  <span className="text-sm text-neutral-500">
+                    (120 reviews)
+                  </span>
+                </div>
+                <span className="px-3 py-1.5 bg-neutral-800/60 backdrop-blur-sm text-neutral-300 text-xs font-medium rounded-full uppercase tracking-wider border border-neutral-700/50">
+                  {car.type}
+                </span>
               </div>
             </div>
+
+            {/* Stats Grid - Glass Cards */}
 
             {/* Booking Card - Glassmorphism */}
             <div className="relative p-8 rounded-3xl bg-gradient-to-br from-neutral-900/80 to-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 shadow-2xl shadow-black/50">
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
 
               <div className="relative space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-medium">Book Now</h3>
-                  <div className="text-right">
-                    <p className="text-3xl font-medium text-white">
-                      ${car.price_per_day}
-                    </p>
-                    <p className="text-sm text-neutral-500">per day</p>
-                  </div>
-                </div>
-
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-neutral-400 flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>Pick-up Location</span>
-                    </label>
-                    <select className="w-full bg-neutral-800/50 border border-neutral-700/50 rounded-xl px-4 py-3.5 text-sm text-white focus:ring-1 focus:ring-white/20 focus:border-neutral-600 focus:outline-none transition-all duration-300 appearance-none cursor-pointer">
-                      <option>City Center Mall</option>
-                      <option>International Airport</option>
-                      <option>North Station</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-neutral-400 flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>Duration</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <input
-                        type="date"
-                        className="w-full bg-neutral-800/50 border border-neutral-700/50 rounded-xl px-4 py-3.5 text-sm text-white focus:ring-1 focus:ring-white/20 focus:border-neutral-600 focus:outline-none transition-all duration-300"
-                      />
-                      <input
-                        type="date"
-                        className="w-full bg-neutral-800/50 border border-neutral-700/50 rounded-xl px-4 py-3.5 text-sm text-white focus:ring-1 focus:ring-white/20 focus:border-neutral-600 focus:outline-none transition-all duration-300"
-                      />
+                  <div>
+                    <h2 className="text-3xl font-light tracking-tight mb-8">
+                      Rental Rates
+                    </h2>
+                    <div className="space-y-0">
+                      {rentalRates.map((rate, i) => (
+                        <div
+                          key={i}
+                          className="flex justify-between items-center py-5 border-b border-neutral-800/50"
+                        >
+                          <span className="text-neutral-300 font-light">
+                            {rate.duration}
+                          </span>
+                          <span className="text-white font-medium">
+                            {rate.price}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-neutral-700/50 space-y-3">
-                  <div className="flex justify-between text-sm text-neutral-400">
-                    <span>${car.price_per_day} × 3 days</span>
-                    <span className="text-white">${car.price_per_day * 3}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-neutral-400">
-                    <span>Insurance & Fees</span>
-                    <span className="text-white">$45</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-medium text-white pt-3">
-                    <span>Total Price</span>
-                    <span>${car.price_per_day * 3 + 45}</span>
                   </div>
                 </div>
 
@@ -332,7 +244,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Rental Terms Section */}
-      <section className="mt-32 py-20 border-t border-neutral-800/50">
+      <section className="mt-32 py-20 border-t border-neutral-800/50 bg-[#0e0e0e] rounded-4xl">
         <div className="container mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             {/* Left Side */}
@@ -367,7 +279,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
               {rentalTerms.map((term, i) => (
                 <div
                   key={i}
-                  className="p-6 rounded-2xl bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500"
+                  className="p-6 rounded-2xl bg-[#171717] backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500"
                 >
                   <term.icon className="h-5 w-5 text-neutral-400 mb-4" />
                   <p className="text-lg font-medium text-white">{term.title}</p>
@@ -388,7 +300,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             {/* Featured Image */}
-            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
+            <div className="relative aspect-4/3 rounded-3xl overflow-hidden">
               <Image
                 src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80"
                 alt="Luxury car"
@@ -400,12 +312,12 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
 
             {/* Steps Grid */}
             <div className="grid grid-cols-2 gap-4">
-              {bookingSteps.map((step, i) => (
+              {BOOKING_STEPS.map((step, i) => (
                 <div
                   key={i}
                   className="p-6 rounded-2xl bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500 group"
                 >
-                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-neutral-700 text-sm font-medium text-neutral-400 mb-4 group-hover:border-white group-hover:text-white transition-all duration-300">
+                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border  border-neutral-700 text-sm font-medium text-neutral-400 mb-4 group-hover:border-white group-hover:text-white transition-all duration-300">
                     {step.number}
                   </span>
                   <h4 className="text-lg font-medium text-white mb-2">
