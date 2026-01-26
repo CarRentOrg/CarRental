@@ -83,8 +83,9 @@ export default function ThumbnailImageGallery({
         <div
           className="
             grid w-full gap-4
-            grid-cols-[repeat(4,minmax(80px,1fr))]
-            sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]
+            grid-cols-[repeat(auto-fill,minmax(80px,1fr))]
+            md:grid-cols-[repeat(4,minmax(100px,1fr))]
+            sm:grid-cols-[repeat(auto-fill,minmax(100px,1fr))]
           "
         >
           {images.map((img, i) => (

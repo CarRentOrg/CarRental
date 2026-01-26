@@ -1,13 +1,15 @@
 "use client";
 
 import Link from 'next/link';
-import { Car, Search, Menu, User, X, Instagram, MessageCircle, Phone } from 'lucide-react';
+import { Car, Search, Menu, User, X, Instagram, MessageCircle, Phone, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,30 +42,41 @@ export default function Header() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center space-x-12 text-sm font-bold tracking-wide uppercase text-white/70">
           <Link href="/" className="transition-all hover:text-white relative group">
-            Home
+            {t('nav.home')}
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full" />
           </Link>
           <Link href="/cars" className="transition-all hover:text-white relative group">
-            Browse Cars
+            {t('nav.cars')}
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full" />
           </Link>
           <Link href="/about" className="transition-all hover:text-white relative group">
-            About Us
+            {t('nav.about')}
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full" />
           </Link>
           <Link href="/contact" className="transition-all hover:text-white relative group">
-            Contact
+            {t('nav.contact')}
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full" />
           </Link>
         </nav>
 
         <div className="flex items-center space-x-6">
+          {/* Language Switcher */}
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'mn' : 'en')}
+            className={`hidden md:flex items-center justify-center p-2 rounded-full border transition-all
+              ${scrolled ? 'border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'}
+            `}
+            title={language === 'en' ? 'Switch to Mongolian' : 'Switch to English'}
+          >
+            <Globe className="h-5 w-5" />
+          </button>
+
           <Link
             href="/admin"
             className="hidden md:flex items-center space-x-2 rounded-full bg-white px-7 py-2.5 text-sm font-bold text-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5"
           >
             <User className="h-4 w-4" />
-            <span>Admin Control</span>
+            <span>{t('nav.admin')}</span>
           </Link>
           <button
             className="md:hidden p-2 text-white/80 hover:text-white transition-all transform active:scale-90"
@@ -113,10 +126,19 @@ export default function Header() {
 
               {/* Nav Links */}
               <nav className="flex flex-col space-y-6 text-xl font-bold mb-12 text-white/80">
-                <Link href="/cars" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">Cars</Link>
-                <Link href="/terms" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">Rental Terms</Link>
-                <Link href="/news" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">News</Link>
+                <Link href="/cars" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">{t('nav.cars')}</Link>
+                <Link href="/terms" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">{t('nav.rentalTerms')}</Link>
+                <Link href="/news" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">{t('nav.news')}</Link>
               </nav>
+
+              {/* Language Switcher Mobile */}
+              <button
+                onClick={() => setLanguage(language === 'en' ? 'mn' : 'en')}
+                className="flex items-center justify-center p-4 rounded-full border border-white/20 bg-white/10 text-white mb-8 hover:bg-white/20 transition-all"
+                title={language === 'en' ? 'Switch to Mongolian' : 'Switch to English'}
+              >
+                <Globe className="h-6 w-6" />
+              </button>
 
               {/* Book Now and Socials */}
               <div className="flex items-center justify-between pt-4">
@@ -125,7 +147,7 @@ export default function Header() {
                   onClick={() => setOpen(false)}
                   className="bg-white text-black rounded-full px-8 py-4 text-lg font-black shadow-2xl shadow-white/10 hover:bg-neutral-100 transition-all active:scale-95"
                 >
-                  Book Now
+                  {t('nav.bookNow')}
                 </Link>
                 <div className="flex items-center space-x-5 text-white/40">
                   <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-white hover:scale-110 transition-all">

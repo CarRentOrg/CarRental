@@ -1,5 +1,4 @@
-import Link from "next/link";
-import Image from "next/image";
+"use client";
 import {
   Users,
   Fuel,
@@ -21,10 +20,12 @@ import {
   Bluetooth,
 } from "lucide-react";
 import { Car, Car1 } from "@/types";
-
 import ThumbnailImageGallery from "@/components/cars/Thumbnails";
 import Returnbutton from "@/components/shared/returnbutton";
-import { BOOKING_STEPS } from "@/constants";
+import Button from "@/components/shared/button";
+import HowToRentSection from "@/components/_sections/HowToRentSection";
+import RentalTermsSection from "@/components/_sections/RentalTermsSection";
+import FAQSection from "@/components/_sections/FAQSection";
 
 const carDaTa: Car1 = {
   id: "gt3rs",
@@ -226,12 +227,11 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 </div>
 
-                <Link
+                <Button
+                  text="Book Now"
+                  className="w-full rounded-xl"
                   href={`/booking?carId=${car.id}`}
-                  className="flex w-full items-center justify-center rounded-xl bg-white py-4 font-medium text-black transition-all duration-300 hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10"
-                >
-                  Reserve this car
-                </Link>
+                />
 
                 <div className="flex items-center justify-center gap-2 text-xs font-medium text-neutral-400">
                   <ShieldCheck className="h-4 w-4" />
@@ -243,126 +243,9 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      {/* Rental Terms Section */}
-      <section className="mt-32 py-20 border-t border-neutral-800/50 bg-[#0e0e0e] rounded-4xl">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-            {/* Left Side */}
-            <div className="space-y-6">
-              <h2 className="text-4xl font-light tracking-tight">
-                Rental Terms
-              </h2>
-              <p className="text-neutral-400 font-light max-w-sm">
-                We're here for you — ready to help find the perfect car that
-                matches your needs.
-              </p>
-
-              <div className="flex items-center gap-4 pt-4">
-                <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center overflow-hidden">
-                  <span className="text-lg font-medium">MC</span>
-                </div>
-                <div>
-                  <p className="font-medium text-white">Michael Carter</p>
-                  <p className="text-sm text-neutral-500">
-                    Your Personal Rental Assistant
-                  </p>
-                </div>
-              </div>
-
-              <button className="mt-4 px-6 py-3 rounded-full border border-neutral-700 text-white text-sm font-medium hover:bg-neutral-800/50 transition-all duration-300">
-                Call Us Now
-              </button>
-            </div>
-
-            {/* Right Side - Terms Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {rentalTerms.map((term, i) => (
-                <div
-                  key={i}
-                  className="p-6 rounded-2xl bg-[#171717] backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500"
-                >
-                  <term.icon className="h-5 w-5 text-neutral-400 mb-4" />
-                  <p className="text-lg font-medium text-white">{term.title}</p>
-                  <p className="text-sm text-neutral-500">{term.subtitle}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6 lg:px-12">
-          <h2 className="text-4xl font-light tracking-tight text-center mb-16">
-            Get Rolling in 4 Steps
-          </h2>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Featured Image */}
-            <div className="relative aspect-4/3 rounded-3xl overflow-hidden">
-              <Image
-                src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80"
-                alt="Luxury car"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            </div>
-
-            {/* Steps Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {BOOKING_STEPS.map((step, i) => (
-                <div
-                  key={i}
-                  className="p-6 rounded-2xl bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500 group"
-                >
-                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border  border-neutral-700 text-sm font-medium text-neutral-400 mb-4 group-hover:border-white group-hover:text-white transition-all duration-300">
-                    {step.number}
-                  </span>
-                  <h4 className="text-lg font-medium text-white mb-2">
-                    {step.title}
-                  </h4>
-                  <p className="text-sm text-neutral-500 leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-24 border-t border-neutral-800/50">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            {/* Left Side */}
-            <div>
-              <h2 className="text-4xl font-light tracking-tight">
-                Frequently Asked
-                <br />
-                Questions
-              </h2>
-            </div>
-
-            {/* Right Side - FAQ List */}
-            <div className="space-y-0">
-              {faqs.map((question, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-6 border-b border-neutral-800/50 group cursor-pointer hover:border-neutral-700 transition-all duration-300"
-                >
-                  <span className="text-neutral-300 font-light group-hover:text-white transition-colors duration-300">
-                    {question}
-                  </span>
-                  <Plus className="h-5 w-5 text-neutral-500 group-hover:text-white transition-colors duration-300" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <RentalTermsSection />
+      <HowToRentSection />
+      <FAQSection />
 
       {/* Bottom Spacing */}
       <div className="h-24" />

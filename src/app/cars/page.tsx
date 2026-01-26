@@ -1,6 +1,9 @@
+"use client";
+
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import CarCard from '@/components/cars/CarCard';
 import { Car } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Mock data for car list
 const ALL_CARS: Car[] = [
@@ -85,21 +88,23 @@ const ALL_CARS: Car[] = [
 ];
 
 export default function CarsPage() {
+    const { t } = useLanguage();
+
     return (
         <div className="container mx-auto px-4 py-20">
             <div className="flex flex-col space-y-8">
                 {/* Header & Search */}
                 <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
                     <div>
-                        <h1 className="text-3xl font-bold">Available Cars</h1>
-                        <p className="text-gray-600">Choose from our diverse fleet of {ALL_CARS.length} vehicles</p>
+                        <h1 className="text-3xl font-bold">{t('cars.title')}</h1>
+                        <p className="text-gray-600">{t('cars.subtitle')}</p>
                     </div>
 
                     <div className="relative w-full max-w-md">
                         <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search by brand or model..."
+                            placeholder={t('cars.searchPlaceholder')}
                             className="w-full rounded-2xl border-gray-500 bg-gray py-3 pl-12 pr-4 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600/10"
                         />
                     </div>
@@ -112,38 +117,38 @@ export default function CarsPage() {
                             <div className="mb-6 flex items-center justify-between border-b pb-4">
                                 <h3 className="flex items-center space-x-2 text-lg font-bold">
                                     <Filter className="h-4 w-4 text-white" />
-                                    <span>Filters</span>
+                                    <span>{t('common.filter')}</span>
                                 </h3>
-                                <button className="text-sm font-medium text-blue-600 hover:underline">Clear all</button>
+                                <button className="text-sm font-medium text-blue-600 hover:underline">{t('common.clearAll')}</button>
                             </div>
 
                             <div className="space-y-6">
                                 <div>
-                                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-400">Car Type</h4>
+                                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-400">{t('cars.carType')}</h4>
                                     <div className="space-y-2">
                                         {['Sedan', 'SUV', 'Luxury', 'Sports', 'Hatchback'].map((type) => (
                                             <label key={type} className="flex items-center space-x-3 text-sm font-medium text-gray-700">
                                                 <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                                                <span>{type}</span>
+                                                <span>{type === 'SUV' ? t('cars.types.suv') : t(`cars.types.${type.toLowerCase()}` as any)}</span>
                                             </label>
                                         ))}
                                     </div>
                                 </div>
 
                                 <div>
-                                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-400">Transmission</h4>
+                                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-400">{t('cars.transmission')}</h4>
                                     <div className="space-y-2">
                                         {['Automatic', 'Manual'].map((type) => (
                                             <label key={type} className="flex items-center space-x-3 text-sm font-medium text-gray-700">
                                                 <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                                                <span>{type}</span>
+                                                <span>{t(`cars.${type.toLowerCase()}` as any)}</span>
                                             </label>
                                         ))}
                                     </div>
                                 </div>
 
                                 <div>
-                                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-400">Price Range</h4>
+                                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-400">{t('cars.priceRange')}</h4>
                                     <input type="range" className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-blue-600" />
                                     <div className="mt-2 flex justify-between text-xs font-bold text-gray-500">
                                         <span>$0</span>
@@ -160,7 +165,7 @@ export default function CarsPage() {
                         <div className="mb-6 flex lg:hidden">
                             <button className="flex items-center space-x-2 rounded-xl border bg-white px-4 py-2.5 text-sm font-bold shadow-sm">
                                 <SlidersHorizontal className="h-4 w-4" />
-                                <span>Filters</span>
+                                <span>{t('common.filter')}</span>
                             </button>
                         </div>
 

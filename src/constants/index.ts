@@ -1,4 +1,5 @@
 import { Car } from "@/types";
+import { Users, FileText, Car as CarIcon, Wallet } from "lucide-react";
 
 export const FEATURED_CARS: Car[] = [
   {
@@ -128,5 +129,53 @@ export const BOOKING_STEPS = [
     number: "04",
     title: "Drive Away",
     description: "We deliver the car to your desired location.",
+  },
+];
+
+export const RENTAL_TERMS = [
+  { icon: Users, title: "21 years", subtitle: "Minimum age" },
+  {
+    icon: FileText,
+    title: "2 documents",
+    subtitle: "Passport and Driver's License",
+  },
+  { icon: CarIcon, title: "1 year", subtitle: "Of driving experience" },
+  { icon: Wallet, title: "From 1000$", subtitle: "Security deposit" },
+];
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+export const FAQS: FAQItem[] = [
+  {
+    question: "What are the terms and conditions for using the car?",
+    answer:
+      "You must have a valid driver's license, meet the minimum age requirement, and comply with all rental agreement terms during the rental period.",
+  },
+  {
+    question: "Can I drive the car outside the city?",
+    answer:
+      "Yes, you may drive the vehicle outside the city limits, provided that the route is within the permitted territory indicated in your rental contract. Please inform us in advance so we can note it in your agreement.",
+  },
+  {
+    question: "What is your fuel policy?",
+    answer:
+      "The car must be returned with the same fuel level as at pickup. Refueling charges apply otherwise.",
+  },
+  {
+    question: "Can the car be decorated for the wedding?",
+    answer:
+      "Yes, light decorations are allowed as long as they do not damage the vehicle and are removed before return.",
+  },
+  {
+    question: "Do you offer a driver service?",
+    answer:
+      "Yes, a professional driver can be provided upon request for an additional fee.",
+  },
+  {
+    question: "What happens if I return the car late?",
+    answer:
+      "Late returns may incur additional hourly charges as outlined in your rental agreement.",
   },
 ];

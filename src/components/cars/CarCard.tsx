@@ -1,13 +1,17 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Car } from "@/types";
 import { ChevronRight } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CarCardProps {
   car: Car;
 }
 
 export default function CarCard({ car }: CarCardProps) {
+  const { t } = useLanguage();
   return (
     <div className="group w-full">
       {/* IMAGE PART */}
@@ -41,13 +45,13 @@ export default function CarCard({ car }: CarCardProps) {
               href=""
               className="flex items-center text-base text-[#b8b8b8] hover:text-white"
             >
-              <span>Learn More</span>
+              <span>{t('common.learnMore')}</span>
               <ChevronRight className="h-5 w-5 " />
             </a>
           </div>
           <div>
             <p className="text-base text-[#b8b8b8]">
-              from {``} <span>${car.price_per_day}/day</span>
+              {t('common.from')} {``} <span>${car.price_per_day} / {t('cars.perDay').replace('per ', '')}</span>
             </p>
           </div>
         </div>

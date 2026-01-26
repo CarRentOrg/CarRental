@@ -5,22 +5,25 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { Calendar, User, Mail, Phone, MapPin, CreditCard } from 'lucide-react';
-
-const bookingSchema = z.object({
-    firstName: z.string().min(2, 'First name is required'),
-    lastName: z.string().min(2, 'Last name is required'),
-    email: z.string().email('Invalid email address'),
-    phone: z.string().min(8, 'Phone number is required'),
-    pickupLocation: z.string().min(1, 'Pick-up location is required'),
-    dropoffLocation: z.string().min(1, 'Drop-off location is required'),
-    pickupDate: z.string().min(1, 'Pick-up date is required'),
-    dropoffDate: z.string().min(1, 'Drop-off date is required'),
-});
-
-type BookingFormValues = z.infer<typeof bookingSchema>;
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function BookingForm() {
     const router = useRouter();
+    const { t } = useLanguage();
+
+    const bookingSchema = z.object({
+        firstName: z.string().min(2, t('booking.firstName') + ' is required'),
+        lastName: z.string().min(2, t('booking.lastName') + ' is required'),
+        email: z.string().email(t('booking.email') + ' is invalid'),
+        phone: z.string().min(8, t('booking.phone') + ' is required'),
+        pickupLocation: z.string().min(1, t('booking.pickupLocation') + ' is required'),
+        dropoffLocation: z.string().min(1, t('booking.dropoffLocation') + ' is required'),
+        pickupDate: z.string().min(1, t('booking.pickupDate') + ' is required'),
+        dropoffDate: z.string().min(1, t('booking.returnDate') + ' is required'),
+    });
+
+    type BookingFormValues = z.infer<typeof bookingSchema>;
+
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<BookingFormValues>({
         resolver: zodResolver(bookingSchema),
     });
@@ -38,30 +41,30 @@ export default function BookingForm() {
             <div className="space-y-6">
                 <div className="flex items-center space-x-2 border-b pb-2">
                     <Calendar className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-xl font-bold">Booking Details</h3>
+                    <h3 className="text-xl font-bold">{t('booking.details')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Pick-up Location</label>
+                        <label className="text-sm font-bold text-gray-700">{t('booking.pickupLocation')}</label>
                         <input
                             {...register('pickupLocation')}
                             className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                            placeholder="City or Airport"
+                            placeholder={t('booking.cityOrAirport')}
                         />
                         {errors.pickupLocation && <p className="text-xs text-red-500 font-medium">{errors.pickupLocation.message}</p>}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Drop-off Location</label>
+                        <label className="text-sm font-bold text-gray-700">{t('booking.dropoffLocation')}</label>
                         <input
                             {...register('dropoffLocation')}
                             className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                            placeholder="City or Airport"
+                            placeholder={t('booking.cityOrAirport')}
                         />
                         {errors.dropoffLocation && <p className="text-xs text-red-500 font-medium">{errors.dropoffLocation.message}</p>}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Pick-up Date</label>
+                        <label className="text-sm font-bold text-gray-700">{t('booking.pickupDate')}</label>
                         <input
                             {...register('pickupDate')}
                             type="date"
@@ -70,7 +73,7 @@ export default function BookingForm() {
                         {errors.pickupDate && <p className="text-xs text-red-500 font-medium">{errors.pickupDate.message}</p>}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Drop-off Date</label>
+                        <label className="text-sm font-bold text-gray-700">{t('booking.returnDate')}</label>
                         <input
                             {...register('dropoffDate')}
                             type="date"
@@ -85,12 +88,12 @@ export default function BookingForm() {
             <div className="space-y-6">
                 <div className="flex items-center space-x-2 border-b pb-2">
                     <User className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-xl font-bold">Personal Information</h3>
+                    <h3 className="text-xl font-bold">{t('booking.personalInfo')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">First Name</label>
+                        <label className="text-sm font-bold text-gray-700">{t('booking.firstName')}</label>
                         <input
                             {...register('firstName')}
                             className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -99,7 +102,7 @@ export default function BookingForm() {
                         {errors.firstName && <p className="text-xs text-red-500 font-medium">{errors.firstName.message}</p>}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Last Name</label>
+                        <label className="text-sm font-bold text-gray-700">{t('booking.lastName')}</label>
                         <input
                             {...register('lastName')}
                             className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -108,7 +111,7 @@ export default function BookingForm() {
                         {errors.lastName && <p className="text-xs text-red-500 font-medium">{errors.lastName.message}</p>}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Email Address</label>
+                        <label className="text-sm font-bold text-gray-700">{t('booking.email')}</label>
                         <input
                             {...register('email')}
                             type="email"
@@ -118,7 +121,7 @@ export default function BookingForm() {
                         {errors.email && <p className="text-xs text-red-500 font-medium">{errors.email.message}</p>}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Phone Number</label>
+                        <label className="text-sm font-bold text-gray-700">{t('booking.phone')}</label>
                         <input
                             {...register('phone')}
                             className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -134,7 +137,7 @@ export default function BookingForm() {
                 disabled={isSubmitting}
                 className="w-full flex items-center justify-center space-x-2 rounded-2xl bg-blue-600 py-4 font-bold text-white transition-all hover:bg-blue-700 hover:shadow-lg disabled:opacity-50"
             >
-                <span>{isSubmitting ? 'Processing...' : 'Confirm Booking'}</span>
+                <span>{isSubmitting ? t('booking.processing') : t('booking.confirmBooking')}</span>
             </button>
         </form>
     );

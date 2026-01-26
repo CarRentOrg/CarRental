@@ -13,6 +13,7 @@
   --bg-soft: #0e0e0e;
   --bg-card: #171717;
   --bg-float: #212121;
+  --bg-button: #b20c0c;
 
   --font-inter-display: "Inter Display", sans-serif;
 }
@@ -34,9 +35,12 @@
 @layer components {
   .container {
     width: 100%;
-    max-width: 103rem; /* 1900px */
-    margin-inline: auto; /* centered */
-    padding-inline: 2.5rem; /* px-10 = 40px */
+    max-width: 103rem;
+    /* 1900px */
+    margin-inline: auto;
+    /* centered */
+    padding-inline: 2.5rem;
+    /* px-10 = 40px */
   }
 }
 
@@ -45,4 +49,56 @@ body {
   background: var(--background);
   color: var(--foreground);
   transition-behavior: smooth;
+}
+
+/* Smooth transitions for language changes */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+button,
+label {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Mongolian language font size adjustment */
+html[lang="mn"] body {
+  font-size: 1em;
+}
+
+html[lang="mn"] h1 {
+  font-size: 4em;
+}
+
+html[lang="mn"] h2,
+html[lang="mn"] h3 {
+  font-size: 1.4em;
+}
+
+html[lang="mn"] p,
+html[lang="mn"] span,
+html[lang="mn"] a,
+html[lang="mn"] button {
+  font-size: 1em;
+}
+
+/* Extra small on mobile */
+@media (max-width: 768px) {
+  html[lang="mn"] body {
+    font-size: 0.90em;
+  }
+
+  html[lang="mn"] h1 {
+    font-size: 0.88em;
+  }
+
+  html[lang="mn"] h2,
+  html[lang="mn"] h3 {
+    font-size: 0.89em;
+  }
 }
