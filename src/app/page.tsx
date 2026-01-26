@@ -1,55 +1,104 @@
+"use client";
+
 import Link from "next/link";
-import { Search, Calendar, MapPin, ChevronRight, Users } from "lucide-react";
+import { Search, Calendar, MapPin, ChevronRight, Users, Diamond } from "lucide-react";
+import { motion, Variants } from "framer-motion";
 import CarCard from "@/components/cars/CarCard";
 import { Car } from "@/types";
 import Title from "@/components/shared/title";
 import FeaturedSection from "@/components/_sections/FeaturedSection";
 
 export default function Home() {
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 20
+      }
+    },
+  };
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-       <section className="relative min-h-screen w-full overflow-hidden bg-black">
+      <section className="relative min-h-screen w-full overflow-hidden bg-black">
         {/* Background Image with Gradient Overlay */}
         <div className="absolute inset-0">
-          <img
+          <motion.img
+            initial={{ scale: 1.1, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.6 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
             src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80"
-            className="h-full w-full object-cover opacity-60"
+            className="h-full w-full object-cover"
             alt="Hero Car"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />        </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+        </div>
 
         {/* Content */}
         <div className="container relative mx-auto flex h-screen flex-col justify-center px-6 md:px-12">
-          <div className="max-w-3xl space-y-8 pt-20">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Chosen by more than 250 clients
-            </div>
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="max-w-3xl space-y-8 pt-20"
+          >
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-neutral-900/80 px-5 py-2 text-sm font-semibold text-white/90 backdrop-blur-md shadow-2xl"
+            >
+              <Diamond className="h-4 w-4 text-white fill-white/20" />
+              <span className="tracking-wide">Chosen by more than 250 clients</span>
+            </motion.div>
 
-            <h1 className="text-5xl font-bold leading-tight tracking-tight text-white md:text-7xl lg:text-8xl">
-              Premium Car Rental <br />
-              <span className="text-gray-400">in Los Angeles</span>
-            </h1>
+            <motion.h1
+              variants={itemVariants}
+              className="text-6xl font-black leading-[1.1] tracking-tighter text-white md:text-8xl lg:text-9xl"
+            >
+              Premium <br />
+              <span className="text-neutral-500 font-medium tracking-tight">Rental Service</span>
+            </motion.h1>
 
-            <p className="max-w-xl text-lg text-gray-400 md:text-xl leading-relaxed">
+            <motion.p
+              variants={itemVariants}
+              className="max-w-xl text-lg text-neutral-400 md:text-xl leading-relaxed font-medium"
+            >
               Experience unmatched comfort, style, and service — wherever the road takes you.
-            </p>
+            </motion.p>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col gap-4 sm:flex-row pt-4"
+            >
               <Link
                 href="/cars"
-                className="inline-flex items-center justify-center rounded-full bg-white px-8 py-4 text-base font-bold text-black transition-transform hover:scale-105 active:scale-95"
+                className="inline-flex items-center justify-center rounded-full bg-white px-10 py-5 text-lg font-bold text-black transition-all hover:scale-[1.02] active:scale-95 shadow-xl hover:bg-neutral-100"
               >
                 Choose Your Car
               </Link>
               <button
-                className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-colors hover:bg-white/10 hover:border-white/40"
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-10 py-5 text-lg font-bold text-white backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 active:scale-95"
               >
                 Our Approach
               </button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
