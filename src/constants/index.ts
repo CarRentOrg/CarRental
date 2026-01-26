@@ -107,3 +107,26 @@ export const FEATURED_CARS: Car[] = [
     is_available: true,
   },
 ];
+
+export const BOOKING_STEPS = [
+  {
+    number: "01",
+    title: "Choose your car",
+    description: "Pick the premium model that suits your style and plans.",
+  },
+  {
+    number: "02",
+    title: "Contact Us",
+    description: "Reach out and reserve your dates.",
+  },
+  {
+    number: "03",
+    title: "Confirm & Secure",
+    description: "Send documents, pay deposit and we'll handle the rest.",
+  },
+  {
+    number: "04",
+    title: "Drive Away",
+    description: "We deliver the car to your desired location.",
+  },
+];
