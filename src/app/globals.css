@@ -4,6 +4,7 @@
 :root {
   --background: #000;
   --foreground: #ffffff;
+  --secondary-foreground: #b8b8b8;
   --font-inter-display: "Inter Display", sans-serif;
 }
 

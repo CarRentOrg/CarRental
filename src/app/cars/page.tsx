@@ -86,12 +86,12 @@ const ALL_CARS: Car[] = [
 
 export default function CarsPage() {
     return (
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-20">
             <div className="flex flex-col space-y-8">
                 {/* Header & Search */}
                 <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Available Cars</h1>
+                        <h1 className="text-3xl font-bold">Available Cars</h1>
                         <p className="text-gray-600">Choose from our diverse fleet of {ALL_CARS.length} vehicles</p>
                     </div>
 
@@ -100,7 +100,7 @@ export default function CarsPage() {
                         <input
                             type="text"
                             placeholder="Search by brand or model..."
-                            className="w-full rounded-2xl border-gray-200 bg-white py-3 pl-12 pr-4 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600/10"
+                            className="w-full rounded-2xl border-gray-500 bg-gray py-3 pl-12 pr-4 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600/10"
                         />
                     </div>
                 </div>
@@ -108,10 +108,10 @@ export default function CarsPage() {
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
                     {/* Filters Sidebar */}
                     <aside className="hidden space-y-8 lg:block">
-                        <div className="rounded-3xl border bg-white p-6 shadow-sm">
+                        <div className="rounded-3xl border bg-black p-6 shadow-sm">
                             <div className="mb-6 flex items-center justify-between border-b pb-4">
                                 <h3 className="flex items-center space-x-2 text-lg font-bold">
-                                    <Filter className="h-4 w-4 text-blue-600" />
+                                    <Filter className="h-4 w-4 text-white" />
                                     <span>Filters</span>
                                 </h3>
                                 <button className="text-sm font-medium text-blue-600 hover:underline">Clear all</button>
