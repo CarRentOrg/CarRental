@@ -3,7 +3,7 @@ import { Car, Search, Menu, User } from 'lucide-react';
 
 export default function Header() {
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
+        <header className="sticky top-0 left-0 right-0 z-50 w-full transition-all duration-300 bg-transparent backdrop-blur-md">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 <Link href="/" className="flex items-center space-x-2">
                     <Car className="h-8 w-8 text-blue-600" />
