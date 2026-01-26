@@ -49,30 +49,6 @@ const rentalRates = [
   { duration: "30+ days", price: "$600/day" },
 ];
 
-// Rental terms data
-const rentalTerms = [
-  { icon: Users, title: "21 years", subtitle: "Minimum age" },
-  {
-    icon: FileText,
-    title: "2 documents",
-    subtitle: "Passport and Driver's License",
-  },
-  { icon: CarIcon, title: "1 year", subtitle: "Of driving experience" },
-  { icon: Wallet, title: "From 1000$", subtitle: "Security deposit" },
-];
-
-// FAQ data
-const faqs = [
-  "What are the terms and conditions for using the car?",
-  "Can I drive the car outside the city?",
-  "What is your fuel policy?",
-  "Can the car be decorated for the wedding?",
-  "Do you offer a driver service?",
-  "What happens if I return the car late?",
-];
-
-// Steps data
-
 // This would typically come from a DB call in a real app
 const getCarById = (id: string): Car | undefined => {
   const cars: Car[] = [
@@ -121,25 +97,6 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
           <div className="space-y-8">
             <ThumbnailImageGallery images={carDaTa.images} alt={carDaTa.name} />
 
-            {/* Rental Rates Section */}
-            {/* <div className="pt-12">
-              <h2 className="text-3xl font-light tracking-tight mb-8">
-                Rental Rates
-              </h2>
-              <div className="space-y-0">
-                {rentalRates.map((rate, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center py-5 border-b border-neutral-800/50"
-                  >
-                    <span className="text-neutral-300 font-light">
-                      {rate.duration}
-                    </span>
-                    <span className="text-white font-medium">{rate.price}</span>
-                  </div>
-                ))}
-              </div>
-            </div> */}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
               {[
                 {

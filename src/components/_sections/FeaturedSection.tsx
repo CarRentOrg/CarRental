@@ -11,9 +11,9 @@ const FeaturedSection = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="py-24 sm:px-10 mx-auto w-full px-6">
+    <section id="featured" className="py-24 sm:px-10 mx-auto w-full px-6">
       <div className="text-center md:mb-20 mb-10">
-        <Title title={t('home.chooseRide')} align={"center"} />
+        <Title title={t("home.chooseRide")} align={"center"} />
       </div>
 
       <div className="grid grid-cols-1 gap-y-10 gap-x-6 md:grid-cols-3 w-full mb-16">
@@ -23,7 +23,7 @@ const FeaturedSection = () => {
       </div>
       <div className="w-full flex justify-center items-center">
         <Button
-          text={t('home.exploreAllCars')}
+          text={t("home.exploreAllCars")}
           className="w-2/3 lg:w-50"
           href="/cars"
         />
