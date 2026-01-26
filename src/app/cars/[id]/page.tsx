@@ -1,7 +1,4 @@
 "use client";
-
-import Link from "next/link";
-import Image from "next/image";
 import {
   Users,
   Fuel,
@@ -23,10 +20,12 @@ import {
   Bluetooth,
 } from "lucide-react";
 import { Car, Car1 } from "@/types";
-import { useLanguage } from "@/contexts/LanguageContext";
-
 import ThumbnailImageGallery from "@/components/cars/Thumbnails";
 import Returnbutton from "@/components/shared/returnbutton";
+import Button from "@/components/shared/button";
+import HowToRentSection from "@/components/_sections/HowToRentSection";
+import RentalTermsSection from "@/components/_sections/RentalTermsSection";
+import FAQSection from "@/components/_sections/FAQSection";
 
 const carDaTa: Car1 = {
   id: "gt3rs",
@@ -41,6 +40,38 @@ const carDaTa: Car1 = {
     "https://hips.hearstapps.com/hmg-prod/images/2025-lexus-lx600-f-sport-exterior-pr-103-6864352bba6da.jpg?crop=0.708xw:0.598xh;0.145xw,0.304xh&resize=1200:*",
   ],
 };
+
+// Rental rates data
+const rentalRates = [
+  { duration: "Hourly (min. 4 hrs)", price: "$150/hr" },
+  { duration: "1 day", price: "$1200" },
+  { duration: "7-14 days", price: "$700/day" },
+  { duration: "30+ days", price: "$600/day" },
+];
+
+// Rental terms data
+const rentalTerms = [
+  { icon: Users, title: "21 years", subtitle: "Minimum age" },
+  {
+    icon: FileText,
+    title: "2 documents",
+    subtitle: "Passport and Driver's License",
+  },
+  { icon: CarIcon, title: "1 year", subtitle: "Of driving experience" },
+  { icon: Wallet, title: "From 1000$", subtitle: "Security deposit" },
+];
+
+// FAQ data
+const faqs = [
+  "What are the terms and conditions for using the car?",
+  "Can I drive the car outside the city?",
+  "What is your fuel policy?",
+  "Can the car be decorated for the wedding?",
+  "Do you offer a driver service?",
+  "What happens if I return the car late?",
+];
+
+// Steps data
 
 // This would typically come from a DB call in a real app
 const getCarById = (id: string): Car | undefined => {
@@ -65,42 +96,7 @@ const getCarById = (id: string): Car | undefined => {
 };
 
 export default function CarDetailPage({ params }: { params: { id: string } }) {
-  const { t } = useLanguage();
   const car = getCarById(params.id);
-
-  const rentalTerms = [
-    { icon: Users, title: "21+", subtitle: t('terms.minAge') },
-    {
-      icon: FileText,
-      title: "2 docs",
-      subtitle: t('terms.documents'),
-    },
-    { icon: CarIcon, title: "1 year", subtitle: t('terms.experience') },
-    { icon: Wallet, title: "From 1000$", subtitle: t('terms.deposit') },
-  ];
-
-  const faqs = [
-    t('faq.q1'),
-    t('faq.q2'),
-    t('faq.q3'),
-    t('faq.q4'),
-    t('faq.q5'),
-    t('faq.q6'),
-  ];
-
-  const bookingSteps = [
-    { number: "01", title: t('steps.s1.title'), description: t('steps.s1.desc') },
-    { number: "02", title: t('steps.s2.title'), description: t('steps.s2.desc') },
-    { number: "03", title: t('steps.s3.title'), description: t('steps.s3.desc') },
-    { number: "04", title: t('steps.s4.title'), description: t('steps.s4.desc') },
-  ];
-
-  const rentalRates = [
-    { duration: "Hourly", price: "$150/hr" },
-    { duration: "1 day", price: "$1200" },
-    { duration: "7-14 days", price: "$700/day" },
-    { duration: "30+ days", price: "$600/day" },
-  ];
 
   if (!car) {
     return (
@@ -112,33 +108,56 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-black text-white py-20 px-2 sm:px-10 mx-auto w-full">
+      {/* Header Navigation */}
+
       <div className="px-6 lg:px-12 pb-6">
-        <Returnbutton href="/cars" text={t('cars.backToResults')} />
+        <Returnbutton href="/cars" text="Back to results" />
       </div>
 
+      {/* Main Content */}
       <div className=" ">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          {/* Left Column - Gallery */}
           <div className="space-y-8">
             <ThumbnailImageGallery images={carDaTa.images} alt={carDaTa.name} />
 
+            {/* Rental Rates Section */}
+            {/* <div className="pt-12">
+              <h2 className="text-3xl font-light tracking-tight mb-8">
+                Rental Rates
+              </h2>
+              <div className="space-y-0">
+                {rentalRates.map((rate, i) => (
+                  <div
+                    key={i}
+                    className="flex justify-between items-center py-5 border-b border-neutral-800/50"
+                  >
+                    <span className="text-neutral-300 font-light">
+                      {rate.duration}
+                    </span>
+                    <span className="text-white font-medium">{rate.price}</span>
+                  </div>
+                ))}
+              </div>
+            </div> */}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
               {[
                 {
                   icon: Users,
-                  title: `${car.seats}`,
-                  subtitle: t('cars.capacity'),
+                  title: `${car.seats} Persons`,
+                  subtitle: "Capacity",
                 },
                 {
                   icon: Gauge,
                   title: car.transmission,
-                  subtitle: t('cars.transmission'),
+                  subtitle: "Transmission",
                 },
-                { icon: Fuel, title: car.fuel_type, subtitle: t('cars.fuelType') },
-                { icon: Zap, title: "520 HP", subtitle: t('cars.performance') },
+                { icon: Fuel, title: car.fuel_type, subtitle: "Fuel Type" },
+                { icon: Zap, title: "520 HP", subtitle: "Performance" },
                 {
                   icon: Bluetooth,
                   title: "Bluetooth",
-                  subtitle: t('cars.capacity'),
+                  subtitle: "Capacity",
                 },
               ].map((item, i) => (
                 <div
@@ -156,7 +175,9 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
             </div>
           </div>
 
+          {/* Right Column - Car Details */}
           <div className="space-y-6">
+            {/* Car Title */}
             <div className="flex items-center gap-8 mb-3">
               <h1 className="text-5xl lg:text-6xl font-light tracking-tight leading-tight">
                 {car.brand} {""}
@@ -167,7 +188,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                   <Star className="h-4 w-4 text-white fill-white" />
                   <span className="text-sm font-medium text-white">4.9</span>
                   <span className="text-sm text-neutral-500">
-                    (120 {t('cars.reviews')})
+                    (120 reviews)
                   </span>
                 </div>
                 <span className="px-3 py-1.5 bg-neutral-800/60 backdrop-blur-sm text-neutral-300 text-xs font-medium rounded-full uppercase tracking-wider border border-neutral-700/50">
@@ -176,6 +197,9 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
               </div>
             </div>
 
+            {/* Stats Grid - Glass Cards */}
+
+            {/* Booking Card - Glassmorphism */}
             <div className="relative p-8 rounded-3xl bg-gradient-to-br from-neutral-900/80 to-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 shadow-2xl shadow-black/50">
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
 
@@ -183,7 +207,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-3xl font-light tracking-tight mb-8">
-                      {t('cars.rentalRates')}
+                      Rental Rates
                     </h2>
                     <div className="space-y-0">
                       {rentalRates.map((rate, i) => (
@@ -203,16 +227,15 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 </div>
 
-                <Link
+                <Button
+                  text="Book Now"
+                  className="w-full rounded-xl"
                   href={`/booking?carId=${car.id}`}
-                  className="flex w-full items-center justify-center rounded-xl bg-white py-4 font-medium text-black transition-all duration-300 hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10"
-                >
-                  {t('cars.reserveCar')}
-                </Link>
+                />
 
                 <div className="flex items-center justify-center gap-2 text-xs font-medium text-neutral-400">
                   <ShieldCheck className="h-4 w-4" />
-                  <span>{t('cars.freeCancellation')}</span>
+                  <span>Free cancellation up to 48h</span>
                 </div>
               </div>
             </div>
@@ -220,115 +243,11 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <section className="mt-32 py-20 border-t border-neutral-800/50 bg-[#0e0e0e] rounded-4xl">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-            <div className="space-y-6">
-              <h2 className="text-4xl font-light tracking-tight">
-                {t('nav.rentalTerms')}
-              </h2>
-              <p className="text-neutral-400 font-light max-w-sm">
-                {t('cars.termsDescription')}
-              </p>
+      <RentalTermsSection />
+      <HowToRentSection />
+      <FAQSection />
 
-              <div className="flex items-center gap-4 pt-4">
-                <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center overflow-hidden">
-                  <span className="text-lg font-medium">MC</span>
-                </div>
-                <div>
-                  <p className="font-medium text-white">Michael Carter</p>
-                  <p className="text-sm text-neutral-500">
-                    {t('terms.assistant')}
-                  </p>
-                </div>
-              </div>
-
-              <button className="mt-4 px-6 py-3 rounded-full border border-neutral-700 text-white text-sm font-medium hover:bg-neutral-800/50 transition-all duration-300">
-                {t('terms.callUs')}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {rentalTerms.map((term, i) => (
-                <div
-                  key={i}
-                  className="p-6 rounded-2xl bg-[#171717] backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500"
-                >
-                  <term.icon className="h-5 w-5 text-neutral-400 mb-4" />
-                  <p className="text-lg font-medium text-white">{term.title}</p>
-                  <p className="text-sm text-neutral-500">{term.subtitle}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24">
-        <div className="container mx-auto px-6 lg:px-12">
-          <h2 className="text-4xl font-light tracking-tight text-center mb-16">
-            {t('cars.stepsTitle')}
-          </h2>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="relative aspect-4/3 rounded-3xl overflow-hidden">
-              <Image
-                src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80"
-                alt="Luxury car"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {bookingSteps.map((step, i) => (
-                <div
-                  key={i}
-                  className="p-6 rounded-2xl bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500 group"
-                >
-                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border  border-neutral-700 text-sm font-medium text-neutral-400 mb-4 group-hover:border-white group-hover:text-white transition-all duration-300">
-                    {step.number}
-                  </span>
-                  <h4 className="text-lg font-medium text-white mb-2">
-                    {step.title}
-                  </h4>
-                  <p className="text-sm text-neutral-500 leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24 border-t border-neutral-800/50">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            <div>
-              <h2 className="text-4xl font-light tracking-tight">
-                {t('faq.title')}
-              </h2>
-            </div>
-
-            <div className="space-y-0">
-              {faqs.map((question, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-6 border-b border-neutral-800/50 group cursor-pointer hover:border-neutral-700 transition-all duration-300"
-                >
-                  <span className="text-neutral-300 font-light group-hover:text-white transition-colors duration-300">
-                    {question}
-                  </span>
-                  <Plus className="h-5 w-5 text-neutral-500 group-hover:text-white transition-colors duration-300" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* Bottom Spacing */}
       <div className="h-24" />
     </div>
   );
