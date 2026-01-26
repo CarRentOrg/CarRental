@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+
 import Title from "../shared/title";
 import { FEATURED_CARS } from "@/constants";
 import CarCard from "../cars/CarCard";
