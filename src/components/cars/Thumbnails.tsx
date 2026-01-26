@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 
 interface Props {
   images: string[];
@@ -61,7 +61,7 @@ export default function ThumbnailImageGallery({
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.9}
-            onDragEnd={(_, info) => {
+            onDragEnd={(_: unknown, info: PanInfo) => {
               if (info.offset.x < -SWIPE_THRESHOLD) paginate(1);
               if (info.offset.x > SWIPE_THRESHOLD) paginate(-1);
             }}
@@ -78,14 +78,13 @@ export default function ThumbnailImageGallery({
         </AnimatePresence>
       </div>
 
-      {/* THUMBNAILS – ХЭВЭЭРЭЭ */}
+      {/* Thumbnails */}
       {images.length > 1 && (
         <div
           className="
             grid w-full gap-4
-            grid-cols-[repeat(auto-fill,minmax(80px,1fr))]
-            md:grid-cols-[repeat(4,minmax(90px,1fr))]
-            sm:grid-cols-[repeat(auto-fill,minmax(100px,1fr))]
+            grid-cols-[repeat(4,minmax(80px,1fr))]
+            sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]
           "
         >
           {images.map((img, i) => (
@@ -96,7 +95,7 @@ export default function ThumbnailImageGallery({
                 "relative aspect-video rounded-xl overflow-hidden transition-all duration-300",
                 i === activeIndex
                   ? "ring-2 ring-white scale-95"
-                  : "opacity-80 hover:opacity-100 hover:scale-[0.97]",
+                  : "opacity-60 hover:opacity-100 hover:scale-[0.98]",
               )}
             >
               <Image src={img} alt="" fill className="object-cover" />
