@@ -7,8 +7,11 @@ import CarCard from "@/components/cars/CarCard";
 import { Car } from "@/types";
 import Title from "@/components/shared/title";
 import FeaturedSection from "@/components/_sections/FeaturedSection";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Home() {
+  const { t } = useLanguage();
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -64,7 +67,7 @@ export default function Home() {
               className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-neutral-900/80 px-5 py-2 text-sm font-semibold text-white/90 backdrop-blur-md shadow-2xl"
             >
               <Diamond className="h-4 w-4 text-white fill-white/20" />
-              <span className="tracking-wide">Chosen by more than 250 clients</span>
+              <span className="tracking-wide">{t('home.chosenBy')}</span>
             </motion.div>
 
             <motion.h1
@@ -72,14 +75,14 @@ export default function Home() {
               className="text-6xl font-black leading-[1.1] tracking-tighter text-white md:text-8xl lg:text-9xl"
             >
               Premium <br />
-              <span className="text-neutral-500 font-medium tracking-tight">Rental Service</span>
+              <span className="text-neutral-500 font-medium tracking-tight whitespace-pre-wrap">{t('home.premiumRental').replace('Premium ', '')}</span>
             </motion.h1>
 
             <motion.p
               variants={itemVariants}
               className="max-w-xl text-lg text-neutral-400 md:text-xl leading-relaxed font-medium"
             >
-              Experience unmatched comfort, style, and service — wherever the road takes you.
+              {t('home.heroDescription')}
             </motion.p>
 
             <motion.div
@@ -90,12 +93,12 @@ export default function Home() {
                 href="/cars"
                 className="inline-flex items-center justify-center rounded-full bg-white px-10 py-5 text-lg font-bold text-black transition-all hover:scale-[1.02] active:scale-95 shadow-xl hover:bg-neutral-100"
               >
-                Choose Your Car
+                {t('home.chooseCar')}
               </Link>
               <button
                 className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-10 py-5 text-lg font-bold text-white backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 active:scale-95"
               >
-                Our Approach
+                {t('home.ourApproach')}
               </button>
             </motion.div>
           </motion.div>
@@ -110,10 +113,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
-              Why Choose Us?
+              {t('features.title')}
             </h2>
             <p className="mt-4 text-gray-600">
-              The best rental experience with premium benefits
+              {t('features.description')}
             </p>
           </div>
 
@@ -122,30 +125,27 @@ export default function Home() {
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
                 <MapPin className="h-8 w-8" />
               </div>
-              <h3 className="mb-3 text-xl font-bold">Many Locations</h3>
+              <h3 className="mb-3 text-xl font-bold">{t('features.feature1Title')}</h3>
               <p className="text-gray-600 leading-relaxed">
-                Find us easily with numerous locations across the country,
-                making pick-up and drop-off a breeze.
+                {t('features.feature1Desc')}
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
                 <Calendar className="h-8 w-8" />
               </div>
-              <h3 className="mb-3 text-xl font-bold">Easy Booking</h3>
+              <h3 className="mb-3 text-xl font-bold">{t('features.feature2Title')}</h3>
               <p className="text-gray-600 leading-relaxed">
-                Our intuitive platform allows you to book your favorite car in
-                just a few clicks.
+                {t('features.feature2Desc')}
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
                 <Users className="h-8 w-8" />
               </div>
-              <h3 className="mb-3 text-xl font-bold">Reliable Support</h3>
+              <h3 className="mb-3 text-xl font-bold">{t('features.feature3Title')}</h3>
               <p className="text-gray-600 leading-relaxed">
-                Our 24/7 customer support is always here to help you with any
-                questions or concerns.
+                {t('features.feature3Desc')}
               </p>
             </div>
           </div>
