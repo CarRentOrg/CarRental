@@ -1,94 +1,30 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import CarCard from '@/components/cars/CarCard';
 import { Car } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-// Mock data for car list
-const ALL_CARS: Car[] = [
-    {
-        id: '1',
-        name: 'Model 3',
-        brand: 'Tesla',
-        type: 'Luxury',
-        price_per_day: 95,
-        image_url: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80',
-        transmission: 'Automatic',
-        fuel_type: 'Electric',
-        seats: 5,
-        description: 'The Tesla Model 3 is designed for electric performance.',
-        is_available: true,
-    },
-    {
-        id: '2',
-        name: '911 Carrera',
-        brand: 'Porsche',
-        type: 'Sports',
-        price_per_day: 250,
-        image_url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80',
-        transmission: 'Automatic',
-        fuel_type: 'Petrol',
-        seats: 4,
-        description: 'The 911 has been the heart of the Porsche brand for decades.',
-        is_available: true,
-    },
-    {
-        id: '3',
-        name: 'Range Rover Sport',
-        brand: 'Land Rover',
-        type: 'SUV',
-        price_per_day: 180,
-        image_url: 'https://images.unsplash.com/photo-1606611013016-969c19ba27bb?auto=format&fit=crop&q=80',
-        transmission: 'Automatic',
-        fuel_type: 'Petrol',
-        seats: 5,
-        description: 'Range Rover Sport is the most dynamic Range Rover.',
-        is_available: true,
-    },
-    {
-        id: '4',
-        name: 'Camry',
-        brand: 'Toyota',
-        type: 'Sedan',
-        price_per_day: 55,
-        image_url: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&q=80',
-        transmission: 'Automatic',
-        fuel_type: 'Hybrid',
-        seats: 5,
-        description: 'Reliable and fuel-efficient mid-size sedan.',
-        is_available: true,
-    },
-    {
-        id: '5',
-        name: 'Civic',
-        brand: 'Honda',
-        type: 'Sedan',
-        price_per_day: 50,
-        image_url: 'https://images.unsplash.com/photo-1599912027806-cfec9f5944b6?auto=format&fit=crop&q=80',
-        transmission: 'Manual',
-        fuel_type: 'Petrol',
-        seats: 5,
-        description: 'Sporty and practical compact car.',
-        is_available: true,
-    },
-    {
-        id: '6',
-        name: 'Mustang Mach-E',
-        brand: 'Ford',
-        type: 'SUV',
-        price_per_day: 110,
-        image_url: 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?auto=format&fit=crop&q=80',
-        transmission: 'Automatic',
-        fuel_type: 'Electric',
-        seats: 5,
-        description: 'All-electric SUV with the heart of a Mustang.',
-        is_available: true,
-    },
-];
+import { getCars } from '@/lib/car-api';
 
 export default function CarsPage() {
     const { t } = useLanguage();
+    const [cars, setCars] = useState<Car[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadCars() {
+            try {
+                const data = await getCars();
+                setCars(data);
+            } catch (error) {
+                console.error('Failed to load cars:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadCars();
+    }, []);
 
     return (
         <div className="container mx-auto px-4 py-20">
@@ -169,11 +105,17 @@ export default function CarsPage() {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                            {ALL_CARS.map(car => (
-                                <CarCard key={car.id} car={car} />
-                            ))}
-                        </div>
+                        {loading ? (
+                            <div className="flex justify-center p-12">
+                                <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                                {cars.map((car: Car) => (
+                                    <CarCard key={car.id} car={car} />
+                                ))}
+                            </div>
+                        )}
 
                         {/* Pagination Placeholder */}
                         <div className="mt-12 flex justify-center">
