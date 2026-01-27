@@ -88,7 +88,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Left Column - Gallery */}
           <div className="space-y-8">
-            <ThumbnailImageGallery images={[car.image_url, ...carDaTa.images.slice(1)]} alt={car.name} />
+            <ThumbnailImageGallery images={[car.image_url, ...carDaTa.images.slice(1)]} alt={car.model} />
 
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
               {[
@@ -102,7 +102,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                   title: car.transmission === 'Automatic' ? t('cars.automatic') : t('cars.manual'),
                   subtitle: t('cars.transmission'),
                 },
-                { icon: Fuel, title: car.fuel_type, subtitle: t('cars.fuelType') },
+                { icon: Fuel, title: car.fuel, subtitle: t('cars.fuelType') },
                 { icon: Zap, title: "520 HP", subtitle: t('cars.performance') },
                 {
                   icon: Bluetooth,
@@ -131,7 +131,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
             <div className="flex items-center gap-8 mb-3">
               <h1 className="text-5xl lg:text-6xl font-light tracking-tight leading-tight">
                 {car.brand} {""}
-                <span className="font-medium">{car.name}</span>
+                <span className="font-medium">{car.model}</span>
               </h1>
               <div className="flex flex-col items-start gap-3">
                 <div className="flex items-center gap-1.5">

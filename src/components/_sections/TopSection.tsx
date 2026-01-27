@@ -36,7 +36,7 @@ export default function TopSection() {
         },
     };
     return (
-        < section className="relative min-h-screen w-full overflow-hidden bg-black" >
+        < section className="relative min-h-screen w-full overflow-hidden bg-black rounded-xl" >
             {/* Background Image with Gradient Overlay */}
             < div className="absolute inset-0" >
                 <motion.img
@@ -69,7 +69,7 @@ export default function TopSection() {
 
                     <motion.h1
                         variants={itemVariants}
-                        className="text-6xl font-black leading-[1.1] tracking-tighter text-white md:text-8xl lg:text-9xl"
+                        className="text-6xl lg:text-9xl font-black leading-[1.1] tracking-tighter text-white"
                     >
                         Premium <br />
                         <span className="text-neutral-500 font-medium tracking-tight whitespace-pre-wrap">

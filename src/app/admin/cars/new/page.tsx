@@ -7,6 +7,9 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Image as ImageIcon, Info, Sliders, DollarSign, Plus } from 'lucide-react';
 import Link from 'next/link';
 
+import { createCar } from '@/lib/car-api';
+import { useLanguage } from '@/contexts/LanguageContext';
+
 const carSchema = z.object({
     name: z.string().min(1, 'Model name is required'),
     brand: z.string().min(1, 'Brand is required'),
@@ -33,14 +36,31 @@ export default function NewCarPage() {
     });
 
     const onSubmit = async (data: CarFormValues) => {
-        const formattedData = {
-            ...data,
-            pricePerDay: Number(data.pricePerDay),
-            seats: Number(data.seats)
-        };
-        console.log(formattedData);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        router.push('/admin/cars');
+        try {
+            const formattedData = {
+                model: data.name,
+                brand: data.brand,
+                type: data.type,
+                price_per_day: Number(data.pricePerDay),
+                transmission: data.transmission,
+                fuel: data.fuelType,
+                seats: Number(data.seats),
+                description: data.description,
+                image_url: data.imageUrl || 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80',
+                is_available: true
+            };
+
+            const result = await createCar(formattedData as any);
+            if (result) {
+                router.push('/admin/cars');
+                router.refresh();
+            } else {
+                alert('Failed to create car. Please check your Supabase connection and tables.');
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+            alert('An error occurred while saving the car.');
+        }
     };
 
     return (

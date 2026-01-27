@@ -16,9 +16,9 @@ export default function Footer() {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-[#0e0e0e] text-gray-300 rounded-xl">
+    <footer className="bg-[#0e0e0e] text-gray-300 rounded-xl md:py-10">
       <div className="container mx-auto px-4 md:px-12 py-12 md:py-5">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2 text-white">
               <Car className="h-8 w-8 text-gray-500" />
@@ -41,7 +41,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-6 text-sm font-semibold uppercase tracking-wider text-white">
+            <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-white">
               {t("footer.quickLinks")}
             </h3>
             <ul className="space-y-4 text-sm">
@@ -61,27 +61,11 @@ export default function Footer() {
                   {t("footer.aboutUs")}
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/pricing"
-                  className="hover:text-white transition-colors"
-                >
-                  {t("footer.pricing")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/faq"
-                  className="hover:text-white transition-colors"
-                >
-                  {t("footer.faq")}
-                </Link>
-              </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="mb-6 text-sm font-semibold uppercase tracking-wider text-white">
+            <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-white">
               {t("footer.support")}
             </h3>
             <ul className="space-y-4 text-sm">
@@ -99,14 +83,6 @@ export default function Footer() {
                   className="hover:text-white transition-colors"
                 >
                   {t("footer.termsOfService")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="hover:text-white transition-colors"
-                >
-                  {t("footer.privacyPolicy")}
                 </Link>
               </li>
               <li>
@@ -131,7 +107,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-gray-500" />
-                <span>+1 (234) 567-890</span>
+                <span>+976 99999999</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-gray-500" />
@@ -141,7 +117,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-gray-800 pt-8 text-center text-xs">
+        <div className="mt-10 border-t border-gray-800 pt-8 text-center text-xs">
           <p>
             &copy; {new Date().getFullYear()} CarRent.{" "}
             {t("footer.allRightsReserved")}

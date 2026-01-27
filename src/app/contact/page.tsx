@@ -1,7 +1,7 @@
 "use client";
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Mail, MapPin, Phone, Send, ArrowRight } from 'lucide-react';
+import { Mail, MapPin, Phone, Send, ArrowRight, Plus } from 'lucide-react';
 
 export default function ContactPage() {
     const { t } = useLanguage();
@@ -54,6 +54,67 @@ export default function ContactPage() {
 
                     {/* Info & Map */}
                     <div className="space-y-8">
+                        {/* New Car Request Form */}
+                        <div className="bg-blue-600/10 border border-blue-500/20 rounded-3xl p-8">
+                            <h2 className="text-2xl font-bold mb-6 flex items-center space-x-2">
+                                <Plus className="h-6 w-6 text-blue-500" />
+                                <span>Request a Specific Car</span>
+                            </h2>
+                            <form
+                                className="space-y-4"
+                                onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const data = {
+                                        user_name: formData.get('name') as string,
+                                        user_email: formData.get('email') as string,
+                                        car_model: formData.get('model') as string,
+                                        message: formData.get('message') as string,
+                                    };
+
+                                    const { requestCar } = await import('@/lib/car-api');
+                                    const success = await requestCar(data);
+                                    if (success) {
+                                        alert('Request submitted successfully!');
+                                        (e.target as HTMLFormElement).reset();
+                                    } else {
+                                        alert('Failed to submit request.');
+                                    }
+                                }}
+                            >
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input
+                                        name="name"
+                                        required
+                                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors"
+                                        placeholder="Your Name"
+                                    />
+                                    <input
+                                        name="email"
+                                        type="email"
+                                        required
+                                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors"
+                                        placeholder="Email Address"
+                                    />
+                                </div>
+                                <input
+                                    name="model"
+                                    required
+                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors"
+                                    placeholder="Desired Car Model (e.g. 2024 Ferrari SF90)"
+                                />
+                                <textarea
+                                    name="message"
+                                    rows={3}
+                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors resize-none"
+                                    placeholder="Any special requirements?"
+                                />
+                                <button className="w-full bg-white text-black font-black py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all uppercase text-xs tracking-widest">
+                                    Submit Request
+                                </button>
+                            </form>
+                        </div>
+
                         <div className="grid grid-cols-1 gap-6">
                             <div className="flex items-start space-x-4 p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-colors">
                                 <div className="p-3 bg-blue-500/10 rounded-xl">
@@ -71,7 +132,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-lg mb-1">{t('contact.info.phone')}</h3>
-                                    <p className="text-gray-400">+1 (234) 567-890</p>
+                                    <p className="text-gray-400">+976 99999999</p>
                                     <p className="text-gray-500 text-sm mt-1">Mon-Fri 9am-6pm</p>
                                 </div>
                             </div>

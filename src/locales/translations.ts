@@ -215,9 +215,17 @@ export const translations = {
             }
         },
         notFound: {
-            title: '404 - Page Not Found',
-            message: "The page you are looking for doesn't exist or has been moved.",
             backHome: 'Back to Home',
+        },
+        benefits: {
+            title1: 'Fully insured, no surprises',
+            desc1: 'Your rental includes full coverage, so you can drive with complete peace of mind.',
+            title2: 'Clear pricing, no hidden fees',
+            desc2: 'What you see is what you pay. No unexpected charges after your trip.',
+            title3: 'Car to your door in 90 minutes',
+            desc3: 'Skip the trip to the rental office and we\'ll bring the car straight to you.',
+            title4: '24/7 customer support',
+            desc4: 'Whatever happens on the road, we\'re here to help at any time, day or night.',
         },
     },
     mn: {
@@ -436,9 +444,17 @@ export const translations = {
             }
         },
         notFound: {
-            title: '404 - Хуудас Олдсонгүй',
-            message: "Таны хайсан хуудас байхгүй эсвэл зөөгдсөн байна.",
             backHome: 'Нүүр Хуудас руу Буцах',
+        },
+        benefits: {
+            title1: 'Бүрэн даатгалтай, гэнэтийн зүйлгүй',
+            desc1: 'Таны түрээс бүрэн даатгалтай тул та сэтгэл амар жолоодох боломжтой.',
+            title2: 'Тодорхой үнэ, далд шимтгэлгүй',
+            desc2: 'Таны харж буй үнэ бол таны төлөх үнэ юм. Аялалын дараа гэнэтийн төлбөр гарахгүй.',
+            title3: 'Машиныг 90 минутын дотор үүдэнд тань',
+            desc3: 'Түрээсийн оффис руу явах шаардлагагүй, бид машиныг шууд таны үүдэнд аваачиж өгнө.',
+            title4: '24/7 хэрэглэгчийн тусламж',
+            desc4: 'Зам дээр юу ч тохиолдсон, бид өдөр шөнийн аль ч цагт танд туслахад бэлэн байна.',
         },
     },
 } as const;
