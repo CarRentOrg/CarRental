@@ -94,7 +94,7 @@ export default function Header() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 backdrop-blur-md md:hidden"
+            className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-3 backdrop-blur-md md:hidden"
             onClick={() => setOpen(false)}
           >
             <motion.div
@@ -102,7 +102,7 @@ export default function Header() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", stiffness: 400, damping: 35 }}
-              className="relative w-full max-w-sm rounded-[2.5rem] bg-neutral-900 border border-white/10 p-10 shadow-3xl overflow-hidden"
+              className="relative w-full max-w-sm rounded-[2.5rem] bg-neutral-900 border border-white/10 p-6 shadow-3xl overflow-hidden"
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
               <div className="absolute top-0 right-0 p-8">
@@ -117,7 +117,7 @@ export default function Header() {
               </div>
 
               {/* Header Row */}
-              <div className="flex items-center space-x-3 mb-12">
+              <div className="flex items-center space-x-3 mb-10">
                 <div className="bg-white/10 rounded-xl p-2.5 border border-white/10">
                   <Car className="h-6 w-6 text-white" />
                 </div>
@@ -125,7 +125,7 @@ export default function Header() {
               </div>
 
               {/* Nav Links */}
-              <nav className="flex flex-col space-y-6 text-xl font-bold mb-12 text-white/80">
+              <nav className="flex flex-col space-y-6 text-xl font-bold mb-8 text-white/80">
                 <Link href="/cars" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">{t('nav.cars')}</Link>
                 <Link href="/terms" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">{t('nav.rentalTerms')}</Link>
                 <Link href="/news" onClick={() => setOpen(false)} className="hover:text-white transition-all hover:translate-x-2">{t('nav.news')}</Link>
@@ -134,14 +134,14 @@ export default function Header() {
               {/* Language Switcher Mobile */}
               <button
                 onClick={() => setLanguage(language === 'en' ? 'mn' : 'en')}
-                className="flex items-center justify-center p-4 rounded-full border border-white/20 bg-white/10 text-white mb-8 hover:bg-white/20 transition-all"
+                className="flex items-center justify-center p-4 rounded-full border border-white/20 bg-white/10 text-white mb-6 hover:bg-white/20 transition-all"
                 title={language === 'en' ? 'Switch to Mongolian' : 'Switch to English'}
               >
                 <Globe className="h-6 w-6" />
               </button>
 
               {/* Book Now and Socials */}
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex items-center justify-between pt-3">
                 <Link
                   href="/book"
                   onClick={() => setOpen(false)}

@@ -29,10 +29,34 @@ export default function BookingForm() {
     });
 
     const onSubmit = async (data: BookingFormValues) => {
-        console.log(data);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        router.push('/confirmation');
+        try {
+            const searchParams = new URLSearchParams(window.location.search);
+            const carId = searchParams.get('carId');
+
+            if (!carId) {
+                alert('No vehicle selected for booking.');
+                return;
+            }
+
+            const { createBooking } = await import('@/lib/car-api');
+            const bookingData = {
+                car_id: carId,
+                start_date: data.pickupDate,
+                end_date: data.dropoffDate,
+                status: 'pending' as const,
+                total_price: 0, // Placeholder, usually calculated based on days * price_per_day
+            };
+
+            const result = await createBooking(bookingData);
+            if (result) {
+                router.push('/confirmation');
+            } else {
+                alert('Failed to process booking.');
+            }
+        } catch (error) {
+            console.error('Booking error:', error);
+            alert('An error occurred during booking.');
+        }
     };
 
     return (

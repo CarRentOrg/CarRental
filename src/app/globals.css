@@ -94,11 +94,18 @@ html[lang="mn"] button {
   }
 
   html[lang="mn"] h1 {
-    font-size: 0.88em;
+    font-size: 3em;
   }
 
   html[lang="mn"] h2,
   html[lang="mn"] h3 {
     font-size: 0.89em;
+  }
+
+  html[lang="mn"] p,
+  html[lang="mn"] span,
+  html[lang="mn"] a,
+  html[lang="mn"] button {
+    font-size: 0.9em;
   }
 }
