@@ -1,17 +1,12 @@
 "use client";
+import React, { useState, useEffect } from "react";
 import {
   Users,
   Fuel,
   Gauge,
-  ArrowLeft,
-  Calendar,
   ShieldCheck,
   Zap,
-  Info,
-  MapPin,
   Star,
-  Check,
-  Clock,
   FileText,
   Car as CarIcon,
   Wallet,
@@ -26,6 +21,8 @@ import Button from "@/components/shared/button";
 import HowToRentSection from "@/components/_sections/HowToRentSection";
 import RentalTermsSection from "@/components/_sections/RentalTermsSection";
 import FAQSection from "@/components/_sections/FAQSection";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getCarById } from "@/lib/car-api";
 
 const carDaTa: Car1 = {
   id: "gt3rs",
@@ -41,62 +38,27 @@ const carDaTa: Car1 = {
   ],
 };
 
-// Rental rates data
-const rentalRates = [
-  { duration: "Hourly (min. 4 hrs)", price: "$150/hr" },
-  { duration: "1 day", price: "$1200" },
-  { duration: "7-14 days", price: "$700/day" },
-  { duration: "30+ days", price: "$600/day" },
-];
-
-// Rental terms data
-const rentalTerms = [
-  { icon: Users, title: "21 years", subtitle: "Minimum age" },
-  {
-    icon: FileText,
-    title: "2 documents",
-    subtitle: "Passport and Driver's License",
-  },
-  { icon: CarIcon, title: "1 year", subtitle: "Of driving experience" },
-  { icon: Wallet, title: "From 1000$", subtitle: "Security deposit" },
-];
-
-// FAQ data
-const faqs = [
-  "What are the terms and conditions for using the car?",
-  "Can I drive the car outside the city?",
-  "What is your fuel policy?",
-  "Can the car be decorated for the wedding?",
-  "Do you offer a driver service?",
-  "What happens if I return the car late?",
-];
-
-// Steps data
-
-// This would typically come from a DB call in a real app
-const getCarById = (id: string): Car | undefined => {
-  const cars: Car[] = [
-    {
-      id: "2",
-      name: "LX 570",
-      brand: "Lexus",
-      type: "Luxury SUV",
-      price_per_day: 180,
-      image_url:
-        "https://images.unsplash.com/photo-1669691101370-9ee9ee0782dc?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bHg1NzB8ZW58MHx8MHx8fDA%3D",
-      transmission: "Automatic",
-      fuel_type: "Petrol",
-      seats: 7,
-      description:
-        "The Lexus LX 570 features a 5.7L V8 engine with around 383 hp and 4WD luxury performance with premium leather interior and advanced safety suite.",
-      is_available: true,
-    },
-  ];
-  return cars.find((c) => c.id === id) || cars[0];
-};
-
 export default function CarDetailPage({ params }: { params: { id: string } }) {
-  const car = getCarById(params.id);
+  const { t } = useLanguage();
+  const [car, setCar] = useState<Car | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCar() {
+      const data = await getCarById(params.id);
+      setCar(data);
+      setLoading(false);
+    }
+    fetchCar();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+      </div>
+    );
+  }
 
   if (!car) {
     return (
@@ -106,12 +68,19 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
     );
   }
 
+  const rentalRates = [
+    { duration: "Hourly (min. 4 hrs)", price: "$150/hr" },
+    { duration: "1 day", price: `$${car.price_per_day * 12}` }, // Just an example
+    { duration: "7-14 days", price: `$${car.price_per_day}/day` },
+    { duration: "30+ days", price: `$${Math.round(car.price_per_day * 0.8)}/day` },
+  ];
+
   return (
     <div className="min-h-screen bg-black text-white py-20 px-2 sm:px-10 mx-auto w-full">
       {/* Header Navigation */}
 
       <div className="px-6 lg:px-12 pb-6">
-        <Returnbutton href="/cars" text="Back to results" />
+        <Returnbutton href="/cars" text={t('cars.backToResults')} />
       </div>
 
       {/* Main Content */}
@@ -119,45 +88,26 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Left Column - Gallery */}
           <div className="space-y-8">
-            <ThumbnailImageGallery images={carDaTa.images} alt={carDaTa.name} />
+            <ThumbnailImageGallery images={[car.image_url, ...carDaTa.images.slice(1)]} alt={car.name} />
 
-            {/* Rental Rates Section */}
-            {/* <div className="pt-12">
-              <h2 className="text-3xl font-light tracking-tight mb-8">
-                Rental Rates
-              </h2>
-              <div className="space-y-0">
-                {rentalRates.map((rate, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center py-5 border-b border-neutral-800/50"
-                  >
-                    <span className="text-neutral-300 font-light">
-                      {rate.duration}
-                    </span>
-                    <span className="text-white font-medium">{rate.price}</span>
-                  </div>
-                ))}
-              </div>
-            </div> */}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
               {[
                 {
                   icon: Users,
-                  title: `${car.seats} Persons`,
-                  subtitle: "Capacity",
+                  title: `${car.seats} ${t('cars.seats')}`,
+                  subtitle: t('cars.capacity'),
                 },
                 {
                   icon: Gauge,
-                  title: car.transmission,
-                  subtitle: "Transmission",
+                  title: car.transmission === 'Automatic' ? t('cars.automatic') : t('cars.manual'),
+                  subtitle: t('cars.transmission'),
                 },
-                { icon: Fuel, title: car.fuel_type, subtitle: "Fuel Type" },
-                { icon: Zap, title: "520 HP", subtitle: "Performance" },
+                { icon: Fuel, title: car.fuel_type, subtitle: t('cars.fuelType') },
+                { icon: Zap, title: "520 HP", subtitle: t('cars.performance') },
                 {
                   icon: Bluetooth,
                   title: "Bluetooth",
-                  subtitle: "Capacity",
+                  subtitle: t('cars.capacity'),
                 },
               ].map((item, i) => (
                 <div
@@ -188,7 +138,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                   <Star className="h-4 w-4 text-white fill-white" />
                   <span className="text-sm font-medium text-white">4.9</span>
                   <span className="text-sm text-neutral-500">
-                    (120 reviews)
+                    (120 {t('cars.reviews')})
                   </span>
                 </div>
                 <span className="px-3 py-1.5 bg-neutral-800/60 backdrop-blur-sm text-neutral-300 text-xs font-medium rounded-full uppercase tracking-wider border border-neutral-700/50">
@@ -207,7 +157,7 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-3xl font-light tracking-tight mb-8">
-                      Rental Rates
+                      {t('cars.rentalRates')}
                     </h2>
                     <div className="space-y-0">
                       {rentalRates.map((rate, i) => (
@@ -228,14 +178,14 @@ export default function CarDetailPage({ params }: { params: { id: string } }) {
                 </div>
 
                 <Button
-                  text="Book Now"
+                  text={t('nav.bookNow')}
                   className="w-full rounded-xl"
                   href={`/booking?carId=${car.id}`}
                 />
 
                 <div className="flex items-center justify-center gap-2 text-xs font-medium text-neutral-400">
                   <ShieldCheck className="h-4 w-4" />
-                  <span>Free cancellation up to 48h</span>
+                  <span>{t('cars.freeCancellation')}</span>
                 </div>
               </div>
             </div>

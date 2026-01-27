@@ -25,7 +25,7 @@ export default function Header() {
         flex items-center justify-between transition-all duration-500
         
         /* Mobile: Floating Pill */
-        max-md:mx-auto max-md:mt-4 max-md:w-[92%] max-md:max-w-sm max-md:rounded-full max-md:px-6 max-md:py-3 max-md:border max-md:border-white/10 max-md:bg-neutral-900 max-md:shadow-2xl
+        max-md:mx-auto max-md:mt-4 max-md:w-[92%] max-md:max-w-sm max-md:rounded-full max-md:px-6 max-md:py-0.5 max-md:border max-md:border-white/10 max-md:bg-neutral-900 max-md:shadow-2xl
         
         /* Desktop: Full Width */
         w-full md:px-12 ${scrolled ? 'md:h-20' : 'md:h-24'}
