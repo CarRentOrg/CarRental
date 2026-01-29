@@ -6,10 +6,13 @@ export interface Car {
   price_per_day: number;
   image_url: string;
   transmission: "Automatic" | "Manual";
-  fuel: "Petrol" | "Diesel" | "Electric" | "Hybrid";
+  fuel_type: "Petrol" | "Diesel" | "Electric" | "Hybrid";
   seats: number;
   description: string;
   is_available: boolean;
+  max_speed_kmh?: number;
+  acceleration_sec?: number;
+  horsepower?: number;
   created_at?: string;
 }
 

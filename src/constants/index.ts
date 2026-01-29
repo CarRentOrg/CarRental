@@ -1,10 +1,10 @@
 import { Car } from "@/types";
 import { Users, FileText, Car as CarIcon, Wallet } from "lucide-react";
 
-export const FEATURED_CARS: Car[] = [
+export const ALL_CARS: Car[] = [
   {
     id: "1",
-    name: "Tesla Model 3",
+    model: "Tesla Model 3",
     brand: "Tesla",
     type: "Luxury",
     price_per_day: 95,
@@ -16,10 +16,12 @@ export const FEATURED_CARS: Car[] = [
     description:
       "The Tesla Model 3 is designed for electric performance, with dual motor AWD, quick acceleration, long range and fast charging.",
     is_available: true,
+    max_speed_kmh: 261,
+    acceleration_sec: 3.3,
+    horsepower: 510,
   },
   {
     id: "2",
-    name: "Lexus LX 570",
     brand: "Lexus",
     type: "Luxury SUV",
     price_per_day: 180,
@@ -31,10 +33,13 @@ export const FEATURED_CARS: Car[] = [
     description:
       "The Lexus LX 570 features a 5.7L V8 engine with around 383 hp and 4WD luxury performance with premium leather interior and advanced safety suite.",
     is_available: true,
+    max_speed_kmh: 220,
+    acceleration_sec: 7.3,
+    horsepower: 383,
+    model: "Lexus LX 570",
   },
   {
     id: "3",
-    name: "Lexus LX 600",
     brand: "Lexus",
     type: "Luxury SUV",
     price_per_day: 220,
@@ -46,10 +51,14 @@ export const FEATURED_CARS: Car[] = [
     description:
       "The Lexus LX 600 comes with a 3.5L twin-turbo V6 producing ~409 hp, advanced infotainment, full-time 4WD, and a premium spacious interior with modern tech. :contentReference[oaicite:0]{index=0}",
     is_available: true,
+    max_speed_kmh: 210,
+    acceleration_sec: 6.9,
+    horsepower: 409,
+    model: "",
   },
   {
     id: "4",
-    name: "Lexus LX 700h Overtrail",
+    model: "Lexus LX 700h Overtrail",
     brand: "Lexus",
     type: "Luxury Hybrid SUV",
     price_per_day: 260,
@@ -61,10 +70,13 @@ export const FEATURED_CARS: Car[] = [
     description:
       "The LX 700h adds a 3.4L twin-turbo hybrid V6 with around 457 hp and 583 lb-ft torque, plus overlanding-ready features like differential locks and a waterproofed hybrid system. :contentReference[oaicite:1]{index=1}",
     is_available: true,
+    max_speed_kmh: 200,
+    acceleration_sec: 6.5,
+    horsepower: 457,
   },
   {
     id: "5",
-    name: "Lexus LC 500",
+    model: "Lexus LC 500",
     brand: "Lexus",
     type: "Luxury Coupe",
     price_per_day: 300,
@@ -76,10 +88,13 @@ export const FEATURED_CARS: Car[] = [
     description:
       "The Lexus LC is a luxury grand tourer with striking design, premium materials, and a front-engine, rear-drive layout. The LC500 coupe is powered by a V8, blending performance and elegance. :contentReference[oaicite:2]{index=2}",
     is_available: true,
+    max_speed_kmh: 270,
+    acceleration_sec: 4.4,
+    horsepower: 471,
   },
   {
     id: "6",
-    name: "Mercedes-AMG GT 63 S E PERFORMANCE",
+    model: "Mercedes-AMG GT 63 S E PERFORMANCE",
     brand: "Mercedes-AMG",
     type: "Luxury Supercar",
     price_per_day: 450,
@@ -91,10 +106,13 @@ export const FEATURED_CARS: Car[] = [
     description:
       "Combines a handcrafted AMG 4.0L V8 twin-turbo with an electric motor for massive performance and supreme driving dynamics.",
     is_available: true,
+    max_speed_kmh: 316,
+    acceleration_sec: 2.9,
+    horsepower: 831,
   },
   {
     id: "7",
-    name: "Audi R8 V10 Performance",
+    model: "Audi R8 V10 Performance",
     brand: "Audi",
     type: "Supercar",
     price_per_day: 480,
@@ -106,6 +124,9 @@ export const FEATURED_CARS: Car[] = [
     description:
       "Mid-engine 5.2L V10 supercar with quattro all-wheel drive and blistering acceleration — an icon of Audi performance.",
     is_available: true,
+    max_speed_kmh: 331,
+    acceleration_sec: 3.1,
+    horsepower: 602,
   },
 ];
 
@@ -149,33 +170,33 @@ export interface FAQItem {
 
 export const FAQS: FAQItem[] = [
   {
-    question: "What are the terms and conditions for using the car?",
+    question: "Машин ашиглах нөхцөл, дүрэм юу вэ?",
     answer:
-      "You must have a valid driver's license, meet the minimum age requirement, and comply with all rental agreement terms during the rental period.",
+      "Танд хүчинтэй жолоочийн үнэмлэх байх, жолоочийн насны шаардлагыг хангах, мөн түрээсийн хугацаанд бүх түрээсийн гэрээний нөхцлийг дагах шаардлагатай.",
   },
   {
-    question: "Can I drive the car outside the city?",
+    question: "Машиныг хотын гадна жолоодож болох уу?",
     answer:
-      "Yes, you may drive the vehicle outside the city limits, provided that the route is within the permitted territory indicated in your rental contract. Please inform us in advance so we can note it in your agreement.",
+      "Тийм, та машиныг хотын хязгаараас гадна жолоодож болно, гэхдээ маршрутыг түрээсийн гэрээнд заасан зөвшөөрөгдсөн бүс нутгаар хязгаарлах ёстой. Урьдчилан мэдэгдэж, гэрээнд тэмдэглүүлэхийг зөвлөж байна.",
   },
   {
-    question: "What is your fuel policy?",
+    question: "Түлшний бодлого юу вэ?",
     answer:
-      "The car must be returned with the same fuel level as at pickup. Refueling charges apply otherwise.",
+      "Машиныг авах үед байсан түлшний түвшинд буцааж өгөх ёстой. Үгүй бол шатахууны төлбөр нэмэгдэнэ.",
   },
   {
-    question: "Can the car be decorated for the wedding?",
+    question: "Машиныг хуримд чимэглэх боломжтой юу?",
     answer:
-      "Yes, light decorations are allowed as long as they do not damage the vehicle and are removed before return.",
+      "Тийм, хөнгөн чимэглэл хийх боломжтой бөгөөд машиныг гэмтээхгүйгээр суурилуулж, буцаахын өмнө арилгах шаардлагатай.",
   },
   {
-    question: "Do you offer a driver service?",
+    question: "Жолоочийн үйлчилгээ санал болгодог уу?",
     answer:
-      "Yes, a professional driver can be provided upon request for an additional fee.",
+      "Тийм, нэмэлт төлбөрийн төлөө мэргэжлийн жолоочийг хүсэлтээр олгож болно.",
   },
   {
-    question: "What happens if I return the car late?",
+    question: "Машиныг тогтоосон цагаас хоцорвол яах болох вэ?",
     answer:
-      "Late returns may incur additional hourly charges as outlined in your rental agreement.",
+      "Та  машиныг тогтоосон цагаас хоцорвол түрээсийн гэрээнд заасан цаг тутмын нэмэлт төлбөр ногдуулж бодно.",
   },
 ];

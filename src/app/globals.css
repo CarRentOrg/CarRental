@@ -90,7 +90,7 @@ html[lang="mn"] button {
 /* Extra small on mobile */
 @media (max-width: 768px) {
   html[lang="mn"] body {
-    font-size: 0.90em;
+    font-size: 0.9em;
   }
 
   html[lang="mn"] h1 {
@@ -108,4 +108,17 @@ html[lang="mn"] button {
   html[lang="mn"] button {
     font-size: 0.9em;
   }
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

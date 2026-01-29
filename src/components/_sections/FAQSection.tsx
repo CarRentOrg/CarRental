@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { FAQS, FAQItem } from "@/constants";
+import Title from "../shared/title";
 
 const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -11,12 +12,12 @@ const FAQSection = () => {
   };
 
   return (
-    <section className="py-24 border-t border-neutral-800/50">
+    <section className="py-10 sm:py-24 border-t border-neutral-800/50">
       <div className="container mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Left Side */}
           <div>
-            <h2 className="text-4xl font-light tracking-tight">
+            <h2 className="text-5xl font-bold tracking-tight">
               Frequently Asked
               <br />
               Questions
@@ -24,19 +25,19 @@ const FAQSection = () => {
           </div>
 
           {/* Right Side */}
-          <div className="divide-y divide-neutral-800/50 cursor-pointer">
+          <div className="divide-y divide-neutral-800/50">
             {FAQS.map((item: FAQItem, i: number) => {
               const isOpen = openIndex === i;
 
               return (
-                <div key={i} className="py-6">
+                <div key={i} className="py-6 cursor-pointer">
                   {/* Question */}
                   <button
                     type="button"
                     onClick={() => toggleFAQ(i)}
                     className="w-full flex items-center justify-between text-left group"
                   >
-                    <span className="text-neutral-300 font-light group-hover:text-white transition-colors">
+                    <span className="text-neutral-300 font-medium group-hover:text-white transition-colors">
                       {item.question}
                     </span>
 
