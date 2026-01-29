@@ -1,39 +1,8 @@
-export interface Car {
-  id: number;
-  model: string;
-  brand: string;
-  type: string;
-  price_per_day: number;
-  image_url: string;
-  transmission: "Automatic" | "Manual";
-  fuel_type: "Petrol" | "Diesel" | "Electric" | "Hybrid";
-  seats: number;
-  description: string;
-  is_available: boolean;
-  max_speed_kmh?: number;
-  acceleration_sec?: number;
-  horsepower?: number;
-  created_at?: string;
-}
+import { Database } from './supabase';
 
-export interface Booking {
-  id: string;
-  car_id: string;
-  user_id?: string;
-  start_date: string;
-  end_date: string;
-  total_price: number;
-  status: "pending" | "confirmed" | "cancelled";
-  created_at?: string;
-  car?: Car;
-}
-
-export type RENTAL_RATE = {
-  season: "summer" | "winter" | null;
-  start_date?: string;
-  end_date?: string;
-  price_per_day: number;
-};
+export type Car = Database['public']['Tables']['cars']['Row'];
+export type Booking = Database['public']['Tables']['bookings']['Row'];
+export type NewsPost = Database['public']['Tables']['news']['Row'];
 
 export interface TitleProps {
   title: string;
@@ -63,15 +32,4 @@ export interface Car1 {
   id: string;
   name: string;
   images: string[];
-}
-
-export interface NewsPost {
-  id: string;
-  title_en: string;
-  title_mn: string;
-  content_en: string;
-  content_mn: string;
-  image_url: string;
-  author: string;
-  created_at: string;
 }

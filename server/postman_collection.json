@@ -1,0 +1,164 @@
+{
+    "info": {
+        "_postman_id": "8a0e5b7b-23c3-4d6e-9f8a-9f5b0c9a9b9b",
+        "name": "Car Rental API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        ""
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Get All Cars",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/api/cars",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "cars"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Get Car By ID",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/api/cars/CAR_ID",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "cars",
+                        "CAR_ID"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Create Car",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"Tesla Model 3\",\n    \"brand\": \"Tesla\",\n    \"price_per_day\": 150,\n    \"status\": \"available\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/cars",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "cars"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Update Car",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"price_per_day\": 160\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/cars/CAR_ID",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "cars",
+                        "CAR_ID"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Delete Car",
+            "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/api/cars/CAR_ID",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "cars",
+                        "CAR_ID"
+                    ]
+                }
+            },
+            "response": []
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:3001",
+            "type": "string"
+        }
+    ]
+}

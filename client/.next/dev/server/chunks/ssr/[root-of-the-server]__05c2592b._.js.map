@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///Users/dashnyam/Documents/CarRental/src/app/test/page.tsx"],"sourcesContent":["import Link from \"next/link\";\nimport { CheckCircle2, Home, ArrowRight, Printer, Share2 } from \"lucide-react\";\n\nexport default function Test() {\n  // Logic to fetch the latest booking would go here\n  const bookingNumber =\n    \"CR-\" + Math.random().toString(36).substring(2, 8).toUpperCase();\n\n  return (\n    <div className=\"min-h-screen bg-green-50 flex items-center justify-center py-20 px-4\">\n      dfghjkjhgfdfghjk\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;;AAGe,SAAS;IACtB,kDAAkD;IAClD,MAAM,gBACJ,QAAQ,KAAK,MAAM,GAAG,QAAQ,CAAC,IAAI,SAAS,CAAC,GAAG,GAAG,WAAW;IAEhE,qBACE,8OAAC;QAAI,WAAU;kBAAuE;;;;;;AAI1F"}}]
-}

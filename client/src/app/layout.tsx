@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { usePathname } from "next/navigation";
 
 const interDisplay = Inter({
   weight: "400",
@@ -17,15 +18,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isAdminPage = pathname?.startsWith("/admin");
+
   return (
     <html lang="en">
       <body
         className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col`}
       >
         <LanguageProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
+          {!isAdminPage && <Header />}
+          <main className="flex-grow">{children}</main>
+          {!isAdminPage && <Footer />}
         </LanguageProvider>
       </body>
     </html>

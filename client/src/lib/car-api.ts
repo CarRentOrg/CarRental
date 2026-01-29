@@ -1,5 +1,10 @@
 import { supabase } from './supabase';
-import { Car, NewsPost, Booking } from '@/types';
+import { Database } from '../types/supabase';
+
+type Car = Database['public']['Tables']['cars']['Row'];
+type NewsPost = Database['public']['Tables']['news']['Row'];
+type Booking = Database['public']['Tables']['bookings']['Row'];
+type CarRequest = Database['public']['Tables']['car_requests']['Insert'];
 
 export async function getCars(): Promise<Car[]> {
     const { data, error } = await supabase
@@ -11,7 +16,7 @@ export async function getCars(): Promise<Car[]> {
         return [];
     }
 
-    return data || [];
+    return (data as Car[]) || [];
 }
 
 export async function getCarById(id: string): Promise<Car | null> {
@@ -26,13 +31,13 @@ export async function getCarById(id: string): Promise<Car | null> {
         return null;
     }
 
-    return data;
+    return data as Car;
 }
 
-export async function createCar(car: Omit<Car, 'id' | 'created_at'>): Promise<Car | null> {
+export async function createCar(car: Database['public']['Tables']['cars']['Insert']): Promise<Car | null> {
     const { data, error } = await supabase
         .from('cars')
-        .insert([car])
+        .insert([car] as any)
         .select()
         .single();
 
@@ -41,12 +46,11 @@ export async function createCar(car: Omit<Car, 'id' | 'created_at'>): Promise<Ca
         return null;
     }
 
-    return data;
+    return data as Car;
 }
 
-export async function requestCar(request: { user_name: string, user_email: string, car_model: string, message: string }): Promise<boolean> {
-    const { error } = await supabase
-        .from('car_requests')
+export async function requestCar(request: CarRequest): Promise<boolean> {
+    const { error } = await (supabase.from('car_requests') as any)
         .insert([request]);
 
     if (error) {
@@ -68,13 +72,13 @@ export async function getNews(): Promise<NewsPost[]> {
         return [];
     }
 
-    return data || [];
+    return (data as NewsPost[]) || [];
 }
 
-export async function createNewsPost(post: Omit<NewsPost, 'id' | 'created_at'>): Promise<NewsPost | null> {
+export async function createNewsPost(post: Database['public']['Tables']['news']['Insert']): Promise<NewsPost | null> {
     const { data, error } = await supabase
         .from('news')
-        .insert([post])
+        .insert([post] as any)
         .select()
         .single();
 
@@ -83,13 +87,13 @@ export async function createNewsPost(post: Omit<NewsPost, 'id' | 'created_at'>):
         return null;
     }
 
-    return data;
+    return data as NewsPost;
 }
 
-export async function createBooking(booking: Omit<Booking, 'id' | 'created_at' | 'car'>): Promise<Booking | null> {
+export async function createBooking(booking: Database['public']['Tables']['bookings']['Insert']): Promise<Booking | null> {
     const { data, error } = await supabase
         .from('bookings')
-        .insert([booking])
+        .insert([booking] as any)
         .select()
         .single();
 
@@ -98,5 +102,5 @@ export async function createBooking(booking: Omit<Booking, 'id' | 'created_at' |
         return null;
     }
 
-    return data;
+    return data as Booking;
 }

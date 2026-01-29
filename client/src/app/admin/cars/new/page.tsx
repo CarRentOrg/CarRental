@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Image as ImageIcon, Info, Sliders, DollarSign, Plus } from 'lucide-react';
 import Link from 'next/link';
 
-import { createCar } from '@/lib/car-api';
+import { api } from '@/lib/api';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const carSchema = z.object({
@@ -50,7 +50,7 @@ export default function NewCarPage() {
                 is_available: true
             };
 
-            const result = await createCar(formattedData as any);
+            const result = await api.cars.create(formattedData);
             if (result) {
                 router.push('/admin/cars');
                 router.refresh();

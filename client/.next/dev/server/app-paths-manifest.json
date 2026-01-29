@@ -1,3 +1,9 @@
 {
+  "/admin/analytics/page": "app/admin/analytics/page.js",
+  "/admin/bookings/page": "app/admin/bookings/page.js",
+  "/admin/cars/new/page": "app/admin/cars/new/page.js",
+  "/admin/cars/page": "app/admin/cars/page.js",
+  "/admin/customers/page": "app/admin/customers/page.js",
+  "/admin/page": "app/admin/page.js",
   "/page": "app/page.js"
 }
