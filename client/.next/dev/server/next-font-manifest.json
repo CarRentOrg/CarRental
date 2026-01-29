@@ -1,23 +1,5 @@
 {
   "app": {
-    "[project]/src/app/admin/analytics/page": [
-      "static/media/bd61c44353c129b5-s.p.940c99a9.woff2"
-    ],
-    "[project]/src/app/admin/bookings/page": [
-      "static/media/bd61c44353c129b5-s.p.940c99a9.woff2"
-    ],
-    "[project]/src/app/admin/cars/new/page": [
-      "static/media/bd61c44353c129b5-s.p.940c99a9.woff2"
-    ],
-    "[project]/src/app/admin/cars/page": [
-      "static/media/bd61c44353c129b5-s.p.940c99a9.woff2"
-    ],
-    "[project]/src/app/admin/customers/page": [
-      "static/media/bd61c44353c129b5-s.p.940c99a9.woff2"
-    ],
-    "[project]/src/app/admin/page": [
-      "static/media/bd61c44353c129b5-s.p.940c99a9.woff2"
-    ],
     "[project]/src/app/page": [
       "static/media/bd61c44353c129b5-s.p.940c99a9.woff2"
     ]
