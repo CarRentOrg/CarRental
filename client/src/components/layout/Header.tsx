@@ -21,7 +21,7 @@ interface NavLinkProps {
   children: React.ReactNode;
   setOpen?: (open: boolean) => void;
   className?: string;
-  offset?: number; // Scroll offset
+  offset?: number;
 }
 
 const NavLink = ({
@@ -29,7 +29,7 @@ const NavLink = ({
   children,
   setOpen,
   className,
-  offset = -20,
+  offset = -120,
 }: NavLinkProps) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -59,7 +59,7 @@ const NavLink = ({
       className={`transition-all hover:text-white relative group ${className}`}
     >
       {children}
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full" />
+      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-fit lg:group-hover:w-full" />
     </a>
   );
 };
@@ -80,8 +80,8 @@ export default function Header() {
       <div
         className={`
           flex items-center justify-between transition-all duration-500
-          max-md:mx-auto max-md:mt-4 max-md:w-[92%] max-md:max-w-sm max-md:rounded-full max-md:px-6 max-md:py-0.5 max-md:border max-md:border-white/10 max-md:bg-neutral-900 max-md:shadow-2xl
-          w-full md:px-12 ${scrolled ? "md:h-20" : "md:h-24"}
+          max-lg:mx-auto max-lg:mt-4 max-lg:w-[92%] max-lg:max-w-full max-lg:rounded-full max-lg:px-6 max-lg:py-0.5 max-lg:border max-lg:border-white/10 max-lg:bg-neutral-900 max-lg:shadow-2xl
+          w-full md:px-12 ${scrolled ? "lg:h-20" : "lg:h-24"}
         `}
       >
         {/* Logo */}
@@ -97,16 +97,15 @@ export default function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-8 text-xs font-semibold tracking-wide uppercase text-white/70">
+        <nav className="hidden lg:flex items-center space-x-8 text-xs font-semibold tracking-wide uppercase text-white/70">
           <NavLink href="/cars">{t("nav.cars")}</NavLink>
-          <NavLink href="/cars#rental-terms">{t("nav.rentalTerms")}</NavLink>
-          <NavLink href="/#rental-guide">{t("nav.guide")}</NavLink>
+          <NavLink href="/#rental-terms">{t("nav.rentalTerms")}</NavLink>
           <NavLink href="/about">{t("nav.about")}</NavLink>
         </nav>
 
         {/* Right Actions */}
         <div className="flex items-center space-x-4">
-          <div className="hidden md:flex items-center space-x-4 text-white/90">
+          <div className="hidden lg:flex items-center space-x-4 text-white/90">
             <a
               href="https://instagram.com"
               target="_blank"
@@ -131,7 +130,7 @@ export default function Header() {
             </a>
             <button
               onClick={() => setLanguage(language === "en" ? "mn" : "en")}
-              className={`hidden md:flex items-center justify-center p-1.5 rounded-full border transition-all
+              className={`hidden lg:flex items-center justify-center p-1.5 rounded-full border transition-all
               ${scrolled ? "border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10" : "border-white/20 bg-white/10 text-white hover:bg-white/20"}
             `}
             >
@@ -141,14 +140,14 @@ export default function Header() {
 
           <Link
             href="/admin"
-            className="hidden md:flex items-center space-x-2 rounded-full bg-white px-6 py-2.5 text-xs font-semibold text-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5"
+            className="hidden lg:flex items-center space-x-2 rounded-full bg-white px-6 py-2.5 text-xs font-semibold text-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5"
           >
             <User className="h-4 w-4" />
             <span>{t("nav.admin")}</span>
           </Link>
 
           <button
-            className="md:hidden p-2 text-white/80 hover:text-white transition-all transform active:scale-90"
+            className="lg:hidden p-2 text-white/80 hover:text-white transition-all transform active:scale-90"
             aria-label="Open menu"
             onClick={() => setOpen(true)}
           >
@@ -164,7 +163,7 @@ export default function Header() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-3 backdrop-blur-md md:hidden"
+            className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-3 backdrop-blur-lg lg:hidden "
             onClick={() => setOpen(false)}
           >
             <motion.div
@@ -172,7 +171,7 @@ export default function Header() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", stiffness: 400, damping: 35 }}
-              className="relative w-full max-w-sm rounded-[2.5rem] bg-neutral-900 border border-white/10 p-6 shadow-3xl overflow-hidden"
+              className="relative w-[93%] min-w-sm rounded-[2.5rem] bg-neutral-900 border border-white/10 p-6 shadow-3xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="absolute top-0 right-0 p-8">

@@ -13,8 +13,10 @@ export default function Home() {
     <div className="flex flex-col">
       <TopSection />
       <FeaturedSection />
-      <RentalTermsSection />
-      <HowToRentSection />
+      <div className="px-3 lg:px-12 mx-auto">
+        <RentalTermsSection />
+        <HowToRentSection />
+      </div>
       <FAQSection />
       <BenefitsSection />
     </div>
