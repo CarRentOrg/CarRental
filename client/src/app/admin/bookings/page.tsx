@@ -42,13 +42,13 @@ export default function AdminBookingsPage() {
   useEffect(() => {
     const lowerSearch = search.toLowerCase();
     setFilteredBookings(
-      bookings.filter(
-        (b) =>
-          (b.id && b.id.toLowerCase().includes(lowerSearch)) ||
-          (b.status && b.status.toLowerCase().includes(lowerSearch)) ||
-          b.user?.full_name?.toLowerCase().includes(lowerSearch) ||
-          b.car?.name?.toLowerCase().includes(lowerSearch),
-      ),
+      bookings.filter((b) => {
+        const idMatch = b.id?.toLowerCase().includes(lowerSearch);
+        const statusMatch = b.status?.toLowerCase().includes(lowerSearch);
+        const nameMatch = b.user?.full_name?.toLowerCase().includes(lowerSearch);
+        const carMatch = (b.car?.name || b.car?.model)?.toLowerCase().includes(lowerSearch);
+        return idMatch || statusMatch || nameMatch || carMatch;
+      }),
     );
   }, [search, bookings]);
 
@@ -212,13 +212,12 @@ export default function AdminBookingsPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
-                  row.rate_applied === "daily"
-                    ? "bg-gray-100 text-gray-600"
-                    : row.rate_applied === "weekly"
-                      ? "bg-blue-50 text-blue-600"
-                      : "bg-purple-50 text-purple-600"
-                }`}
+                className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${row.rate_applied === "daily"
+                  ? "bg-gray-100 text-gray-600"
+                  : row.rate_applied === "weekly"
+                    ? "bg-blue-50 text-blue-600"
+                    : "bg-purple-50 text-purple-600"
+                  }`}
               >
                 {row.rate_applied} Rate
               </span>
@@ -241,7 +240,7 @@ export default function AdminBookingsPage() {
               Math.ceil(
                 (new Date(row.end_date).getTime() -
                   new Date(row.start_date).getTime()) /
-                  (1000 * 60 * 60 * 24),
+                (1000 * 60 * 60 * 24),
               )
             ).toFixed(0)}{" "}
             / day
@@ -357,8 +356,8 @@ export default function AdminBookingsPage() {
         title={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
         message={
           modalAction === "approve"
-            ? `Та ${selectedBooking?.car?.name} машины захиалгыг баталгаажуулахдаа итгэлтэй байна уу?`
-            : `Та ${selectedBooking?.car?.name} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
+            ? `Та ${selectedBooking?.car?.name || selectedBooking?.car?.model || "сонгосон"} машины захиалгыг баталгаажуулахдаа итгэлтэй байна уу?`
+            : `Та ${selectedBooking?.car?.name || selectedBooking?.car?.model || "сонгосон"} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
         }
         confirmText={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
         type={modalAction === "approve" ? "success" : "danger"}

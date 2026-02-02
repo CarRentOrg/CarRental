@@ -9,6 +9,7 @@ export const translations = {
             rentalTerms: 'Rental Terms',
             news: 'News',
             bookNow: 'Book Now',
+            guide: 'Rental Guide',
         },
         home: {
             title: 'Drive Your Dreams',
@@ -238,6 +239,7 @@ export const translations = {
             rentalTerms: 'Түрээсийн Нөхцөл',
             news: 'Мэдээ',
             bookNow: 'Захиалах',
+            guide: 'Зааварчилгаа',
         },
         home: {
             title: 'Мөрөөдлөө Жолоодоорой',

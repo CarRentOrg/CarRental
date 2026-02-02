@@ -12,53 +12,41 @@ export type Database = {
             cars: {
                 Row: {
                     id: string
-                    model: string
                     brand: string
-                    type: string
+                    model: string
+                    year: number | null
                     price_per_day: number
-                    image_url: string
-                    transmission: string
-                    fuel_type: string
-                    seats: number
-                    description: string
+                    transmission: string | null
+                    fuel: string | null
+                    seats: number | null
+                    image_url: string | null
                     is_available: boolean
-                    max_speed_kmh: number | null
-                    acceleration_sec: number | null
-                    horsepower: number | null
                     created_at: string
                 }
                 Insert: {
                     id?: string
-                    model: string
                     brand: string
-                    type: string
+                    model: string
+                    year?: number | null
                     price_per_day: number
-                    image_url: string
-                    transmission: string
-                    fuel_type: string
-                    seats: number
-                    description: string
+                    transmission?: string | null
+                    fuel?: string | null
+                    seats?: number | null
+                    image_url?: string | null
                     is_available?: boolean
-                    max_speed_kmh?: number | null
-                    acceleration_sec?: number | null
-                    horsepower?: number | null
                     created_at?: string
                 }
                 Update: {
                     id?: string
-                    model?: string
                     brand?: string
-                    type?: string
+                    model?: string
+                    year?: number | null
                     price_per_day?: number
-                    image_url?: string
-                    transmission?: string
-                    fuel_type?: string
-                    seats?: number
-                    description?: string
+                    transmission?: string | null
+                    fuel?: string | null
+                    seats?: number | null
+                    image_url?: string | null
                     is_available?: boolean
-                    max_speed_kmh?: number | null
-                    acceleration_sec?: number | null
-                    horsepower?: number | null
                     created_at?: string
                 }
             }

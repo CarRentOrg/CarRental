@@ -3,7 +3,11 @@ import { newsService } from '../services/newsService';
 
 export const getNews = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const news = await newsService.getAllNews();
+        const { page, limit } = req.query;
+        const news = await newsService.getAllNews({
+            page: page ? parseInt(page as string) : undefined,
+            limit: limit ? parseInt(limit as string) : undefined
+        });
         res.status(200).json({ success: true, data: news });
     } catch (error) {
         next(error);
@@ -26,6 +30,11 @@ export const getNewsById = async (req: Request, res: Response, next: NextFunctio
 
 export const createNews = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { title_en, title_mn, content_en, content_mn } = req.body;
+        if (!title_en || !title_mn || !content_en || !content_mn) {
+            res.status(400).json({ success: false, message: 'Missing required news fields (titles and contents in both languages).' });
+            return;
+        }
         const news = await newsService.createNews(req.body);
         res.status(201).json({ success: true, data: news });
     } catch (error) {
@@ -36,6 +45,10 @@ export const createNews = async (req: Request, res: Response, next: NextFunction
 export const updateNews = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
+        if (Object.keys(req.body).length === 0) {
+            res.status(400).json({ success: false, message: 'No update data provided.' });
+            return;
+        }
         const news = await newsService.updateNews(id, req.body);
         res.status(200).json({ success: true, data: news });
     } catch (error) {
