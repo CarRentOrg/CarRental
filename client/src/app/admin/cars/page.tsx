@@ -3,6 +3,7 @@
 import { Search, Plus, Fuel, Settings2, Users, Trash2, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { mockApi, Car } from "@/lib/mockData";
+import { api } from "@/lib/api";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,10 +39,12 @@ export default function AdminCarsPage() {
   async function loadCars() {
     try {
       setLoading(true);
-      const response = await mockApi.cars.getAll({ page, limit: LIMIT });
-      setCars(response.data || []);
-      setTotal(response.total || 0);
-      setFilteredCars(response.data || []);
+      const data: any = await api.owner.getCars();
+      // Adjusting to real API response structure
+      const carList = Array.isArray(data) ? data : data.cars || [];
+      setCars(carList);
+      setTotal(carList.length);
+      setFilteredCars(carList);
     } catch (error) {
       console.error("Failed to load cars:", error);
     } finally {
@@ -52,7 +55,7 @@ export default function AdminCarsPage() {
   async function confirmDelete() {
     if (!deleteId) return;
     try {
-      await mockApi.cars.delete(deleteId);
+      await api.owner.deleteCar(deleteId as any); // assuming similar endpoint
       setCars((prev) => prev.filter((c) => c.id !== deleteId));
       setDeleteId(null);
     } catch (error) {

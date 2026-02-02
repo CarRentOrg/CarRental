@@ -140,6 +140,32 @@ export type Database = {
                     created_at?: string
                 }
             }
+            users: {
+                Row: {
+                    id: string
+                    name: string
+                    email: string
+                    password: string
+                    role: string
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    email: string
+                    password: string
+                    role?: string
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    email?: string
+                    password?: string
+                    role?: string
+                    created_at?: string
+                }
+            }
         }
         Views: {
             [_ in never]: never

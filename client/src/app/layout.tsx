@@ -4,10 +4,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import Login from "@/components/auth/Login";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AppProvider } from "@/contexts/App.Context";
 import { usePathname } from "next/navigation";
-
-import { AppProvider } from "@/contexts/AppContext";
 
 const interDisplay = Inter({
   weight: "400",
@@ -22,7 +22,6 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith("/admin");
-
   return (
     <html lang="en">
       <body

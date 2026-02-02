@@ -13,14 +13,65 @@ import {
   Phone,
   Globe,
   User,
+  LogOut,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import NavLink from "../shared/navLink";
+import { useAppContext } from "@/contexts/App.Context";
+import { usePathname, useRouter } from "next/navigation";
+
+interface NavLinkProps {
+  href: string;
+  children: React.ReactNode;
+  setOpen?: (open: boolean) => void;
+  className?: string;
+  offset?: number;
+}
+
+const NavLink = ({
+  href,
+  children,
+  setOpen,
+  className,
+  offset = -120,
+}: NavLinkProps) => {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    const [path, hash] = href.split("#");
+    e.preventDefault();
+    if (setOpen) setOpen(false);
+
+    if (pathname === path && hash) {
+      // Same page, scroll to anchor
+      const el = document.getElementById(hash);
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY + offset;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    } else {
+      // Navigate to page + hash
+      router.push(href);
+    }
+  };
+
+  return (
+    <a
+      href={href}
+      onClick={handleClick}
+      className={`transition-all hover:text-white relative group ${className}`}
+    >
+      {children}
+      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-fit lg:group-hover:w-full" />
+    </a>
+  );
+};
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { language, setLanguage, t } = useLanguage();
+  const { token, setShowLogin, logout } = useAppContext();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -94,13 +145,23 @@ export default function Header() {
             </button>
           </div>
 
-          <Link
-            href="/admin"
-            className="hidden lg:flex items-center space-x-2 rounded-full bg-white px-6 py-2.5 text-xs font-semibold text-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5"
-          >
-            <User className="h-4 w-4" />
-            <span>{t("nav.admin")}</span>
-          </Link>
+          {!token ? (
+            <button
+              onClick={() => setShowLogin(true)}
+              className="hidden lg:flex items-center space-x-2 rounded-full bg-white px-6 py-2.5 text-xs font-semibold text-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5"
+            >
+              <User className="h-4 w-4" />
+              <span>Login</span>
+            </button>
+          ) : (
+            <button
+              onClick={logout}
+              className="hidden lg:flex items-center space-x-2 rounded-full bg-red-600 px-6 py-2.5 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-red-500/10"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sign Out</span>
+            </button>
+          )}
 
           <button
             className="lg:hidden p-2 text-white/80 hover:text-white transition-all transform active:scale-90"
@@ -167,14 +228,32 @@ export default function Header() {
               </button>
 
               {/* Book & Social */}
-              <div className="flex items-center gap-6">
-                <Link
-                  href="/book"
-                  onClick={() => setOpen(false)}
-                  className="bg-white text-black rounded-full px-5 py-3.5 text-sm font-medium shadow-2xl shadow-white/10 hover:bg-neutral-100 transition-all active:scale-95"
-                >
-                  {t("nav.bookNow")}
-                </Link>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-6">
+                  {!token ? (
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        setShowLogin(true);
+                      }}
+                      className="bg-white text-black rounded-full px-8 py-3.5 text-sm font-bold shadow-2xl shadow-white/10 hover:bg-neutral-100 transition-all active:scale-95 flex items-center gap-2"
+                    >
+                      <User className="h-4 w-4" />
+                      Login
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        logout();
+                      }}
+                      className="bg-red-600 text-white rounded-full px-8 py-3.5 text-sm font-bold shadow-2xl shadow-red-500/10 hover:bg-red-700 transition-all active:scale-95 flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-center space-x-4 text-white/90">
                   <a
                     href="https://instagram.com"
