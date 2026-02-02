@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Car } from "@/types";
+import { Car } from "@/lib/mockData";
 import { ChevronRight, Fuel, Gauge, User } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CarCardProps {
   car: Car;
+  onBook?: (car: Car) => void;
 }
 
-export default function CarCard({ car }: CarCardProps) {
+export default function CarCard({ car, onBook }: CarCardProps) {
   const { t } = useLanguage();
   return (
-    <div className="group w-full cursor-pointer">
+    <div className="group w-full cursor-pointer relative">
       {/* IMAGE PART */}
       <Link
         href={`/cars/${car.id}`}
@@ -53,16 +54,24 @@ export default function CarCard({ car }: CarCardProps) {
         </div>
 
         {/* Image */}
-        <div className="relative aspect-[3/2] w-full max-w-full overflow-hidden">
-          <Image
-            src={car.image_url}
-            alt={car.model}
-            fill
-            priority
-            className="object-cover transition-transform duration-700 ease-out md:group-hover:scale-110"
-          />
+        <div className="relative aspect-3/2 w-full max-w-full overflow-hidden bg-zinc-800">
+          {car.thumbnail_url ? (
+            <Image
+              src={car.thumbnail_url}
+              alt={car.model}
+              fill
+              priority
+              className="object-cover transition-transform duration-700 ease-out md:group-hover:scale-110"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-600">
+              <span className="text-xs uppercase font-bold tracking-widest">
+                No Image
+              </span>
+            </div>
+          )}
           {/* Gradient Overlay for better visibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </div>
       </Link>
 
@@ -73,6 +82,10 @@ export default function CarCard({ car }: CarCardProps) {
             <h3 className="text-xl font-medium text-white group-hover:text-blue-500 transition-colors">
               {car.brand} {car.model}
             </h3>
+            {/* If onBook is present, show NOTHING here or maybe keep Learn More? 
+                Let's keep Learn More but maybe add Book button below? 
+                Actually nice UI: Button on the right instead of Learn More if available?
+            */}
             <Link
               href={`/cars/${car.id}`}
               className="group/link flex items-center space-x-1 text-sm font-medium text-gray-400 transition-colors hover:text-white"
@@ -81,13 +94,25 @@ export default function CarCard({ car }: CarCardProps) {
               <ChevronRight className="h-4 w-4 transition-transform group-hover/link:translate-x-0.5" />
             </Link>
           </div>
-          <div>
+          <div className="flex justify-between items-end">
             <p className="text-base text-gray-400">
               {t("common.from")}{" "}
               <span className="font-semibold text-white">
                 ${car.price_per_day}/{t("cars.perDay").replace("per ", "")}
               </span>
             </p>
+            {onBook && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onBook(car);
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-blue-900/20"
+              >
+                Book Now
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -51,7 +51,7 @@ export default function AdminDashboard() {
 
   const STAT_CARDS = [
     {
-      label: "Total Revenue",
+      label: "Нийт орлого",
       value: `$${stats.revenue.toLocaleString()}`,
       change: "+12.5%",
       isUp: true,
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
       bg: "bg-emerald-50",
     },
     {
-      label: "Total Bookings",
+      label: "Нийт захиалга",
       value: stats.bookings.toString(),
       change: "+8.2%",
       isUp: true,
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
       bg: "bg-blue-50",
     },
     {
-      label: "Active Fleet",
+      label: "Нийт машин",
       value: stats.activeFleet.toString(),
       change: "-2.1%",
       isUp: false,
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
       bg: "bg-orange-50",
     },
     {
-      label: "New Customers",
+      label: "Шинэ хэрэглэгчид",
       value: stats.newCustomers.toString(),
       change: "+18.4%",
       isUp: true,
@@ -96,10 +96,10 @@ export default function AdminDashboard() {
     >
       <div>
         <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-          Dashboard Overview
+          Хяналтын самбар
         </h1>
         <p className="text-gray-500 font-medium">
-          Welcome back, Admin! Here's what's happening today.
+          Тавтай морил, Админ! Өнөөдрийн мэдээллийг эндээс харна уу.
         </p>
       </div>
 
@@ -142,18 +142,20 @@ export default function AdminDashboard() {
         {/* Fleet Distribution */}
         <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 space-y-8 lg:col-span-2">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900">Fleet Status</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              Машинуудын төлөв
+            </h2>
             <TrendingUp className="h-5 w-5 text-blue-600" />
           </div>
           <div className="space-y-6">
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-bold">
-                <span className="text-gray-500">Available</span>
+                <span className="text-gray-500">Түрээслэгдэх боломжтой</span>
                 <span className="text-gray-900">
                   {stats.activeFleet > 0
                     ? Math.floor(stats.activeFleet * 0.7)
                     : 0}{" "}
-                  Cars
+                  Машин
                 </span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
@@ -167,12 +169,12 @@ export default function AdminDashboard() {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-bold">
-                <span className="text-gray-500">On Rent</span>
+                <span className="text-gray-500">Түрээслэгдсэн</span>
                 <span className="text-gray-900">
                   {stats.activeFleet > 0
                     ? Math.floor(stats.activeFleet * 0.2)
                     : 0}{" "}
-                  Cars
+                  Машин
                 </span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
@@ -186,12 +188,12 @@ export default function AdminDashboard() {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-bold">
-                <span className="text-gray-500">Maintenance</span>
+                <span className="text-gray-500">Засвартай</span>
                 <span className="text-gray-900">
                   {stats.activeFleet > 0
                     ? Math.floor(stats.activeFleet * 0.1)
                     : 0}{" "}
-                  Cars
+                  Машин
                 </span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
@@ -209,13 +211,17 @@ export default function AdminDashboard() {
         {/* Recent Activity */}
         <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              Сүүлийн үйлдлүүд
+            </h2>
             <Clock className="h-5 w-5 text-gray-400" />
           </div>
 
           <div className="space-y-6">
             {loading ? (
-              <p className="text-sm text-gray-400">Loading activity...</p>
+              <p className="text-sm text-gray-400">
+                Үйлдлийг ачааллаж байна...
+              </p>
             ) : (
               activities.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex gap-4 items-start">
@@ -258,7 +264,9 @@ export default function AdminDashboard() {
             )}
 
             {activities.length === 0 && !loading && (
-              <p className="text-sm text-gray-400">No recent activity.</p>
+              <p className="text-sm text-gray-400">
+                Сүүлийн үйлдэл байхгүй байна.
+              </p>
             )}
           </div>
         </div>

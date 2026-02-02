@@ -67,11 +67,11 @@ export default function AdminCarsPage() {
       className="space-y-8 pb-12"
     >
       <AdminPageHeader
-        title="Manage Cars"
-        description="View and manage fleet inventory."
+        title="Машин удирдах"
+        description="Автопаркийн мэдээллийг харах болон удирдах."
         breadcrumbs={[
-          { label: "Dashboard", href: "/admin" },
-          { label: "Cars" },
+          { label: "Хяналтын самбар", href: "/admin" },
+          { label: "Машинууд" },
         ]}
         actions={
           <Link
@@ -79,7 +79,7 @@ export default function AdminCarsPage() {
             className="flex items-center space-x-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-200"
           >
             <Plus className="h-5 w-5" />
-            <span>Add New Car</span>
+            <span>машин нэмэх</span>
           </Link>
         }
       />

@@ -14,37 +14,44 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import clsx from "clsx";
 
 const MENU_ITEMS = [
-  { icon: LayoutDashboard, label: "Overview", href: "/admin" },
-  { icon: Car, label: "Manage Cars", href: "/admin/cars" },
-  { icon: CalendarCheck, label: "Bookings", href: "/admin/bookings" },
-  { icon: BarChart3, label: "Analytics", href: "/admin/analytics" },
-  { icon: Users, label: "Customers", href: "/admin/customers" },
+  { icon: LayoutDashboard, label: "Хяналтын самбар", href: "/admin" },
+  { icon: Car, label: "Машин удирдах", href: "/admin/cars" },
+  { icon: CalendarCheck, label: "Захиалгууд", href: "/admin/bookings" },
+  { icon: BarChart3, label: "Тайлан / Статистик", href: "/admin/analytics" },
+  { icon: Users, label: "Харилцагчид", href: "/admin/customers" },
 ];
 
-interface SidebarProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
+interface AdminSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 function SidebarContent({
   isCollapsed,
   onNavigate,
+  onCloseMobile,
 }: {
   isCollapsed: boolean;
   onNavigate?: () => void;
+  onCloseMobile?: () => void;
 }) {
   const pathname = usePathname();
 
   return (
     <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="p-6">
-        <Link href="/admin" className="flex items-center gap-3 overflow-hidden">
+      {/* Logo & Close Button (Mobile) */}
+      <div className="p-6 flex items-center justify-between">
+        <Link
+          href="/admin"
+          onClick={onCloseMobile}
+          className="flex items-center gap-3 overflow-hidden"
+        >
           <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
             <Car className="h-6 w-6 text-white" />
           </div>
@@ -67,6 +74,14 @@ function SidebarContent({
             )}
           </AnimatePresence>
         </Link>
+
+        {/* Mobile Close Button */}
+        <button
+          onClick={onCloseMobile}
+          className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors"
+        >
+          <X className="h-6 w-6" />
+        </button>
       </div>
 
       {/* Menu */}
@@ -76,11 +91,16 @@ function SidebarContent({
             pathname === item.href ||
             (item.href !== "/admin" && pathname.startsWith(item.href));
 
+          const handleClick = () => {
+            if (onNavigate) onNavigate();
+            if (onCloseMobile) onCloseMobile();
+          };
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              onClick={onNavigate}
+              onClick={handleClick}
               className={clsx(
                 "group relative flex items-center px-3 py-3 rounded-xl text-sm font-bold transition-all duration-200",
                 isActive
@@ -132,19 +152,22 @@ function SidebarContent({
         <div className="pt-6">
           {!isCollapsed && (
             <p className="px-3 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">
-              Quick Actions
+              Хурдан үйлдэл
             </p>
           )}
           <Link
             href="/admin/cars/new"
-            onClick={onNavigate}
+            onClick={() => {
+              if (onNavigate) onNavigate();
+              if (onCloseMobile) onCloseMobile();
+            }}
             className={clsx(
               "flex items-center px-3 py-3 rounded-xl text-sm font-bold bg-gray-900 text-white hover:bg-gray-800 transition-all",
               isCollapsed ? "justify-center" : "gap-3",
             )}
           >
             <PlusCircle className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Add New Car</span>}
+            {!isCollapsed && <span>Машин нэмэх</span>}
           </Link>
         </div>
       </nav>
@@ -153,14 +176,17 @@ function SidebarContent({
       <div className="p-3 border-t border-gray-100 space-y-1">
         <Link
           href="/admin/settings"
-          onClick={onNavigate}
+          onClick={() => {
+            if (onNavigate) onNavigate();
+            if (onCloseMobile) onCloseMobile();
+          }}
           className={clsx(
             "flex items-center px-3 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all",
             isCollapsed ? "justify-center" : "gap-3",
           )}
         >
           <Settings className="h-5 w-5 shrink-0" />
-          {!isCollapsed && <span>Settings</span>}
+          {!isCollapsed && <span>Тохиргоо</span>}
         </Link>
         <button
           className={clsx(
@@ -169,47 +195,91 @@ function SidebarContent({
           )}
         >
           <LogOut className="h-5 w-5 shrink-0" />
-          {!isCollapsed && <span>Logout</span>}
+          {!isCollapsed && <span>Гарах</span>}
         </button>
       </div>
     </div>
   );
 }
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Auto-collapse on smaller screens
+  // Handle Resize
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setIsCollapsed(true);
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) {
+        setIsCollapsed(false); // Mobile sidebar shouldn't "collapse" to 80px icons
       } else {
-        setIsCollapsed(false);
+        // Restore desktop collapse state if needed, or keep it expanded by default
       }
     };
 
-    handleResize(); // Initial check
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isCollapsed ? 80 : 260 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="flex flex-col bg-white border-r border-gray-100 h-screen sticky top-0 z-40 shrink-0"
-    >
-      {/* Collapse Toggle - Hidden on small screens as it auto-collapses */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-20 h-6 w-6 bg-white border border-gray-100 rounded-full items-center justify-center shadow-sm hover:bg-gray-50 transition-colors z-50 text-gray-400 hover:text-gray-900 hidden lg:flex"
-      >
-        {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-      </button>
+  // Handle Esc key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
 
-      <SidebarContent isCollapsed={isCollapsed} />
-    </motion.aside>
+  return (
+    <>
+      {/* Backdrop for Mobile */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-gray-900/60 backdrop-blur-[2px] z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar Overlay (Mobile) / Fixed (Desktop) */}
+      <motion.aside
+        initial={false}
+        animate={{
+          x: isMobile ? (isOpen ? 0 : -300) : 0,
+          width: isMobile ? 280 : isCollapsed ? 80 : 260,
+        }}
+        transition={{ type: "spring", stiffness: 400, damping: 40 }}
+        className={clsx(
+          "flex flex-col bg-white border-r border-gray-100 h-screen z-50",
+          isMobile ? "fixed inset-y-0 left-0" : "sticky top-0 shrink-0",
+          "text-[12px] sm:text-[13px] md:text-sm", // Text size reduction
+        )}
+        style={{
+          // On mobile, we don't want the sidebar element to push the flex content
+          position: isMobile ? "fixed" : ("sticky" as any),
+          flexBasis: isMobile ? 0 : undefined,
+          minWidth: isMobile ? 0 : undefined,
+        }}
+      >
+        {/* Collapse Toggle - Hidden on mobile */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-20 h-6 w-6 bg-white border border-gray-100 rounded-full items-center justify-center shadow-sm hover:bg-gray-50 transition-colors z-50 text-gray-400 hover:text-gray-900 hidden lg:flex"
+        >
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+
+        <SidebarContent
+          isCollapsed={isMobile ? false : isCollapsed}
+          onCloseMobile={onClose}
+        />
+      </motion.aside>
+    </>
   );
 }

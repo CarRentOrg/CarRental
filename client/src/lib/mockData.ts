@@ -60,7 +60,19 @@ export interface Activity {
   user?: { name: string; avatar: string };
 }
 
+export interface Notification {
+  id: string;
+  type: "booking_new" | "info" | "alert";
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  bookingId?: string;
+}
+
 // Generate Mock Data
+const NOTIFICATIONS: Notification[] = []; // Start empty or pre-populate if needed
+
 const USERS: User[] = Array.from({ length: 45 }).map(() => ({
   id: faker.string.uuid(),
   email: faker.internet.email(),
@@ -81,10 +93,8 @@ const CARS: Car[] = Array.from({ length: 30 }).map(() => {
     year: faker.date.past().getFullYear(),
     plate_number: faker.vehicle.vrm(),
     status: faker.helpers.arrayElement(["available", "rented", "maintenance"]),
-    thumbnail_url: faker.image.urlLoremFlickr({ category: "car" }),
-    images: Array.from({ length: 3 }).map(() =>
-      faker.image.urlLoremFlickr({ category: "car" }),
-    ),
+    thumbnail_url: faker.image.url(),
+    images: Array.from({ length: 3 }).map(() => faker.image.url()),
     transmission: faker.helpers.arrayElement(["Automatic", "Manual"]),
     fuel_type: faker.helpers.arrayElement([
       "Petrol",
@@ -202,6 +212,32 @@ export const mockApi = {
       const index = CARS.findIndex((c) => c.id === id);
       if (index !== -1) CARS.splice(index, 1);
     },
+    getAvailableCars: async ({
+      startDate,
+      endDate,
+    }: {
+      startDate: string;
+      endDate: string;
+    }) => {
+      await new Promise((r) => setTimeout(r, 600));
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      return CARS.filter((car) => {
+        const hasConflict = BOOKINGS.some(
+          (b) =>
+            b.car_id === car.id &&
+            (b.status === "confirmed" || b.status === "pending") && // Be safe, block pending too? User req: "existing APPROVED bookings" usually blocks confirmed. But often pending blocks too to prevent race conditions. Let's block both for simpler UX or strictly confirmed. The Prompt said: "Validate selected dates against existing APPROVED bookings". OK, so maybe pending doesn't block? logic: "If date range overlaps: Block booking action". Let's block confirmed only for now to follow prompt strictly, OR block pending if we want to be safe. Let's stick to 'confirmed' as requested, but realized typically pending also reserves. I'll block 'confirmed' AND 'pending' to be safe against double booking unless rejected.
+            // Actually prompt says: "Validate selected dates against existing APPROVED bookings". accepted status is 'confirmed'.
+            // However, "Prevent double booking at UI + logic level".
+            // Let's block 'confirmed' bookings.
+            b.status === "confirmed" &&
+            new Date(b.start_date) < end &&
+            new Date(b.end_date) > start,
+        );
+        return !hasConflict;
+      });
+    },
   },
   bookings: {
     getAll: async ({
@@ -219,6 +255,91 @@ export const mockApi = {
       await new Promise((r) => setTimeout(r, 500));
       const index = BOOKINGS.findIndex((b) => b.id === id);
       if (index !== -1) BOOKINGS.splice(index, 1);
+    },
+    approve: async (id: string) => {
+      await new Promise((r) => setTimeout(r, 600));
+      const booking = BOOKINGS.find((b) => b.id === id);
+      if (!booking) throw new Error("Booking not found");
+
+      // Check for conflicts
+      const hasConflict = BOOKINGS.some(
+        (b) =>
+          b.id !== id &&
+          b.car_id === booking.car_id &&
+          b.status === "confirmed" &&
+          new Date(b.start_date) < new Date(booking.end_date) &&
+          new Date(b.end_date) > new Date(booking.start_date),
+      );
+
+      if (hasConflict) {
+        throw new Error("This car is already booked for the selected dates.");
+      }
+
+      booking.status = "confirmed";
+      return booking;
+    },
+    reject: async (id: string) => {
+      await new Promise((r) => setTimeout(r, 600));
+      const booking = BOOKINGS.find((b) => b.id === id);
+      if (!booking) throw new Error("Booking not found");
+
+      booking.status = "cancelled";
+      return booking;
+    },
+    create: async (data: Partial<Booking>) => {
+      await new Promise((r) => setTimeout(r, 800));
+
+      // Validation Check
+      if (data.car_id && data.start_date && data.end_date) {
+        const start = new Date(data.start_date);
+        const end = new Date(data.end_date);
+        const hasConflict = BOOKINGS.some(
+          (b) =>
+            b.car_id === data.car_id &&
+            b.status === "confirmed" &&
+            new Date(b.start_date) < end &&
+            new Date(b.end_date) > start,
+        );
+        if (hasConflict)
+          throw new Error("Car is not available for selected dates");
+      }
+
+      const newBooking = {
+        ...data,
+        id: faker.string.uuid(),
+        status: "pending",
+        created_at: new Date().toISOString(),
+        user: USERS[0], // Mock current user
+        car: CARS.find((c) => c.id === data.car_id),
+      } as Booking;
+
+      BOOKINGS.unshift(newBooking);
+
+      // Trigger Notification
+      NOTIFICATIONS.unshift({
+        id: faker.string.uuid(),
+        type: "booking_new",
+        title: "New Booking Request",
+        message: `${newBooking.user?.full_name} requested ${newBooking.car?.name}`,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        bookingId: newBooking.id,
+      });
+
+      return newBooking;
+    },
+  },
+  notifications: {
+    getAll: async () => {
+      await new Promise((r) => setTimeout(r, 400));
+      return NOTIFICATIONS;
+    },
+    markRead: async (id: string) => {
+      const n = NOTIFICATIONS.find((n) => n.id === id);
+      if (n) n.isRead = true;
+    },
+    markAllRead: async () => {
+      NOTIFICATIONS.forEach((n) => (n.isRead = true));
     },
   },
   customers: {

@@ -32,36 +32,36 @@ export default function AdminAnalyticsPage() {
 
   const cards = [
     {
-      label: "Total Revenue",
+      label: "Нийт орлого",
       value: `$${stats.revenue.toLocaleString()}`,
       icon: DollarSign,
       color: "text-emerald-600",
       bg: "bg-emerald-50",
-      trend: "+12.5% vs last month",
+      trend: "+12.5% vs өмнөх сар",
     },
     {
-      label: "Total Bookings",
+      label: "Нийт захиалга",
       value: stats.bookings,
       icon: Activity,
       color: "text-blue-600",
       bg: "bg-blue-50",
-      trend: "+8.2% vs last month",
+      trend: "+8.2% vs өмнөх сар",
     },
     {
-      label: "Active Fleet",
+      label: "Ашиглагдаж буй машин",
       value: stats.activeFleet,
       icon: Car,
       color: "text-orange-600",
       bg: "bg-orange-50",
-      trend: "85% utilization",
+      trend: "85% ашиглалт",
     },
     {
-      label: "New Customers",
+      label: "Шинэ хэрэглэгчид",
       value: stats.newCustomers,
       icon: Users,
       color: "text-purple-600",
       bg: "bg-purple-50",
-      trend: "+24 this week",
+      trend: "+24 энэ долоо хоногт",
     },
   ];
 
@@ -72,11 +72,11 @@ export default function AdminAnalyticsPage() {
       className="space-y-8 pb-12"
     >
       <AdminPageHeader
-        title="Analytics"
-        description="Overview of key performance metrics."
+        title="Шинжилгээ, тайлан"
+        description="Гол гүйцэтгэлийн үзүүлэлтүүдийн тойм."
         breadcrumbs={[
-          { label: "Dashboard", href: "/admin" },
-          { label: "Analytics" },
+          { label: "Хяналтын самбар", href: "/admin" },
+          { label: "Шинжилгээ, тайлан" },
         ]}
       />
 
@@ -115,10 +115,10 @@ export default function AdminAnalyticsPage() {
             <div>
               <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-gray-400" />
-                Revenue Overview
+                Орлогын тойм
               </h3>
               <p className="text-gray-400 text-xs font-bold mt-1">
-                Last 6 Months
+                Сүүлийн 6 сар
               </p>
             </div>
           </div>
@@ -152,10 +152,10 @@ export default function AdminAnalyticsPage() {
             <div>
               <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
                 <Users className="h-5 w-5 text-gray-400" />
-                User Activity
+                Хэрэглэгчийн идэвх
               </h3>
               <p className="text-gray-400 text-xs font-bold mt-1">
-                Real-time sessions
+                Бодит цагийн идэвхтэй хэрэглээ
               </p>
             </div>
           </div>

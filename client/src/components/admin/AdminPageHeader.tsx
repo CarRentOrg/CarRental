@@ -41,11 +41,13 @@ export default function AdminPageHeader({
             ))}
           </nav>
         )}
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
           {title}
         </h1>
         {description && (
-          <p className="text-gray-500 font-medium">{description}</p>
+          <p className="text-[11px] sm:text-sm md:text-base text-gray-500 font-medium">
+            {description}
+          </p>
         )}
       </div>
       {actions && <div className="flex items-center gap-3">{actions}</div>}

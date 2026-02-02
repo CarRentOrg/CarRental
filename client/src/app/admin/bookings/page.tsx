@@ -1,17 +1,34 @@
 "use client";
 
-import { Search, CalendarDays, DollarSign, Clock } from "lucide-react";
+import {
+  Search,
+  CalendarDays,
+  DollarSign,
+  Clock,
+  Check,
+  X,
+  AlertCircle,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { mockApi, Booking } from "@/lib/mockData";
 import { AdminTable, Column } from "@/components/admin/AdminTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
+
+  // Modal State
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [modalAction, setModalAction] = useState<"approve" | "reject" | null>(
+    null,
+  );
+  const [rejectReason, setRejectReason] = useState("");
 
   // Pagination State
   const [page, setPage] = useState(1);
@@ -23,7 +40,6 @@ export default function AdminBookingsPage() {
   }, [page]); // Reload when page changes
 
   useEffect(() => {
-    // Client-side search filtering (ideal world: server-side search)
     const lowerSearch = search.toLowerCase();
     setFilteredBookings(
       bookings.filter(
@@ -39,7 +55,6 @@ export default function AdminBookingsPage() {
   async function loadBookings() {
     try {
       setLoading(true);
-      // Use mockApi with pagination
       const response = await mockApi.bookings.getAll({ page, limit: LIMIT });
       setBookings(response.data || []);
       setTotal(response.total || 0);
@@ -51,27 +66,76 @@ export default function AdminBookingsPage() {
     }
   }
 
-  async function handleDelete(booking: Booking) {
-    if (
-      !confirm(
-        `Are you sure you want to delete booking #${booking.id.substring(0, 8)}?`,
-      )
-    )
-      return;
+  const openApproveModal = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setModalAction("approve");
+  };
+
+  const openRejectModal = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setModalAction("reject");
+    setRejectReason("");
+  };
+
+  const closeModal = () => {
+    setSelectedBooking(null);
+    setModalAction(null);
+    setRejectReason("");
+  };
+
+  const handleConfirmAction = async () => {
+    if (!selectedBooking || !modalAction) return;
 
     try {
-      await mockApi.bookings.delete(booking.id);
-      setBookings((prev) => prev.filter((b) => b.id !== booking.id));
-      setFilteredBookings((prev) => prev.filter((b) => b.id !== booking.id));
-    } catch (error) {
-      alert("Failed to delete booking");
-      console.error(error);
+      setActionLoading(true);
+
+      if (modalAction === "approve") {
+        await mockApi.bookings.approve(selectedBooking.id);
+
+        // Update local state
+        const updatedBookings = bookings.map((b) =>
+          b.id === selectedBooking.id
+            ? { ...b, status: "confirmed" as const }
+            : b,
+        );
+        setBookings(updatedBookings);
+        setFilteredBookings((prev) =>
+          prev.map((b) =>
+            b.id === selectedBooking.id
+              ? { ...b, status: "confirmed" as const }
+              : b,
+          ),
+        );
+      } else {
+        await mockApi.bookings.reject(selectedBooking.id);
+
+        // Update local state
+        const updatedBookings = bookings.map((b) =>
+          b.id === selectedBooking.id
+            ? { ...b, status: "cancelled" as const }
+            : b,
+        );
+        setBookings(updatedBookings);
+        setFilteredBookings((prev) =>
+          prev.map((b) =>
+            b.id === selectedBooking.id
+              ? { ...b, status: "cancelled" as const }
+              : b,
+          ),
+        );
+      }
+
+      closeModal();
+    } catch (error: any) {
+      alert(error.message || `Failed to ${modalAction} booking`);
+    } finally {
+      setActionLoading(false);
     }
-  }
+  };
 
   const columns: Column<Booking>[] = [
     {
-      header: "Booking info",
+      header: "Захиалгын мэдээлэл",
       accessorKey: "id",
       cell: (row) => (
         <div className="flex flex-col gap-1">
@@ -85,7 +149,7 @@ export default function AdminBookingsPage() {
       ),
     },
     {
-      header: "Customer",
+      header: "Хэрэглэгчид",
       cell: (row) => (
         <div className="flex items-center gap-3">
           <img
@@ -108,7 +172,7 @@ export default function AdminBookingsPage() {
       ),
     },
     {
-      header: "Vehicle",
+      header: "Машин",
       cell: (row) => (
         <div className="flex items-center gap-3">
           <div className="h-10 w-14 rounded-lg bg-gray-100 overflow-hidden relative">
@@ -132,7 +196,7 @@ export default function AdminBookingsPage() {
       ),
     },
     {
-      header: "Duration & Rate",
+      header: "Хугацаа / Үнэ",
       cell: (row) => {
         const start = new Date(row.start_date);
         const end = new Date(row.end_date);
@@ -144,7 +208,7 @@ export default function AdminBookingsPage() {
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-xs font-bold text-gray-900">
               <Clock className="h-3.5 w-3.5 text-blue-600" />
-              <span>{days} Days</span>
+              <span>{days} Хоног</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span
@@ -164,7 +228,7 @@ export default function AdminBookingsPage() {
       },
     },
     {
-      header: "Total Price",
+      header: "Нийт үнэ",
       cell: (row) => (
         <div className="flex flex-col items-end">
           <span className="font-black text-gray-900 text-base">
@@ -197,13 +261,41 @@ export default function AdminBookingsPage() {
         const status = row.status as keyof typeof colors;
 
         return (
-          <span
-            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${colors[status] || colors.pending}`}
-          >
-            {row.status}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${colors[status] || colors.pending}`}
+            >
+              {row.status}
+            </span>
+          </div>
         );
       },
+    },
+    {
+      header: "Actions",
+      className: "text-right",
+      cell: (row) => (
+        <div className="flex justify-end gap-2">
+          {row.status === "pending" && (
+            <>
+              <button
+                onClick={() => openApproveModal(row)}
+                className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 rounded-lg transition-all"
+                title="Approve Booking"
+              >
+                <Check className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => openRejectModal(row)}
+                className="p-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-lg transition-all"
+                title="Reject Booking"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -214,40 +306,39 @@ export default function AdminBookingsPage() {
       className="space-y-8 pb-12"
     >
       <AdminPageHeader
-        title="Bookings"
-        description="Manage customer reservations and track status."
+        title="Захиалгууд"
+        description="Харилцагчдын захиалгыг удирдах болон төлөвийг хянах."
         breadcrumbs={[
-          { label: "Dashboard", href: "/admin" },
-          { label: "Bookings" },
+          { label: "Хяналтын самбар", href: "/admin" },
+          { label: "Захиалгууд" },
         ]}
       />
 
-      <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px] flex flex-col">
-        <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px] flex flex-col w-full">
+        <div className="p-4 sm:p-8 border-b border-gray-50 flex flex-col md:flex-row gap-4 justify-between items-center">
           <div className="relative w-full md:max-w-md group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
             <input
               type="text"
               placeholder="Search bookings..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all text-sm font-medium placeholder:text-gray-400"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all text-xs sm:text-sm font-medium placeholder:text-gray-400"
             />
           </div>
 
-          <div className="flex gap-2">
-            <button className="px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg shadow-gray-200">
-              Download CSV
+          <div className="flex gap-2 w-full md:w-auto">
+            <button className="flex-1 md:flex-none px-4 py-2 bg-gray-900 text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-gray-800 transition-all shadow-lg shadow-gray-200">
+              Export
             </button>
           </div>
         </div>
 
-        <div className="p-4 flex-1">
+        <div className="p-2 sm:p-4 flex-1 w-full">
           <AdminTable
             columns={columns}
             data={filteredBookings}
             loading={loading}
-            onDelete={handleDelete}
             emptyMessage="No bookings found."
             // Pagination
             page={page}
@@ -257,6 +348,36 @@ export default function AdminBookingsPage() {
           />
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={selectedBooking !== null && modalAction !== null}
+        onClose={closeModal}
+        onConfirm={handleConfirmAction}
+        isLoading={actionLoading}
+        title={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
+        message={
+          modalAction === "approve"
+            ? `Та ${selectedBooking?.car?.name} машины захиалгыг баталгаажуулахдаа итгэлтэй байна уу?`
+            : `Та ${selectedBooking?.car?.name} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
+        }
+        confirmText={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
+        type={modalAction === "approve" ? "success" : "danger"}
+      >
+        {modalAction === "reject" && (
+          <div className="mt-4">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">
+              Татгалзах шалтгаан (заавал биш)
+            </label>
+            <textarea
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all font-medium text-gray-700"
+              rows={3}
+              placeholder="e.g., Давхардсан, Машин байхгүй..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+          </div>
+        )}
+      </ConfirmationModal>
     </motion.div>
   );
 }

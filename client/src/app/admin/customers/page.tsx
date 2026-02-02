@@ -51,7 +51,7 @@ export default function AdminCustomersPage() {
     User & { total_bookings?: number; total_spent?: number }
   >[] = [
     {
-      header: "User",
+      header: "Хэрэглэгч",
       cell: (row) => (
         <div className="flex items-center gap-4">
           <img
@@ -74,7 +74,7 @@ export default function AdminCustomersPage() {
       ),
     },
     {
-      header: "Contact Info",
+      header: "Contact",
       cell: (row) => (
         <div className="flex flex-col gap-1 text-xs text-gray-500">
           <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export default function AdminCustomersPage() {
       ),
     },
     {
-      header: "Joined",
+      header: "Бүртгүүлсэн",
       cell: (row) => (
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <Calendar className="h-3 w-3" />
@@ -100,12 +100,12 @@ export default function AdminCustomersPage() {
       ),
     },
     {
-      header: "Stats",
+      header: "Статистик",
       cell: (row) => (
         <div className="flex gap-4">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-              Bookings
+              Захиалга
             </span>
             <span className="text-sm font-black text-gray-900">
               {row.total_bookings || 0}
@@ -113,7 +113,7 @@ export default function AdminCustomersPage() {
           </div>
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-              Spent
+              Зарцуулсан
             </span>
             <span className="text-sm font-black text-emerald-600">
               ${(row.total_spent || 0).toLocaleString()}
@@ -131,11 +131,11 @@ export default function AdminCustomersPage() {
       className="space-y-8 pb-12"
     >
       <AdminPageHeader
-        title="Customers"
-        description="View and manage user accounts."
+        title="Харилцагчид"
+        description="Хэрэглэгчийн бүртгэлийг харах болон удирдах."
         breadcrumbs={[
-          { label: "Dashboard", href: "/admin" },
-          { label: "Customers" },
+          { label: "Хяналтын самбар", href: "/admin" },
+          { label: "Харилцагчид" },
         ]}
       />
 

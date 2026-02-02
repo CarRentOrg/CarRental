@@ -1,15 +1,28 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
 import CarCard from "@/components/cars/CarCard";
-import { CARS } from "@/constants";
 import { useLanguage } from "@/contexts/LanguageContext";
 import MultiSelectDropdown from "@/components/ui/MultiSelectDropdown";
 import Title from "@/components/shared/title";
+import { mockApi, Car } from "@/lib/mockData";
+import DateRangePicker from "@/components/ui/DateRangePicker";
+import BookingModal from "@/components/booking/BookingModal";
 
 export default function CarsPage() {
   const { t } = useLanguage();
+
+  // Booking State
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedCar, setSelectedCar] = useState<Car | null>(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
+
+  // Data State
+  const [cars, setCars] = useState<Car[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Filter States - Arrays for Multi-Select
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -23,29 +36,67 @@ export default function CarsPage() {
   // Constants
   const ITEMS_PER_PAGE = 6;
 
+  // Load Data
+  useEffect(() => {
+    fetchCars();
+  }, [startDate, endDate]);
+
+  async function fetchCars() {
+    setLoading(true);
+    try {
+      if (startDate && endDate) {
+        // Fetch available cars
+        const available = await mockApi.cars.getAvailableCars({
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        });
+        setCars(available);
+      } else {
+        // Fetch all cars
+        const response = await mockApi.cars.getAll({ limit: 100 }); // Mock large limit
+        setCars(response.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to load cars", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // Derived Options for Filters
   const brands = useMemo(
-    () => Array.from(new Set(CARS.map((c) => c.brand))).sort(),
-    [],
+    () => Array.from(new Set(cars.map((c) => c.brand))).sort(),
+    [cars],
   );
-  const types = useMemo(
-    () => Array.from(new Set(CARS.map((c) => c.type))).sort(),
-    [],
+  // Assume mock data cars have 'type' or derive it? MockData cars have 'status' etc but no 'type'?
+  // Checking MockData Interface:
+  // Car { ... seats, fuel_type, transmission, ... }
+  // Wait, existing code used `c.type` but interface doesn't have `type`.
+  // It has `fuel_type`. Maybe `type` was a mistake/inferred in previous file?
+  // Let's use fuel_type as proxy for "Type" or Body Type if existed.
+  // Previous code used `c.type` which suggests `Car` interface might have had it or it was type unsafe.
+  // The `Car` interface in `mockData.ts` (Step 122) does NOT have `type`. It has `fuel_type`, `transmission`, etc.
+  // So likely the original code was broken or using a different type definition?
+  // I will switch "Type" filter to "Fuel Type" to be safe and correct.
+
+  const fuelTypes = useMemo(
+    () => Array.from(new Set(cars.map((c) => c.fuel_type))).sort(),
+    [cars],
   );
   const transmissions = ["Automatic", "Manual"];
 
   // Filtering Logic
   const filteredCars = useMemo(() => {
-    let result = [...CARS];
+    let result = [...cars];
 
     // Filter by Brands
     if (selectedBrands.length > 0) {
       result = result.filter((car) => selectedBrands.includes(car.brand));
     }
 
-    // Filter by Types
+    // Filter by Fuel Type (replacing Type)
     if (selectedTypes.length > 0) {
-      result = result.filter((car) => selectedTypes.includes(car.type));
+      result = result.filter((car) => selectedTypes.includes(car.fuel_type));
     }
 
     // Filter by Transmission
@@ -59,15 +110,11 @@ export default function CarsPage() {
     if (sortOption === "price_asc") {
       result.sort((a, b) => a.price_per_day - b.price_per_day);
     }
-    // "relevant" uses default order (or could be added later)
 
     return result;
-  }, [selectedBrands, selectedTypes, selectedTransmissions, sortOption]);
+  }, [selectedBrands, selectedTypes, selectedTransmissions, sortOption, cars]);
 
   // Reset pagination when filters change
-  // We can't use useEffect here easily without causing loops or complex deps,
-  // but usually resetting page on filter change is good UX.
-  // Ideally, use a useEffect that watches the filter arrays length/content string.
   useMemo(() => {
     setCurrentPage(1);
   }, [selectedBrands, selectedTypes, selectedTransmissions, sortOption]);
@@ -90,6 +137,48 @@ export default function CarsPage() {
     setSelectedTransmissions([]);
     setSortOption("relevant");
     setCurrentPage(1);
+    // Optional: Clear dates too? Probably not, users want to keep dates.
+  };
+
+  const onBookClick = (car: Car) => {
+    if (!startDate || !endDate) {
+      // Should prompt to select dates
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      alert("Please select rental dates first to check availability.");
+      return;
+    }
+    setSelectedCar(car);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selectedCar || !startDate || !endDate) return;
+
+    setBookingLoading(true);
+    try {
+      await mockApi.bookings.create({
+        car_id: selectedCar.id,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        total_price:
+          selectedCar.price_per_day *
+          Math.ceil(
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+          ),
+      });
+
+      alert("Booking Request Sent! Admin will review it shortly.");
+      setIsBookingModalOpen(false);
+      setSelectedCar(null);
+
+      // Refresh cars (this car should now be unavailable)
+      fetchCars();
+    } catch (error: any) {
+      alert(error.message || "Failed to create booking");
+    } finally {
+      setBookingLoading(false);
+    }
   };
 
   return (
@@ -97,7 +186,7 @@ export default function CarsPage() {
       <div className="mx-auto px-3 sm:px-12 py-26 w-full">
         {/* Header */}
 
-        <div className="mb-12 text-center">
+        <div className="mb-12 text-center space-y-6">
           <Title
             title={t("cars.title") || "Cars"}
             subtitle={
@@ -105,6 +194,20 @@ export default function CarsPage() {
               "Choose from our exclusive collection of premium vehicles."
             }
           />
+
+          {/* Date Picker Centered */}
+          <div className="flex justify-center">
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+                // If clearing dates, maybe re-fetch all?
+              }}
+              className="shadow-2xl shadow-blue-900/20"
+            />
+          </div>
         </div>
 
         {/* Filters & Sorting */}
@@ -117,8 +220,8 @@ export default function CarsPage() {
           />
 
           <MultiSelectDropdown
-            label="Type"
-            options={types}
+            label="Fuel"
+            options={fuelTypes}
             selected={selectedTypes}
             onChange={setSelectedTypes}
           />
@@ -149,13 +252,25 @@ export default function CarsPage() {
         </div>
 
         {/* Cars Grid */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
-          {paginatedCars.length > 0 ? (
-            paginatedCars.map((car) => <CarCard key={car.id} car={car} />)
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12 min-h-[400px]">
+          {loading ? (
+            <div className="col-span-full flex justify-center py-20">
+              <div className="h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : paginatedCars.length > 0 ? (
+            paginatedCars.map((car) => (
+              <CarCard
+                key={car.id}
+                car={car}
+                onBook={startDate && endDate ? onBookClick : undefined}
+              />
+            ))
           ) : (
             <div className="col-span-full py-20 text-center">
               <p className="text-xl text-gray-500">
-                No cars found matching your criteria.
+                {startDate && endDate
+                  ? "No cars available for these dates."
+                  : "No cars found matching your criteria."}
               </p>
               <button
                 onClick={clearAllFilters}
@@ -168,7 +283,7 @@ export default function CarsPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {totalPages > 1 && !loading && (
           <div className="mt-16 flex justify-center">
             <nav className="flex items-center space-x-2 rounded-full border border-white/10 bg-white/5 p-2">
               <button
@@ -209,6 +324,25 @@ export default function CarsPage() {
           </div>
         )}
       </div>
+
+      {/* Booking Modal */}
+      {selectedCar && startDate && endDate && (
+        <BookingModal
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+          onConfirm={handleConfirmBooking}
+          car={selectedCar}
+          startDate={startDate}
+          endDate={endDate}
+          totalPrice={
+            selectedCar.price_per_day *
+            Math.ceil(
+              (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+            )
+          }
+          isLoading={bookingLoading}
+        />
+      )}
     </div>
   );
 }
