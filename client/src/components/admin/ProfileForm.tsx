@@ -70,7 +70,7 @@ export default function ProfileForm() {
       >
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
           <div className="relative group">
-            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-blue-100 overflow-hidden relative">
+            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-blue-100 overflow-hidden relative">
               <span className="group-hover:opacity-0 transition-opacity">
                 SA
               </span>

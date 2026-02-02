@@ -269,7 +269,7 @@ function BookingContent() {
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-zinc-900/50 rounded-3xl overflow-hidden border border-white/5"
               >
-                <div className="relative aspect-[4/3] w-full bg-zinc-800">
+                <div className="relative aspect-4/3 w-full bg-zinc-800">
                   {carImage ? (
                     <Image
                       src={carImage}
@@ -285,7 +285,7 @@ function BookingContent() {
                       </span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-2 py-1 rounded-lg text-xs font-bold">

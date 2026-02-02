@@ -122,7 +122,7 @@ export function AdminTable<T extends { id: string }>({
       </div>
 
       {/* Desktop View: Table */}
-      <div className="hidden lg:block bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
+      <div className="hidden lg:block bg-white rounded-4xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>

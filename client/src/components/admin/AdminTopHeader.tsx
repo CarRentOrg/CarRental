@@ -201,7 +201,7 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
             onClick={() => setShowProfile(!showProfile)}
             className="flex items-center space-x-2 group outline-none"
           >
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-md shadow-blue-100 group-hover:scale-105 transition-all">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-linear-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-md shadow-blue-100 group-hover:scale-105 transition-all">
               <User className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div className="text-left hidden lg:block">

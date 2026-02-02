@@ -6,7 +6,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Login from "@/components/auth/Login";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AppProvider } from "@/contexts/App.Context";
+import { AppProvider as AuthProvider } from "@/contexts/App.Context";
+import { AppProvider as DataProvider } from "@/contexts/AppContext";
 import { usePathname } from "next/navigation";
 
 const interDisplay = Inter({
@@ -27,13 +28,16 @@ export default function RootLayout({
       <body
         className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col bg-black`}
       >
-        <AppProvider>
-          <LanguageProvider>
-            {!isAdminPage && <Header />}
-            <main className="grow">{children}</main>
-            {!isAdminPage && <Footer />}
-          </LanguageProvider>
-        </AppProvider>
+        <AuthProvider>
+          <DataProvider>
+            <LanguageProvider>
+              <Login />
+              {!isAdminPage && <Header />}
+              <main className="grow">{children}</main>
+              {!isAdminPage && <Footer />}
+            </LanguageProvider>
+          </DataProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -109,7 +109,7 @@ export default function AdminDashboard() {
           <motion.div
             key={i}
             whileHover={{ y: -5 }}
-            className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 hover:shadow-lg transition-all duration-300"
+            className="bg-white p-6 rounded-4xl border border-gray-100 shadow-sm space-y-4 hover:shadow-lg transition-all duration-300"
           >
             <div className="flex justify-between items-start">
               <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
               activities.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex gap-4 items-start">
                   <div
-                    className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${
+                    className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
                       activity.type === "booking_new"
                         ? "bg-blue-500"
                         : activity.type === "booking_cancelled"
