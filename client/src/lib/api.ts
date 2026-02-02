@@ -4,14 +4,19 @@ import { supabase } from '@/lib/supabase';
 const API_Base_URL = 'http://localhost:3001/api';
 
 async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const { data: { session } } = await supabase.auth.getSession();
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
     const headers: HeadersInit = {
-        'Content-Type': 'application/json',
         ...options.headers,
     };
 
-    if (session?.access_token) {
-        (headers as any)['Authorization'] = `Bearer ${session.access_token}`;
+    // Only set Content-Type if not FormData (fetch sets correctly for FormData)
+    if (!(options.body instanceof FormData)) {
+        (headers as any)['Content-Type'] = 'application/json';
+    }
+
+    if (token) {
+        (headers as any)['Authorization'] = `Bearer ${token}`;
     }
 
     const res = await fetch(`${API_Base_URL}${endpoint}`, {
@@ -29,6 +34,11 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
 }
 
 export const api = {
+    auth: {
+        login: (data: any) => fetchAPI<any>('/user/login', { method: 'POST', body: JSON.stringify(data) }),
+        register: (data: any) => fetchAPI<any>('/user/register', { method: 'POST', body: JSON.stringify(data) }),
+        getMe: () => fetchAPI<any>('/user/data'),
+    },
     cars: {
         getAll: () => fetchAPI<Car[]>('/cars'),
         getById: (id: string) => fetchAPI<Car>(`/cars/${id}`),
@@ -57,5 +67,13 @@ export const api = {
         create: (data: any) => fetchAPI<any>('/news', { method: 'POST', body: JSON.stringify(data) }),
         update: (id: string, data: any) => fetchAPI<any>(`/news/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
         delete: (id: string) => fetchAPI<void>(`/news/${id}`, { method: 'DELETE' }),
+    },
+    owner: {
+        addCar: (formData: FormData) => fetchAPI<any>('/owner/add-car', { method: 'POST', body: formData }),
+        getCars: () => fetchAPI<any[]>('/owner/cars'),
+        getDashboard: () => fetchAPI<any>('/owner/dashboard'),
+        updateImage: (formData: FormData) => fetchAPI<any>('/owner/update-image', { method: 'POST', body: formData }),
+        deleteCar: (id: string) => fetchAPI<any>('/owner/delete-car', { method: 'POST', body: JSON.stringify({ carId: id }) }),
+        changeRoleToOwner: () => fetchAPI<any>('/owner/change-role', { method: 'POST' }),
     }
 };

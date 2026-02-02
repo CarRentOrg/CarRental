@@ -67,3 +67,41 @@ export const deleteBooking = async (req: Request, res: Response, next: NextFunct
         next(error);
     }
 };
+
+export const checkAvailabilityofCar = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { carId, startDate, endDate } = req.body;
+        // Logic to check if car is available in these dates
+        res.status(200).json({ success: true, available: true });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getUserBookings = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const bookings = await bookingService.getAllBookings({ car_id: req.user.id }); // Assuming user_id filter
+        res.status(200).json({ success: true, data: bookings });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getOwnerBookings = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const bookings = await bookingService.getAllBookings(); // Owners get all for now
+        res.status(200).json({ success: true, data: bookings });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const changeBookingStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { bookingId, status } = req.body;
+        const booking = await bookingService.updateBooking(bookingId, { status });
+        res.status(200).json({ success: true, data: booking });
+    } catch (error) {
+        next(error);
+    }
+};

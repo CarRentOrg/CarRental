@@ -51,6 +51,7 @@ export default function CarForm({
   });
 
   const [images, setImages] = useState<string[]>(initialData?.images || []);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -59,6 +60,19 @@ export default function CarForm({
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, thumbnail_url: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleRateChange = (
@@ -94,6 +108,7 @@ export default function CarForm({
         year: Number(formData.year),
         price_per_day: formData.rates.daily, // Sync for backward compatibility
         images,
+        imageFile: selectedFile, // Pass the real file
       });
     } catch (error) {
       console.error(error);
@@ -206,17 +221,23 @@ export default function CarForm({
             {/* Thumbnail */}
             <div className="mb-6 space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                Thumbnail URL
+                Vehicle Image
               </label>
-              <div className="flex gap-4 items-start">
+              <div className="flex gap-4 items-center">
                 <input
-                  type="text"
-                  name="thumbnail_url"
-                  value={formData.thumbnail_url}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                  className="flex-1 px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 text-sm"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="car-image-upload"
                 />
+                <label
+                  htmlFor="car-image-upload"
+                  className="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl font-bold cursor-pointer hover:bg-blue-100 transition-colors flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  Select Image
+                </label>
                 {formData.thumbnail_url && (
                   <div className="h-20 w-32 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
                     <img
