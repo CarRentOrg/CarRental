@@ -12,7 +12,7 @@ const FAQSection = () => {
   };
 
   return (
-    <section className="py-10 sm:py-24 border-t border-neutral-800/50">
+    <section id="faq" className="py-10 sm:py-24 border-t border-neutral-800/50">
       <div className="container mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Left Side */}

@@ -24,11 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col`}
+        className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col bg-black`}
       >
         <LanguageProvider>
           {!isAdminPage && <Header />}
-          <main className="flex-grow">{children}</main>
+          <main className="grow">{children}</main>
           {!isAdminPage && <Footer />}
         </LanguageProvider>
       </body>
