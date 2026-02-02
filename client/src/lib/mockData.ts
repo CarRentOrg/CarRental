@@ -71,9 +71,9 @@ export interface Notification {
 }
 
 // Generate Mock Data
-const NOTIFICATIONS: Notification[] = []; // Start empty or pre-populate if needed
+export const NOTIFICATIONS: Notification[] = []; // Start empty or pre-populate if needed
 
-const USERS: User[] = Array.from({ length: 45 }).map(() => ({
+export const USERS: User[] = Array.from({ length: 45 }).map(() => ({
   id: faker.string.uuid(),
   email: faker.internet.email(),
   full_name: faker.person.fullName(),
@@ -382,8 +382,9 @@ export const mockApi = {
         activeFleet: CARS.filter((c) => c.status === "rented").length,
         newCustomers: USERS.filter(
           (u) =>
+            u.created_at &&
             new Date(u.created_at) >
-            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+              new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         ).length,
       };
     },
@@ -392,6 +393,25 @@ export const mockApi = {
       return ACTIVITIES.sort(
         (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
       );
+    },
+  },
+  auth: {
+    changePassword: async ({
+      currentPassword,
+      newPassword,
+    }: {
+      currentPassword: string;
+      newPassword: string;
+    }) => {
+      await new Promise((r) => setTimeout(r, 1000));
+      if (!currentPassword || !newPassword) {
+        throw new Error("All fields are required");
+      }
+      if (newPassword.length < 8) {
+        throw new Error("Password must be at least 8 characters");
+      }
+      // In mock, we just approve it
+      return { success: true };
     },
   },
 };

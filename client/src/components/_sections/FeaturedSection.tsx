@@ -5,10 +5,11 @@ import Title from "../shared/title";
 import CarCard from "../cars/CarCard";
 import Button from "../shared/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { CARS } from "@/constants";
+import { useApp } from "@/contexts/AppContext";
 
 const FeaturedSection = () => {
   const { t } = useLanguage();
+  const { availableCars: cars, loading } = useApp();
 
   return (
     <section
@@ -19,10 +20,14 @@ const FeaturedSection = () => {
         <Title title={t("home.chooseRide")} align={"center"} />
       </div>
 
-      <div className="grid grid-cols-1 gap-y-10 gap-x-6 md:grid-cols-2 w-full mb-16">
-        {CARS.slice(0, 4).map((car) => (
-          <CarCard key={car.id} car={car} />
-        ))}
+      <div className="grid grid-cols-1 gap-y-10 gap-x-6 md:grid-cols-2 w-full mb-16 min-h-[400px]">
+        {loading ? (
+          <div className="col-span-full flex justify-center items-center py-20">
+            <div className="h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          cars.slice(0, 4).map((car) => <CarCard key={car.id} car={car} />)
+        )}
       </div>
       <div className="w-full flex justify-center items-center">
         <Button

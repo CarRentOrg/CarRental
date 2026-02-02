@@ -53,6 +53,9 @@ export default function Header() {
         <nav className="hidden lg:flex items-center space-x-8 text-xs font-semibold tracking-wide uppercase text-white/70">
           <NavLink href="/cars">{t("nav.cars")}</NavLink>
           <NavLink href="/#rental-terms">{t("nav.rentalTerms")}</NavLink>
+          <NavLink href="/profile">
+            {t("nav.myBookings") || "My Bookings"}
+          </NavLink>
           <NavLink href="/about">{t("nav.about")}</NavLink>
         </nav>
 
@@ -140,6 +143,9 @@ export default function Header() {
               <nav className="flex flex-col space-y-5 text-sm font-medium mb-6 text-white/80">
                 <NavLink href="/cars" setOpen={setOpen}>
                   {t("nav.cars")}
+                </NavLink>
+                <NavLink href="/profile" setOpen={setOpen}>
+                  {t("nav.myBookings") || "My Bookings"}
                 </NavLink>
                 <NavLink href="/cars#rental-terms" setOpen={setOpen}>
                   {t("nav.rentalTerms")}

@@ -105,13 +105,13 @@ export default function Footer() {
               Join our mailing list and never miss an update!
             </h3>
 
-            <div className="flex items-center bg-[#141414] rounded-full">
+            <div className="flex items-center bg-[#141414] rounded-full overflow-hidden">
               <input
                 type="email"
                 placeholder="Your Email"
                 className="flex-1 bg-transparent px-6 py-3 text-xs text-white placeholder-gray-500 focus:outline-none"
               />
-              <button className="bg-white text-black text-xs font-medium px-6 py-3 rounded-full">
+              <button className="bg-white text-black text-xs font-light px-2 py-1 rounded-full">
                 Submit
               </button>
             </div>

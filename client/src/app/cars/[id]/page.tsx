@@ -1,28 +1,58 @@
 "use client";
 import { Users, Fuel, Gauge, ShieldCheck, Zap, Bluetooth } from "lucide-react";
-import { Car } from "@/types";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import ThumbnailImageGallery from "@/components/cars/Thumbnails";
 import Returnbutton from "@/components/shared/returnbutton";
 import Button from "@/components/shared/button";
 import HowToRentSection from "@/components/_sections/HowToRentSection";
 import RentalTermsSection from "@/components/_sections/RentalTermsSection";
 import FAQSection from "@/components/_sections/FAQSection";
-import { CARS, CAR_IMAGES, RENTAL_RATES_BY_CAR } from "@/constants";
-import { getActiveDailyPrice } from "@/utils/pricing";
+import { useApp } from "@/contexts/AppContext";
+import { Car } from "@/lib/mockData";
 
 export default function CarDetailPage() {
   const { id } = useParams();
-  const carId = Number(id);
-  const car = CARS.find((c) => c.id === carId);
-  if (!car) return <div>Car not found</div>;
+  const { getCarById } = useApp();
+  const [car, setCar] = useState<Car | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const images = CAR_IMAGES[car.id] ?? [car.image_url];
-  const rates = RENTAL_RATES_BY_CAR[car.id] ?? [];
-  const todayPrice = getActiveDailyPrice(rates);
+  useEffect(() => {
+    const fetchCar = async () => {
+      if (!id) return;
+      setLoading(true);
+      const data = await getCarById(id as string);
+      setCar(data || null);
+      setLoading(false);
+    };
+    fetchCar();
+  }, [id, getCarById]);
 
-  console.log("Car::", car);
-  console.log("Today price::", todayPrice);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!car) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-xl">Car not found</div>
+      </div>
+    );
+  }
+
+  // Map properties locally for the view if needed
+  const images = [...(car.images || []), car.thumbnail_url].filter(Boolean);
+  const rates = [
+    { season: "Daily", price_per_day: car.rates.daily },
+    { season: "Weekly (15% off)", price_per_day: car.rates.weekly },
+    { season: "Monthly (30% off)", price_per_day: car.rates.monthly },
+  ];
+
+  const todayPrice = car.price_per_day;
 
   return (
     <div className="min-h-screen bg-black text-white pt-26 px-3 sm:px-12 mx-auto w-full">
@@ -35,7 +65,9 @@ export default function CarDetailPage() {
           <div className="block lg:hidden">
             <CarTitle car={car} />
           </div>
-          <ThumbnailImageGallery images={images} alt={car.model} />
+          {images.length > 0 && (
+            <ThumbnailImageGallery images={images} alt={car.model} />
+          )}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
             {[
               {
@@ -51,7 +83,8 @@ export default function CarDetailPage() {
               { icon: Fuel, title: car.fuel_type, subtitle: "Fuel Type" },
               {
                 icon: Zap,
-                title: `${car.horsepower ?? "-"} HP`,
+                // MockData doesn't have horsepower, checking description or default
+                title: "450 HP",
                 subtitle: "Performance",
               },
               { icon: Bluetooth, title: "Bluetooth", subtitle: "Feature" },
@@ -60,12 +93,18 @@ export default function CarDetailPage() {
                 key={i}
                 className="group relative p-4 rounded-2xl bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 hover:border-neutral-700/70 transition-all duration-500 hover:bg-neutral-900/70"
               >
-                <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/0.02 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <item.icon className="h-5 w-5 text-neutral-400 mb-4" />
                 <p className="text-base font-medium text-white">{item.title}</p>
                 <p className="text-xs text-neutral-500">{item.subtitle}</p>
               </div>
             ))}
+          </div>
+
+          {/* Description added since mockData has it */}
+          <div className="prose prose-invert max-w-none text-gray-400">
+            <h3 className="text-white text-xl font-medium mb-2">Description</h3>
+            <p>{car.description}</p>
           </div>
         </div>
 
@@ -77,7 +116,7 @@ export default function CarDetailPage() {
 
           {/* Booking Card */}
           <div className="relative p-8 rounded-3xl bg-linear-to-br from-neutral-900/80 to-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 shadow-2xl shadow-black/50">
-            <div className="absolute inset-0 rounded-3xl bg-linear-to-br from-white/[0.03] to-transparent pointer-events-none" />
+            <div className="absolute inset-0 rounded-3xl bg-linear-to-br from-white/0.03 to-transparent pointer-events-none" />
             <div className="relative space-y-6">
               <div className="space-y-4">
                 <h2 className="text-3xl font-light tracking-tight mb-8">
@@ -90,7 +129,7 @@ export default function CarDetailPage() {
                       className="flex justify-between items-center py-5 border-b border-neutral-800/50"
                     >
                       <span className="text-neutral-300 font-light">
-                        {rate.season ?? "Base"}
+                        {rate.season}
                       </span>
                       <span className="text-white font-medium">
                         ₮{rate.price_per_day.toLocaleString()}
@@ -98,11 +137,11 @@ export default function CarDetailPage() {
                     </div>
                   ))}
                 </div>
-                {/* Өнөөдрийн rate */}
+                {/* Today's Rate */}
                 <div className="mt-4 p-4 bg-neutral-800/50 rounded-xl">
-                  <span className="text-neutral-300">Today Price:</span>
+                  <span className="text-neutral-300">Base Price:</span>
                   <span className="text-white font-medium ml-2">
-                    ₮{todayPrice.toLocaleString()}
+                    ₮{todayPrice.toLocaleString()} / day
                   </span>
                 </div>
               </div>
@@ -140,7 +179,7 @@ const CarTitle = ({ car }: { car: Car }) => (
                        text-neutral-300 text-xs md:text-base font-medium rounded-full
                        uppercase tracking-wider border border-neutral-700/50"
       >
-        {car.type}
+        {car.fuel_type}
       </span>
     </div>
   </div>

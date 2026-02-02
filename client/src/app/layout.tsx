@@ -7,6 +7,8 @@ import Footer from "@/components/layout/Footer";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { usePathname } from "next/navigation";
 
+import { AppProvider } from "@/contexts/AppContext";
+
 const interDisplay = Inter({
   weight: "400",
   subsets: ["latin"],
@@ -26,11 +28,13 @@ export default function RootLayout({
       <body
         className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col bg-black`}
       >
-        <LanguageProvider>
-          {!isAdminPage && <Header />}
-          <main className="grow">{children}</main>
-          {!isAdminPage && <Footer />}
-        </LanguageProvider>
+        <AppProvider>
+          <LanguageProvider>
+            {!isAdminPage && <Header />}
+            <main className="grow">{children}</main>
+            {!isAdminPage && <Footer />}
+          </LanguageProvider>
+        </AppProvider>
       </body>
     </html>
   );

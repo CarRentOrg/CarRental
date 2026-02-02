@@ -42,13 +42,17 @@ export default function AdminBookingsPage() {
   useEffect(() => {
     const lowerSearch = search.toLowerCase();
     setFilteredBookings(
-      bookings.filter(
-        (b) =>
-          (b.id && b.id.toLowerCase().includes(lowerSearch)) ||
-          (b.status && b.status.toLowerCase().includes(lowerSearch)) ||
-          b.user?.full_name?.toLowerCase().includes(lowerSearch) ||
-          b.car?.name?.toLowerCase().includes(lowerSearch),
-      ),
+      bookings.filter((b) => {
+        const idMatch = b.id?.toLowerCase().includes(lowerSearch);
+        const statusMatch = b.status?.toLowerCase().includes(lowerSearch);
+        const nameMatch = b.user?.full_name
+          ?.toLowerCase()
+          .includes(lowerSearch);
+        const carMatch = (b.car?.name || b.car?.model)
+          ?.toLowerCase()
+          .includes(lowerSearch);
+        return idMatch || statusMatch || nameMatch || carMatch;
+      }),
     );
   }, [search, bookings]);
 
@@ -357,8 +361,8 @@ export default function AdminBookingsPage() {
         title={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
         message={
           modalAction === "approve"
-            ? `Та ${selectedBooking?.car?.name} машины захиалгыг баталгаажуулахдаа итгэлтэй байна уу?`
-            : `Та ${selectedBooking?.car?.name} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
+            ? `Та ${selectedBooking?.car?.name || selectedBooking?.car?.model || "сонгосон"} машины захиалгыг баталгаажуулахдаа итгэлтэй байна уу?`
+            : `Та ${selectedBooking?.car?.name || selectedBooking?.car?.model || "сонгосон"} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
         }
         confirmText={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
         type={modalAction === "approve" ? "success" : "danger"}

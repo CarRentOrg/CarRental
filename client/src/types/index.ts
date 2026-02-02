@@ -1,8 +1,8 @@
-import { Database } from './supabase';
+import { Database } from "./supabase";
 
-export type Car = Database['public']['Tables']['cars']['Row'];
-export type Booking = Database['public']['Tables']['bookings']['Row'];
-export type NewsPost = Database['public']['Tables']['news']['Row'];
+export type Car = Database["public"]["Tables"]["cars"]["Row"];
+export type Booking = Database["public"]["Tables"]["bookings"]["Row"];
+export type NewsPost = Database["public"]["Tables"]["news"]["Row"];
 
 export interface TitleProps {
   title: string;
@@ -32,4 +32,10 @@ export interface Car1 {
   id: string;
   name: string;
   images: string[];
+}
+export interface RENTAL_RATE {
+  season: string | null;
+  start_date?: string;
+  end_date?: string;
+  price_per_day: number;
 }

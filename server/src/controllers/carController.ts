@@ -3,7 +3,16 @@ import { carService } from '../services/carService';
 
 export const getCars = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const cars = await carService.getAllCars();
+        const { brand, model, transmission, fuel, is_available, page, limit } = req.query;
+        const cars = await carService.getAllCars({
+            brand: brand as string,
+            model: model as string,
+            transmission: transmission as string,
+            fuel: fuel as string,
+            is_available: is_available !== undefined ? is_available === 'true' : undefined,
+            page: page ? parseInt(page as string) : undefined,
+            limit: limit ? parseInt(limit as string) : undefined
+        });
         res.status(200).json({ success: true, data: cars });
     } catch (error) {
         next(error);
@@ -26,6 +35,11 @@ export const getCarById = async (req: Request, res: Response, next: NextFunction
 
 export const createCar = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { brand, model, price_per_day } = req.body;
+        if (!brand || !model || !price_per_day) {
+            res.status(400).json({ success: false, message: 'Missing required fields: brand, model, and price_per_day are required.' });
+            return;
+        }
         const car = await carService.createCar(req.body);
         res.status(201).json({ success: true, data: car });
     } catch (error) {
@@ -36,6 +50,10 @@ export const createCar = async (req: Request, res: Response, next: NextFunction)
 export const updateCar = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
+        if (Object.keys(req.body).length === 0) {
+            res.status(400).json({ success: false, message: 'No update data provided.' });
+            return;
+        }
         const car = await carService.updateCar(id, req.body);
         res.status(200).json({ success: true, data: car });
     } catch (error) {

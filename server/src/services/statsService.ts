@@ -2,33 +2,50 @@ import { supabase } from '../config/supabase';
 
 export class StatsService {
     async getDashboardStats() {
-        // Run parallel queries for efficiency
-        const [carsResult, bookingsResult] = await Promise.all([
-            supabase.from('cars').select('id', { count: 'exact', head: true }),
-            supabase.from('bookings').select('total_price')
-        ]);
+        try {
+            // Run parallel queries for efficiency
+            const [carsResult, bookingsResult] = await Promise.all([
+                supabase.from('cars').select('id', { count: 'exact', head: true }),
+                supabase.from('bookings').select('total_price')
+            ]);
 
-        const activeFleet = carsResult.count || 0;
-        const bookings = bookingsResult.data;
+            // Handle potential table missing errors
+            if (carsResult.error && !(carsResult.error.code === 'PGRST116' || carsResult.error.message?.includes('cache'))) {
+                throw carsResult.error;
+            }
+            if (bookingsResult.error && !(bookingsResult.error.code === 'PGRST116' || bookingsResult.error.message?.includes('cache'))) {
+                throw bookingsResult.error;
+            }
 
-        // Calculate revenue manually
-        // We use type assertion here to fix the issue where TS incorrectly infers 'never' for the bookings data
-        const revenue = (bookings as { total_price: number }[] | null)?.reduce(
-            (acc, curr) => acc + (curr.total_price || 0),
-            0
-        ) || 0;
+            const activeFleet = carsResult.count || 0;
+            const bookings = bookingsResult.data || [];
 
-        const totalBookings = bookings?.length || 0;
+            // Calculate revenue manually
+            const revenue = (bookings as { total_price: number }[]).reduce(
+                (acc, curr) => acc + (curr.total_price || 0),
+                0
+            );
 
-        // Pseudo-random new customers for now
-        const newCustomers = 12;
+            const totalBookings = bookings.length;
 
-        return {
-            revenue,
-            bookings: totalBookings,
-            activeFleet,
-            newCustomers
-        };
+            // Pseudo-random new customers for now
+            const newCustomers = 12;
+
+            return {
+                revenue,
+                bookings: totalBookings,
+                activeFleet,
+                newCustomers
+            };
+        } catch (error) {
+            console.warn('Error fetching dashboard stats, returning defaults:', error);
+            return {
+                revenue: 0,
+                bookings: 0,
+                activeFleet: 0,
+                newCustomers: 0
+            };
+        }
     }
 }
 

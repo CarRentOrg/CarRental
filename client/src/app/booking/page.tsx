@@ -20,13 +20,17 @@ import {
   isWithinInterval,
   startOfDay,
 } from "date-fns";
+import { useApp } from "@/contexts/AppContext";
 import DateRangePicker from "@/components/ui/DateRangePicker";
+import Returnbutton from "@/components/shared/returnbutton";
 
 // Component to handle Search Params (needed for Suspense boundary)
 function BookingContent() {
+  // Context & Hooks
   const searchParams = useSearchParams();
   const router = useRouter();
   const carId = searchParams.get("carId");
+  const { getCarById } = useApp();
 
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,32 +55,33 @@ function BookingContent() {
     }
 
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const [carData, allBookings] = await Promise.all([
-          mockApi.cars.getById(carId),
-          mockApi.bookings.getAll({ limit: 1000 }), // Hack to get all for filtering
-        ]);
+        // 1. Fetch Car from Context
+        const carData = await getCarById(carId);
 
         if (carData) {
           setCar(carData);
-          // Filter bookings for this car
+
+          // 2. Fetch Bookings (Direct API for now, could be context later)
+          const allBookings = await mockApi.bookings.getAll({ limit: 1000 });
           const carBookings = allBookings.data.filter(
             (b) =>
-              b.car_id === carId && ["confirmed", "pending"].includes(b.status), // Block confirmed and pending
+              b.car_id === carId && ["confirmed", "pending"].includes(b.status),
           );
           setExistingBookings(carBookings);
         } else {
           setError("Car not found");
         }
       } catch (err) {
-        setError("Failed to load car details");
+        setError("Failed to load details");
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [carId]);
+  }, [carId, getCarById]);
 
   // Calculate Disabled Dates
   const disabledDates = useMemo(() => {
@@ -185,7 +190,7 @@ function BookingContent() {
 
   if (submitSuccess) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center text-white p-6">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -226,7 +231,7 @@ function BookingContent() {
             </p>
           </div>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push("/cars")}
             className="w-full py-4 bg-white hover:bg-gray-200 text-black rounded-2xl font-bold text-lg transition-colors"
           >
             Browse Other Cars
@@ -237,15 +242,12 @@ function BookingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32 md:pb-0">
+    <div className="min-h-screen bg-black text-white py-26 px-3 sm:px-12 mx-auto">
       {/* Mobile Sticky Header */}
+      <div className="lg:px-12">
+        <Returnbutton text="Back to Car" onClick={() => router.back()} />
+      </div>
       <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-md border-b border-white/10 px-4 py-3 flex items-center gap-4 md:hidden">
-        <button
-          onClick={() => router.back()}
-          className="p-2 hover:bg-white/10 rounded-full transition-colors"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
         <div className="flex-1 truncate">
           <h1 className="text-lg font-bold leading-none truncate">
             {car.brand} {car.model}
@@ -325,7 +327,7 @@ function BookingContent() {
               </motion.div>
 
               {/* Rates Card */}
-              <div className="bg-zinc-900/30 rounded-3xl p-6 border border-white/5 hidden md:block">
+              <div className="bg-zinc-900/30 rounded-3xl p-6 border border-white/5 block">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">
                   Rental Rates
                 </h3>

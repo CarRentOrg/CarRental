@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { format, addDays, startOfToday, isBefore, isSameDay } from "date-fns";
+import { useState, useRef, useEffect } from "react";
+import { format, startOfToday, isBefore, isSameDay } from "date-fns";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -26,24 +26,46 @@ export default function DateRangePicker({
   onChange,
   disabledDates = [],
   className = "",
-  theme = "light",
+  theme = "dark",
   inline = false,
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(startOfToday());
+  const pickerRef = useRef<HTMLDivElement | null>(null);
 
   const today = startOfToday();
+
+  /* ================= OUTSIDE CLICK ================= */
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen && !inline) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, inline]);
+  /* ================================================= */
+
   const firstDayOfMonth = new Date(
     currentMonth.getFullYear(),
     currentMonth.getMonth(),
     1,
   );
+
   const daysInMonth = new Date(
     currentMonth.getFullYear(),
     currentMonth.getMonth() + 1,
     0,
   ).getDate();
-  const startingDayIndex = firstDayOfMonth.getDay(); // 0 = Sunday
+
+  const startingDayIndex = firstDayOfMonth.getDay();
 
   const nextMonth = () => {
     setCurrentMonth(
@@ -57,11 +79,29 @@ export default function DateRangePicker({
       currentMonth.getMonth() - 1,
       1,
     );
-    // Don't go back past current month if it's the current month (optional constraint)
     if (isBefore(prev, new Date(today.getFullYear(), today.getMonth(), 1)))
       return;
     setCurrentMonth(prev);
   };
+
+  /* ================= VALIDATION HELPER ================= */
+  const isRangeBlocked = (start: Date, end: Date) => {
+    // If we have no disabled dates, never blocked
+    if (disabledDates.length === 0) return false;
+
+    // Check if any disabled date falls within [start, end]
+    // We must check every disabled date
+    // Or iterate days in range. Iterating disabled dates is usually faster if interval is long.
+    // Iterating range is safer for logic if many disabled dates.
+    // Let's use simple check: is there any d in disabledDates such that start <= d <= end?
+    return disabledDates.some((d) => {
+      // Normalize to midnight for accurate comparison
+      const dTime = startOfToday().setTime(d.getTime()); // Just timestamp comparison actually safe if all are dates
+      // But safer to compare timestamps
+      return d.getTime() >= start.getTime() && d.getTime() <= end.getTime();
+    });
+  };
+  /* ===================================================== */
 
   const handleDateClick = (day: number) => {
     const clickedDate = new Date(
@@ -71,20 +111,31 @@ export default function DateRangePicker({
     );
 
     if (isBefore(clickedDate, today)) return;
-    // Check if disabled
     if (disabledDates.some((d) => isSameDay(d, clickedDate))) return;
 
-    if (!startDate || (startDate && endDate)) {
-      // New selection
+    if (!startDate || endDate) {
+      // Start new range
       onChange(clickedDate, null);
     } else {
-      // Completing the range
+      // Complete range
+      let newStart = startDate;
+      let newEnd = clickedDate;
+
       if (isBefore(clickedDate, startDate)) {
-        onChange(clickedDate, startDate);
-      } else {
-        onChange(startDate, clickedDate);
+        newStart = clickedDate;
+        newEnd = startDate;
       }
-      if (!inline) setIsOpen(false);
+
+      // CHECK BLOCKAGE
+      if (isRangeBlocked(newStart, newEnd)) {
+        // Option 1: Reset and start new range at clicked date
+        onChange(clickedDate, null);
+        // Option 2: Show error? (Component is controlled, so we just don't set the range)
+        // Let's go with Option 1: The user likely wants to pick this date, so start a new range.
+      } else {
+        onChange(newStart, newEnd);
+        if (!inline) setIsOpen(false);
+      }
     }
   };
 
@@ -95,6 +146,7 @@ export default function DateRangePicker({
       currentMonth.getMonth(),
       day,
     );
+
     if (endDate) {
       return (
         isSameDay(date, startDate) ||
@@ -105,25 +157,19 @@ export default function DateRangePicker({
     return isSameDay(date, startDate);
   };
 
-  const isRangeStart = (day: number) => {
-    if (!startDate) return false;
-    const date = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      day,
+  const isRangeStart = (day: number) =>
+    startDate &&
+    isSameDay(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day),
+      startDate,
     );
-    return isSameDay(date, startDate);
-  };
 
-  const isRangeEnd = (day: number) => {
-    if (!endDate) return false;
-    const date = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      day,
+  const isRangeEnd = (day: number) =>
+    endDate &&
+    isSameDay(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day),
+      endDate,
     );
-    return isSameDay(date, endDate);
-  };
 
   const isDisabled = (day: number) => {
     const date = new Date(
@@ -137,19 +183,6 @@ export default function DateRangePicker({
   };
 
   const themeClasses = {
-    light: {
-      bg: "bg-white",
-      text: "text-gray-900",
-      border: "border-gray-100",
-      subText: "text-gray-400",
-      hover: "hover:bg-blue-50 hover:text-blue-600",
-      disabled: "text-gray-300 bg-gray-50",
-      rangeBg: "bg-blue-50 text-blue-700",
-      navHover: "hover:bg-gray-50",
-      buttonBg: "bg-white",
-      buttonBorder: "border-gray-200",
-      shadow: "shadow-xl shadow-blue-900/10",
-    },
     dark: {
       bg: "bg-zinc-900",
       text: "text-white",
@@ -161,7 +194,18 @@ export default function DateRangePicker({
       navHover: "hover:bg-white/5",
       buttonBg: "bg-white/5",
       buttonBorder: "border-white/10",
-      shadow: "shadow-none",
+    },
+    light: {
+      bg: "bg-white",
+      text: "text-gray-900",
+      border: "border-gray-100",
+      subText: "text-gray-400",
+      hover: "hover:bg-blue-50 hover:text-blue-600",
+      disabled: "text-gray-300 bg-gray-50",
+      rangeBg: "bg-blue-50 text-blue-700",
+      navHover: "hover:bg-gray-50",
+      buttonBg: "bg-white",
+      buttonBorder: "border-gray-200",
     },
   };
 
@@ -169,50 +213,47 @@ export default function DateRangePicker({
 
   const CalendarContent = (
     <div
-      className={`${inline ? "w-full" : "absolute top-full left-0 mt-3 w-[340px] z-50"} ${t.bg} rounded-3xl ${!inline && t.shadow} ${t.border} ${!inline && "border"} p-6`}
+      className={`${
+        inline ? "w-full" : "absolute top-full left-0 mt-3 w-[340px] z-9999"
+      } ${t.bg} rounded-3xl border ${t.border} p-6`}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <button
-          onClick={prevMonth}
-          className={`p-2 rounded-xl text-gray-500 ${t.navHover}`}
-        >
+        <button onClick={prevMonth} className={`p-2 rounded-xl ${t.navHover}`}>
           <ChevronLeft className="h-5 w-5" />
         </button>
         <h3 className={`font-bold ${t.text}`}>
           {format(currentMonth, "MMMM yyyy")}
         </h3>
-        <button
-          onClick={nextMonth}
-          className={`p-2 rounded-xl text-gray-500 ${t.navHover}`}
-        >
+        <button onClick={nextMonth} className={`p-2 rounded-xl ${t.navHover}`}>
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
 
-      {/* Days Grid */}
+      {/* Week days */}
       <div className="grid grid-cols-7 mb-2">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
           <div
             key={d}
-            className="text-center text-xs font-bold text-gray-500 uppercase py-2"
+            className="text-center text-xs font-bold text-gray-500 py-2"
           >
             {d}
           </div>
         ))}
       </div>
 
+      {/* Days */}
       <div className="grid grid-cols-7 gap-1">
         {Array.from({ length: startingDayIndex }).map((_, i) => (
-          <div key={`empty-${i}`} />
+          <div key={i} />
         ))}
+
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day = i + 1;
           const disabled = isDisabled(day);
           const selected = isSelected(day);
           const start = isRangeStart(day);
           const end = isRangeEnd(day);
-          // Highlight range middle
           const inRange = selected && !start && !end;
 
           return (
@@ -221,13 +262,11 @@ export default function DateRangePicker({
               disabled={disabled}
               onClick={() => handleDateClick(day)}
               className={`
-                relative h-10 w-full flex items-center justify-center text-sm font-medium transition-all rounded-xl
-                ${disabled ? `${t.disabled} cursor-not-allowed` : t.hover}
-                ${start ? "bg-blue-600 text-white z-10 hover:bg-blue-700 hover:text-white !opacity-100" : ""}
-                ${end ? "bg-blue-600 text-white z-10 hover:bg-blue-700 hover:text-white !opacity-100" : ""}
+                h-10 rounded-xl text-sm font-medium transition
+                ${disabled ? t.disabled : t.hover}
+                ${start || end ? "bg-blue-600 text-white" : ""}
                 ${inRange ? t.rangeBg : ""}
                 ${!selected && !disabled ? t.subText : ""}
-                ${selected ? "!opacity-100" : ""}
               `}
             >
               {day}
@@ -238,48 +277,48 @@ export default function DateRangePicker({
     </div>
   );
 
-  if (inline) {
-    return <div className={className}>{CalendarContent}</div>;
-  }
+  if (inline) return <div className={className}>{CalendarContent}</div>;
 
   return (
-    <div className={`relative ${className}`}>
-      {/* Input Trigger */}
+    <div ref={pickerRef} className={`relative ${className}`}>
+      {/* Trigger */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-3 ${t.buttonBg} ${t.buttonBorder} border rounded-2xl px-4 py-3 min-w-[300px] hover:border-gray-300 transition-colors text-left`}
+        onClick={() => setIsOpen((v) => !v)}
+        className={`flex items-center gap-3 ${t.buttonBg} ${t.buttonBorder} border rounded-2xl px-4 py-3 min-w-[300px]`}
       >
         <CalendarIcon className={`h-5 w-5 ${t.subText}`} />
-        <div className="flex-1">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        <div className="flex-1 text-left">
+          <p className="text-[10px] font-bold text-gray-400 uppercase">
             Rental Period
           </p>
-          <p className={`text-sm font-bold truncate ${t.text}`}>
-            {startDate ? format(startDate, "MMM dd, yyyy") : "Select Start"}
+          <p className={`text-sm font-bold ${t.text}`}>
+            {startDate ? format(startDate, "MMM dd, yyyy") : "Start"}
             {" - "}
-            {endDate ? format(endDate, "MMM dd, yyyy") : "Select End"}
+            {endDate ? format(endDate, "MMM dd, yyyy") : "End"}
           </p>
         </div>
+
         {startDate && (
           <div
             onClick={(e) => {
               e.stopPropagation();
               onChange(null, null);
             }}
-            className="p-1 hover:bg-gray-100 rounded-full"
+            className="p-1 rounded-full hover:bg-white/10"
           >
             <X className="h-4 w-4 text-gray-400" />
           </div>
         )}
       </button>
 
-      {/* Dropdown Calendar */}
+      {/* Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="relative z-9999"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
           >
             {CalendarContent}
           </motion.div>

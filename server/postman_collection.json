@@ -2,162 +2,382 @@
     "info": {
         "_postman_id": "8a0e5b7b-23c3-4d6e-9f8a-9f5b0c9a9b9b",
         "name": "Car Rental API",
+        "description": "Complete collection for Car Rental Backend API including Cars, Bookings, News, and Stats.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
         {
-            "name": "Health Check",
-            "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                    "raw": "{{base_url}}/",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        ""
-                    ]
-                }
-            },
-            "response": []
-        },
-        {
-            "name": "Get All Cars",
-            "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                    "raw": "{{base_url}}/api/cars",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "cars"
-                    ]
-                }
-            },
-            "response": []
-        },
-        {
-            "name": "Get Car By ID",
-            "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                    "raw": "{{base_url}}/api/cars/CAR_ID",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "cars",
-                        "CAR_ID"
-                    ]
-                }
-            },
-            "response": []
-        },
-        {
-            "name": "Create Car",
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
+            "name": "General",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                ""
+                            ]
+                        }
                     }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n    \"name\": \"Tesla Model 3\",\n    \"brand\": \"Tesla\",\n    \"price_per_day\": 150,\n    \"status\": \"available\"\n}"
                 },
-                "url": {
-                    "raw": "{{base_url}}/api/cars",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "cars"
-                    ]
-                }
-            },
-            "response": []
-        },
-        {
-            "name": "Update Car",
-            "request": {
-                "method": "PUT",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
+                {
+                    "name": "Dashboard Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/stats/dashboard",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "stats",
+                                "dashboard"
+                            ]
+                        }
                     }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n    \"price_per_day\": 160\n}"
+                }
+            ]
+        },
+        {
+            "name": "Cars",
+            "item": [
+                {
+                    "name": "Get All Cars",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/cars?brand=Tesla&is_available=true&page=1&limit=10",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "cars"
+                            ],
+                            "query": [
+                                {
+                                    "key": "brand",
+                                    "value": "Tesla",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "model",
+                                    "value": "Model 3",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "transmission",
+                                    "value": "Automatic",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "fuel",
+                                    "value": "Electric",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "is_available",
+                                    "value": "true",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
                 },
-                "url": {
-                    "raw": "{{base_url}}/api/cars/CAR_ID",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "cars",
-                        "CAR_ID"
-                    ]
+                {
+                    "name": "Get Car By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/cars/CAR_ID",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "cars",
+                                "CAR_ID"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Car",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"brand\": \"Tesla\",\n    \"model\": \"Model 3\",\n    \"year\": 2024,\n    \"price_per_day\": 150,\n    \"image_url\": \"https://example.com/tesla.jpg\",\n    \"transmission\": \"Automatic\",\n    \"fuel\": \"Electric\",\n    \"seats\": 5,\n    \"is_available\": true\n}"
+                        },
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/cars",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "cars"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Car",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"price_per_day\": 160\n}"
+                        },
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/cars/CAR_ID",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "cars",
+                                "CAR_ID"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Car",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/cars/CAR_ID",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "cars",
+                                "CAR_ID"
+                            ]
+                        }
+                    }
                 }
-            },
-            "response": []
+            ]
         },
         {
-            "name": "Delete Car",
-            "request": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                    "raw": "{{base_url}}/api/cars/CAR_ID",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "cars",
-                        "CAR_ID"
-                    ]
+            "name": "News",
+            "item": [
+                {
+                    "name": "Get All News",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/news?page=1&limit=5",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "news"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "5"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create News",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title_en\": \"New Fleet Arrival\",\n    \"title_mn\": \"Шинэ машинууд ирлээ\",\n    \"content_en\": \"We have added new luxury SUVs to our fleet.\",\n    \"content_mn\": \"Манай автопаркт шинэ тансаг зэрэглэлийн SUV загварууд нэмэгдлээ.\",\n    \"image_url\": \"https://example.com/news1.jpg\",\n    \"author\": \"Admin\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/news",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "news"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update News",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title_en\": \"Updated Title\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/news/NEWS_ID",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "news",
+                                "NEWS_ID"
+                            ]
+                        }
+                    }
                 }
-            },
-            "response": []
-        }
-    ],
-    "event": [
-        {
-            "listen": "prerequest",
-            "script": {
-                "type": "text/javascript",
-                "exec": [
-                    ""
-                ]
-            }
+            ]
         },
         {
-            "listen": "test",
-            "script": {
-                "type": "text/javascript",
-                "exec": [
-                    ""
-                ]
-            }
+            "name": "Bookings",
+            "item": [
+                {
+                    "name": "Get All Bookings",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/bookings?status=pending&page=1&limit=20",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "bookings"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "pending",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "car_id",
+                                    "value": "",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Booking",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"car_id\": \"PASTE_CAR_ID_HERE\",\n    \"start_date\": \"2026-03-01\",\n    \"end_date\": \"2026-03-05\",\n    \"total_price\": 600,\n    \"status\": \"pending\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://{{host}}:{{port}}/api/bookings",
+                            "protocol": "http",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "port": "{{port}}",
+                            "path": [
+                                "api",
+                                "bookings"
+                            ]
+                        }
+                    }
+                }
+            ]
         }
     ],
     "variable": [
         {
-            "key": "base_url",
-            "value": "http://localhost:3001",
+            "key": "host",
+            "value": "localhost",
+            "type": "string"
+        },
+        {
+            "key": "port",
+            "value": "3001",
             "type": "string"
         }
     ]
