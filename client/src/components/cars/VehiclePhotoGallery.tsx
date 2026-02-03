@@ -6,7 +6,7 @@ import clsx from "clsx";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 
 interface Props {
-  gallerySources: (string | null)[];
+  photos: any;
   alt?: string;
 }
 
@@ -30,11 +30,12 @@ const variants = {
   }),
 };
 
-export default function GallerySlider({
-  gallerySources: inputImages,
-  alt = "slider image",
+export default function VehiclePhotoGallery({
+  photos: inputImages,
+  alt = "vehicle image",
 }: Props) {
-  const images = (inputImages || []).filter((img): img is string => typeof img === 'string' && img !== '');
+  const images = (Array.isArray(inputImages) ? inputImages : [])
+    .filter((img): img is string => typeof img === 'string' && img !== '');
   const [[index, direction], setState] = useState<[number, number]>([0, 0]);
 
   // Handle empty images safely

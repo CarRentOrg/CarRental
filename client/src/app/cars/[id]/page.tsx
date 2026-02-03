@@ -2,7 +2,7 @@
 import { Users, Fuel, Gauge, ShieldCheck, Zap, Bluetooth } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import GallerySlider from "@/components/cars/Thumbnails";
+import VehiclePhotoGallery from "@/components/cars/VehiclePhotoGallery";
 import Returnbutton from "@/components/shared/returnbutton";
 import Button from "@/components/shared/button";
 import HowToRentSection from "@/components/_sections/HowToRentSection";
@@ -71,9 +71,9 @@ export default function CarDetailPage() {
           <div className="block lg:hidden">
             <CarTitle car={car} />
           </div>
-          {/* Build trigger: v0.2.0-refactor-gallery-2026-02-04 */}
+          {/* Build trigger: v0.3.0-radical-refactor-2026-02-04 */}
           {images.length > 0 && (
-            <GallerySlider gallerySources={images} alt={car.model} />
+            <VehiclePhotoGallery photos={images} alt={car.model} />
           )}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
             {[
