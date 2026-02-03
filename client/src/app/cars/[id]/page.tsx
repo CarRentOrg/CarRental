@@ -44,7 +44,7 @@ export default function CarDetailPage() {
     );
   }
 
-  // Build image list explicitly for the gallery
+  // Build image list explicitly for the gallery - Ultra-strict for Vercel build
   const galleryImages: string[] = [];
   if (car.images && Array.isArray(car.images)) {
     car.images.forEach(img => {
@@ -53,12 +53,19 @@ export default function CarDetailPage() {
       }
     });
   }
-  if (car.thumbnail_url) galleryImages.push(car.thumbnail_url);
-  if (car.image_url && !galleryImages.includes(car.image_url)) {
-    galleryImages.push(car.image_url);
+  if (typeof car.thumbnail_url === "string" && car.thumbnail_url.trim() !== "") {
+    galleryImages.push(car.thumbnail_url);
   }
-  const images = galleryImages; // Use the name 'images' for compatibility with the view logic below
+  if (typeof car.image_url === "string" && car.image_url.trim() !== "") {
+    if (!galleryImages.includes(car.image_url)) {
+      galleryImages.push(car.image_url);
+    }
+  }
 
+  // Final safeguard to ensure it's strictly string[]
+  const images: string[] = galleryImages.filter((i): i is string => typeof i === "string");
+
+  // Build trigger: v4-strict-typing
   const rates = [
     { season: "Daily", price_per_day: car.rates?.daily || car.price_per_day },
     { season: "Weekly (15% off)", price_per_day: car.rates?.weekly || (car.price_per_day * 0.85) },
@@ -79,7 +86,7 @@ export default function CarDetailPage() {
             <CarTitle car={car} />
           </div>
           {images.length > 0 && (
-            <ThumbnailImageGallery images={images} alt={car.model} />
+            <ThumbnailImageGallery images={images as string[]} alt={car.model} />
           )}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
             {[
