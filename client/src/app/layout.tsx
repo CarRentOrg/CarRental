@@ -10,6 +10,7 @@ import { AppProvider as AuthProvider } from "@/contexts/App.Context";
 import { AppProvider as DataProvider } from "@/contexts/AppContext";
 import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
+import ImageKitProvider from "@/contexts/ImageKitProvider";
 
 const interDisplay = Inter({
   weight: "400",
@@ -33,10 +34,12 @@ export default function RootLayout({
         <AuthProvider>
           <DataProvider>
             <LanguageProvider>
-              <Login />
-              {!isAdminPage && <Header />}
-              <main className="grow">{children}</main>
-              {!isAdminPage && <Footer />}
+              <ImageKitProvider>
+                <Login />
+                {!isAdminPage && <Header />}
+                <main className="grow">{children}</main>
+                {!isAdminPage && <Footer />}
+              </ImageKitProvider>
             </LanguageProvider>
           </DataProvider>
         </AuthProvider>
