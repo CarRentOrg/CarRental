@@ -28,7 +28,7 @@ import { api } from '@/lib/api';
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const apiAxios = axios.create({
-    baseURL: 'http://localhost:3001',
+    baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace('/api', ''),
 });
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
