@@ -1,14 +1,12 @@
 "use client";
-// Build trigger: v0.3.1-all-branches-synced-2026-02-04
-
 
 import { useState } from "react";
-import Image from "next/image";
+import { IKImage } from "imagekitio-react";
 import clsx from "clsx";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 
 interface Props {
-  photos: any;
+  images: string[];
   alt?: string;
 }
 
@@ -32,16 +30,14 @@ const variants = {
   }),
 };
 
-export default function VehiclePhotoGallery({
-  photos: inputImages,
+export default function ThumbnailImageGallery({
+  images,
   alt = "vehicle image",
 }: Props) {
-  const images = (Array.isArray(inputImages) ? inputImages : [])
-    .filter((img): img is string => typeof img === 'string' && img !== '');
   const [[index, direction], setState] = useState<[number, number]>([0, 0]);
 
   // Handle empty images safely
-  if (images.length === 0) return null;
+  if (!images || images.length === 0) return null;
 
   const activeIndex = ((index % images.length) + images.length) % images.length;
 
@@ -52,7 +48,7 @@ export default function VehiclePhotoGallery({
   return (
     <div className="flex flex-col space-y-4 w-full">
       {/* MAIN IMAGE (swipe only here) */}
-      <div className="relative w-full aspect-video overflow-hidden rounded-2xl">
+      <div className="relative w-full aspect-video overflow-hidden rounded-2xl bg-neutral-900">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={index}
@@ -74,12 +70,13 @@ export default function VehiclePhotoGallery({
             }}
             className="absolute inset-0"
           >
-            <Image
-              src={images[activeIndex]}
+            <IKImage
+              path={images[activeIndex]}
               alt={alt}
-              fill
-              priority
-              className="object-cover"
+              transformation={[{ width: "800", height: "450" }]}
+              loading="lazy"
+              lqip={{ active: true, quality: 20 }}
+              className="w-full h-full object-cover"
             />
           </motion.div>
         </AnimatePresence>
@@ -100,13 +97,18 @@ export default function VehiclePhotoGallery({
               key={i}
               onClick={() => setState([i, i > activeIndex ? 1 : -1])}
               className={clsx(
-                "relative aspect-video rounded-xl overflow-hidden transition-all duration-300",
+                "relative aspect-video rounded-xl overflow-hidden transition-all duration-300 bg-neutral-900",
                 i === activeIndex
                   ? "ring-2 ring-white scale-95"
                   : "opacity-60 hover:opacity-100 hover:scale-[0.98]",
               )}
             >
-              <Image src={img} alt="" fill className="object-cover" />
+              <IKImage
+                path={img}
+                alt=""
+                transformation={[{ width: "200", height: "112" }]}
+                className="w-full h-full object-cover"
+              />
             </button>
           ))}
         </div>
