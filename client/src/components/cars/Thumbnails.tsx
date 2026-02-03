@@ -6,7 +6,7 @@ import clsx from "clsx";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 
 interface Props {
-  images: string[];
+  images: (string | null)[];
   alt?: string;
 }
 
@@ -31,9 +31,10 @@ const variants = {
 };
 
 export default function ThumbnailImageGallery({
-  images,
+  images: inputImages,
   alt = "slider image",
 }: Props) {
+  const images = inputImages.filter((img): img is string => typeof img === 'string' && img !== '');
   const [[index, direction], setState] = useState<[number, number]>([0, 0]);
 
   const activeIndex = ((index % images.length) + images.length) % images.length;

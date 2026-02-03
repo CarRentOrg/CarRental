@@ -72,7 +72,6 @@ export default function CarDetailPage() {
             <CarTitle car={car} />
           </div>
           {images.length > 0 && (
-            // @ts-ignore - Bypassing persistent build environment type issues
             <ThumbnailImageGallery images={images} alt={car.model} />
           )}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
