@@ -45,15 +45,18 @@ export default function CarDetailPage() {
   }
 
   // Map properties locally for the view if needed
-  const images: string[] = [...(car.images || []), car.thumbnail_url].filter((img): img is string => !!img);
+  const images: string[] = [];
+  if (car.images) car.images.forEach(img => { if (img) images.push(img); });
+  if (car.thumbnail_url) images.push(car.thumbnail_url);
+
   const rates = [
     { season: "Daily", price_per_day: car.rates?.daily || car.price_per_day },
     { season: "Weekly (15% off)", price_per_day: car.rates?.weekly || (car.price_per_day * 0.85) },
     { season: "Monthly (30% off)", price_per_day: car.rates?.monthly || (car.price_per_day * 0.70) },
   ];
 
-
   const todayPrice = car.price_per_day;
+
 
   return (
     <div className="min-h-screen bg-black text-white pt-26 px-3 sm:px-12 mx-auto w-full">
