@@ -45,7 +45,7 @@ export default function CarDetailPage() {
   }
 
   // Map properties locally for the view if needed
-  const images = ([...(car.images || []), car.thumbnail_url].filter(Boolean) as string[]);
+  const images: string[] = [...(car.images || []), car.thumbnail_url].filter((img): img is string => !!img);
   const rates = [
     { season: "Daily", price_per_day: car.rates?.daily || car.price_per_day },
     { season: "Weekly (15% off)", price_per_day: car.rates?.weekly || (car.price_per_day * 0.85) },
