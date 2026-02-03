@@ -85,7 +85,7 @@ export default function AdminAnalyticsPage() {
         {cards.map((card, i) => (
           <div
             key={i}
-            className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 hover:shadow-lg transition-all duration-300"
+            className="bg-white rounded-4xl border border-gray-100 shadow-sm p-6 hover:shadow-lg transition-all duration-300"
           >
             <div className="flex justify-between items-start mb-4">
               <div className={`p-3 rounded-2xl ${card.bg}`}>

@@ -154,14 +154,18 @@ export const BOOKING_STEPS = [
 ];
 
 export const RENTAL_TERMS = [
-  { icon: Users, title: "21 years", subtitle: "Minimum age" },
+  { icon: Users, title: "terms.age", subtitle: "terms.minAge" },
   {
     icon: FileText,
-    title: "2 documents",
-    subtitle: "Passport and Driver's License",
+    title: "terms.document",
+    subtitle: "terms.documentsDesc",
   },
-  { icon: CarIcon, title: "1 year", subtitle: "Of driving experience" },
-  { icon: Wallet, title: "From 1000$", subtitle: "Security deposit" },
+  {
+    icon: CarIcon,
+    title: "terms.experience",
+    subtitle: "terms.experienceDesc",
+  },
+  { icon: Wallet, title: "terms.deposit", subtitle: "terms.depositDesc" },
 ];
 export interface FAQItem {
   question: string;
@@ -170,34 +174,28 @@ export interface FAQItem {
 
 export const FAQS: FAQItem[] = [
   {
-    question: "Машин ашиглах нөхцөл, дүрэм юу вэ?",
-    answer:
-      "Танд хүчинтэй жолоочийн үнэмлэх байх, жолоочийн насны шаардлагыг хангах, мөн түрээсийн хугацаанд бүх түрээсийн гэрээний нөхцлийг дагах шаардлагатай.",
+    question: "faq.q1",
+    answer: "faq.a1",
   },
   {
-    question: "Машиныг хотын гадна жолоодож болох уу?",
-    answer:
-      "Тийм, та машиныг хотын хязгаараас гадна жолоодож болно, гэхдээ маршрутыг түрээсийн гэрээнд заасан зөвшөөрөгдсөн бүс нутгаар хязгаарлах ёстой. Урьдчилан мэдэгдэж, гэрээнд тэмдэглүүлэхийг зөвлөж байна.",
+    question: "faq.q2",
+    answer: "faq.a2",
   },
   {
-    question: "Түлшний бодлого юу вэ?",
-    answer:
-      "Машиныг авах үед байсан түлшний түвшинд буцааж өгөх ёстой. Үгүй бол шатахууны төлбөр нэмэгдэнэ.",
+    question: "faq.q3",
+    answer: "faq.a3",
   },
   {
-    question: "Машиныг хуримд чимэглэх боломжтой юу?",
-    answer:
-      "Тийм, хөнгөн чимэглэл хийх боломжтой бөгөөд машиныг гэмтээхгүйгээр суурилуулж, буцаахын өмнө арилгах шаардлагатай.",
+    question: "faq.q4",
+    answer: "faq.a4",
   },
   {
-    question: "Жолоочийн үйлчилгээ санал болгодог уу?",
-    answer:
-      "Тийм, нэмэлт төлбөрийн төлөө мэргэжлийн жолоочийг хүсэлтээр олгож болно.",
+    question: "faq.q5",
+    answer: "faq.a5",
   },
   {
-    question: "Машиныг тогтоосон цагаас хоцорвол яах болох вэ?",
-    answer:
-      "Та  машиныг тогтоосон цагаас хоцорвол түрээсийн гэрээнд заасан цаг тутмын нэмэлт төлбөр ногдуулж бодно.",
+    question: "faq.q6",
+    answer: "faq.a6",
   },
 ];
 

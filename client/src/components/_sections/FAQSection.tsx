@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { FAQS, FAQItem } from "@/constants";
 import Title from "../shared/title";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -11,6 +12,7 @@ const FAQSection = () => {
     setOpenIndex((prev) => (prev === index ? null : index));
   };
 
+  const { t } = useLanguage();
   return (
     <section id="faq" className="py-10 sm:py-24 border-t border-neutral-800/50">
       <div className="container mx-auto px-6 lg:px-12">
@@ -18,9 +20,7 @@ const FAQSection = () => {
           {/* Left Side */}
           <div>
             <h2 className="text-5xl font-bold tracking-tight">
-              Frequently Asked
-              <br />
-              Questions
+              {t("faq.title")}
             </h2>
           </div>
 
@@ -38,7 +38,7 @@ const FAQSection = () => {
                     className="w-full flex items-center justify-between text-left group"
                   >
                     <span className="text-neutral-300 font-medium group-hover:text-white transition-colors">
-                      {item.question}
+                      {t(item.question)}
                     </span>
 
                     {isOpen ? (
@@ -58,7 +58,7 @@ const FAQSection = () => {
                   >
                     <div className="overflow-hidden">
                       <p className="text-sm text-neutral-400 leading-relaxed">
-                        {item.answer}
+                        {t(item.answer)}
                       </p>
                     </div>
                   </div>
