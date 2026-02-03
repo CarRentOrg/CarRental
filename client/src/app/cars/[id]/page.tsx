@@ -44,12 +44,12 @@ export default function CarDetailPage() {
     );
   }
 
-  // Build image list - strictly filtered for strings to satisfy TypeScript
+  // Build image list - Version 0.5.0-force-type-cast
   const images = [
     ...(car.images || []),
     car.thumbnail_url,
     car.image_url
-  ].filter((img): img is string => typeof img === 'string' && img.length > 0);
+  ].filter(img => typeof img === 'string' && img !== '') as string[];
 
   // Build trigger: v4-strict-typing
   const rates = [
@@ -71,7 +71,7 @@ export default function CarDetailPage() {
           <div className="block lg:hidden">
             <CarTitle car={car} />
           </div>
-          {/* EXTREME_BUILD_TRIGGER_PAGE_REF_040_UNIQUE_789234 */}
+          {/* FORCE_BUILD_TRIGGER_REF_050_STRICT_CAST_APPLIED */}
           {images.length > 0 && (
             <ThumbnailImageGallery images={images} alt={car.model} />
           )}
