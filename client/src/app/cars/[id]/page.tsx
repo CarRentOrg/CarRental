@@ -71,7 +71,7 @@ export default function CarDetailPage() {
           <div className="block lg:hidden">
             <CarTitle car={car} />
           </div>
-          {/* Build trigger: v0.3.0-radical-refactor-2026-02-04 */}
+          {/* EXTREME_BUILD_TRIGGER_PAGE_REF_040_UNIQUE_789234 */}
           {images.length > 0 && (
             <VehiclePhotoGallery photos={images} alt={car.model} />
           )}
