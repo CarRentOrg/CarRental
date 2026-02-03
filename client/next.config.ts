@@ -2,9 +2,9 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: path.resolve(__dirname),
-  } as any,
+  // turbopack: {
+  //   root: path.resolve(__dirname),
+  // } as any,
   images: {
     remotePatterns: [
       {
