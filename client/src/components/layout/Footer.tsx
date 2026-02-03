@@ -41,13 +41,13 @@ export default function Footer() {
             </div>
 
             <div>
-              <p className="text-gray-400 mb-1"> {t("footer.phoneNumber")}</p>
+              <p className="text-gray-400 mb-1"> {t("contact.phoneNumber")}</p>
               <p className="text-white font-medium">+1 (323) 555-7842</p>
             </div>
 
             <div>
-              <p className="text-gray-400 mb-1"> {t("footer.email")}</p>
-              <p className="text-white font-medium">info@luxerra.com</p>
+              <p className="text-gray-400 mb-1"> {t("contact.email")}</p>
+              <p className="text-white font-medium">[EMAIL_ADDRESS]</p>
             </div>
           </div>
 
@@ -69,7 +69,7 @@ export default function Footer() {
               </li>
               <li>
                 <NavLink href="/#rental-guide" className="hover:text-white">
-                  How To Rent
+                  {t("nav.guide")}
                 </NavLink>
               </li>
             </ul>
@@ -81,11 +81,6 @@ export default function Footer() {
               {t("footer.helpCenter")}
             </h3>
             <ul className="space-y-2 text-xs text-gray-400">
-              <li>
-                <NavLink href="/booking" className="hover:text-white">
-                  {t("footer.booking")}
-                </NavLink>
-              </li>
               <li>
                 <NavLink href="/#faq" className="hover:text-white">
                   {t("footer.faq")}

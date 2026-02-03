@@ -1,7 +1,9 @@
 import { RENTAL_TERMS } from "@/constants";
 import Button from "../shared/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const RentalTermsSection = () => {
+  const { t } = useLanguage();
   return (
     <section
       id="rental-terms"
@@ -44,8 +46,8 @@ const RentalTermsSection = () => {
                          transition-all duration-500"
             >
               <term.icon className="h-5 w-5 text-neutral-400 mb-4" />
-              <p className="text-lg font-medium text-white">{term.title}</p>
-              <p className="text-sm text-neutral-500">{term.subtitle}</p>
+              <p className="text-lg font-medium text-white">{t(term.title)}</p>
+              <p className="text-sm text-neutral-500">{t(term.subtitle)}</p>
             </div>
           ))}
         </div>

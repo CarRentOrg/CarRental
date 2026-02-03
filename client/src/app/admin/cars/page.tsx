@@ -3,7 +3,6 @@
 import { Search, Plus, Fuel, Settings2, Users, Trash2, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { mockApi, Car } from "@/lib/mockData";
-import { api } from "@/lib/api";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,7 +28,9 @@ export default function AdminCarsPage() {
     const lowerSearch = search.toLowerCase();
     setFilteredCars(
       cars.filter((c) => {
-        const nameMatch = (c.name || c.model)?.toLowerCase().includes(lowerSearch);
+        const nameMatch = (c.name || c.model)
+          ?.toLowerCase()
+          .includes(lowerSearch);
         const plateMatch = c.plate_number?.toLowerCase().includes(lowerSearch);
         return nameMatch || plateMatch;
       }),
@@ -39,12 +40,10 @@ export default function AdminCarsPage() {
   async function loadCars() {
     try {
       setLoading(true);
-      const data: any = await api.owner.getCars();
-      // Adjusting to real API response structure
-      const carList = Array.isArray(data) ? data : data.cars || [];
-      setCars(carList);
-      setTotal(carList.length);
-      setFilteredCars(carList);
+      const response = await mockApi.cars.getAll({ page, limit: LIMIT });
+      setCars(response.data || []);
+      setTotal(response.total || 0);
+      setFilteredCars(response.data || []);
     } catch (error) {
       console.error("Failed to load cars:", error);
     } finally {
@@ -55,7 +54,7 @@ export default function AdminCarsPage() {
   async function confirmDelete() {
     if (!deleteId) return;
     try {
-      await api.owner.deleteCar(deleteId as any); // assuming similar endpoint
+      await mockApi.cars.delete(deleteId);
       setCars((prev) => prev.filter((c) => c.id !== deleteId));
       setDeleteId(null);
     } catch (error) {
@@ -106,99 +105,100 @@ export default function AdminCarsPage() {
         <AnimatePresence mode="popLayout">
           {loading
             ? [...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-4xl h-80 animate-pulse bg-gray-100"
-              />
-            ))
+                <div
+                  key={i}
+                  className="bg-white rounded-4xl h-80 animate-pulse"
+                />
+              ))
             : filteredCars.map((car) => (
-              <motion.div
-                key={car.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                whileHover={{ y: -5 }}
-                className="group bg-white rounded-4xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 relative"
-              >
-                <div className="aspect-4/3 bg-gray-100 relative overflow-hidden">
-                  <img
-                    src={car.thumbnail_url || car.images?.[0]}
-                    alt={car.name || car.model}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-sm">
-                    {car.plate_number}
-                  </div>
-                  <div
-                    className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm ${car.status === "available"
-                      ? "bg-emerald-500 text-white"
-                      : car.status === "rented"
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-900 text-white"
+                <motion.div
+                  key={car.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileHover={{ y: -5 }}
+                  className="group bg-white rounded-4xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 relative"
+                >
+                  <div className="aspect-4/3 bg-gray-100 relative overflow-hidden">
+                    <img
+                      src={car.thumbnail_url || car.images?.[0]}
+                      alt={car.name || car.model}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-sm">
+                      {car.plate_number}
+                    </div>
+                    <div
+                      className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm ${
+                        car.status === "available"
+                          ? "bg-emerald-500 text-white"
+                          : car.status === "rented"
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-900 text-white"
                       }`}
-                  >
-                    {car.status}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">
-                        {car.brand}
-                      </p>
-                      <h3 className="text-lg font-black text-gray-900 leading-tight">
-                        {car.model}
-                      </h3>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-blue-600 font-black text-xl">
-                        ${car.price_per_day}
-                      </p>
-                      <p className="text-gray-400 text-[10px] font-bold uppercase">
-                        / day
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 mb-6">
-                    <div className="flex flex-col items-center p-2 bg-gray-50 rounded-xl">
-                      <Settings2 className="h-4 w-4 text-gray-400 mb-1" />
-                      <span className="text-[10px] font-bold text-gray-600">
-                        {car.transmission}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center p-2 bg-gray-50 rounded-xl">
-                      <Fuel className="h-4 w-4 text-gray-400 mb-1" />
-                      <span className="text-[10px] font-bold text-gray-600">
-                        {car.fuel_type}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center p-2 bg-gray-50 rounded-xl">
-                      <Users className="h-4 w-4 text-gray-400 mb-1" />
-                      <span className="text-[10px] font-bold text-gray-600">
-                        {car.seats} Seats
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-4 border-t border-gray-100">
-                    <Link
-                      href={`/admin/cars/${car.id}/edit`}
-                      className="flex-1 py-3 text-center rounded-xl text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
                     >
-                      Edit Car
-                    </Link>
-                    <button
-                      onClick={() => setDeleteId(car.id)}
-                      className="px-4 py-3 rounded-xl text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 transition-all"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                      {car.status}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">
+                          {car.brand}
+                        </p>
+                        <h3 className="text-lg font-black text-gray-900 leading-tight">
+                          {car.model}
+                        </h3>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-blue-600 font-black text-xl">
+                          ${car.price_per_day}
+                        </p>
+                        <p className="text-gray-400 text-[10px] font-bold uppercase">
+                          / day
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 mb-6">
+                      <div className="flex flex-col items-center p-2 bg-gray-50 rounded-xl">
+                        <Settings2 className="h-4 w-4 text-gray-400 mb-1" />
+                        <span className="text-[10px] font-bold text-gray-600">
+                          {car.transmission}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center p-2 bg-gray-50 rounded-xl">
+                        <Fuel className="h-4 w-4 text-gray-400 mb-1" />
+                        <span className="text-[10px] font-bold text-gray-600">
+                          {car.fuel_type}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center p-2 bg-gray-50 rounded-xl">
+                        <Users className="h-4 w-4 text-gray-400 mb-1" />
+                        <span className="text-[10px] font-bold text-gray-600">
+                          {car.seats} Seats
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-4 border-t border-gray-100">
+                      <Link
+                        href={`/admin/cars/${car.id}/edit`}
+                        className="flex-1 py-3 text-center rounded-xl text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
+                      >
+                        Edit Car
+                      </Link>
+                      <button
+                        onClick={() => setDeleteId(car.id)}
+                        className="px-4 py-3 rounded-xl text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
         </AnimatePresence>
       </div>
 

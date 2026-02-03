@@ -318,7 +318,7 @@ export default function AdminBookingsPage() {
         ]}
       />
 
-      <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px] flex flex-col w-full">
+      <div className="bg-white rounded-4xl sm:rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px] flex flex-col w-full">
         <div className="p-4 sm:p-8 border-b border-gray-50 flex flex-col md:flex-row gap-4 justify-between items-center">
           <div className="relative w-full md:max-w-md group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
