@@ -1,9 +1,9 @@
 import { Car, RENTAL_RATE } from "@/types";
 import { Users, FileText, Car as CarIcon, Wallet } from "lucide-react";
 
-export const CARS: Car[] = [
+export const CARS: any[] = [
   {
-    id: 1,
+    id: "1",
     model: "Tesla Model 3",
     brand: "Tesla",
     type: "Luxury",
@@ -21,7 +21,7 @@ export const CARS: Car[] = [
     horsepower: 510,
   },
   {
-    id: 2,
+    id: "2",
     brand: "Lexus",
     type: "Luxury SUV",
     price_per_day: 180,
@@ -39,7 +39,7 @@ export const CARS: Car[] = [
     model: "Lexus LX 570",
   },
   {
-    id: 3,
+    id: "3",
     brand: "Lexus",
     type: "SUV",
     price_per_day: 220,
@@ -57,7 +57,7 @@ export const CARS: Car[] = [
     model: "",
   },
   {
-    id: 4,
+    id: "4",
     model: "Lexus LX 700h Overtrail",
     brand: "Lexus",
     type: "Hybrid SUV",
@@ -75,7 +75,7 @@ export const CARS: Car[] = [
     horsepower: 457,
   },
   {
-    id: 5,
+    id: "5",
     model: "Lexus LC 500",
     brand: "Lexus",
     type: "Coupe",
@@ -93,7 +93,7 @@ export const CARS: Car[] = [
     horsepower: 471,
   },
   {
-    id: 6,
+    id: "6",
     model: "Mercedes-AMG GT 63 S E PERFORMANCE",
     brand: "Mercedes-AMG",
     type: "Supercar",
@@ -111,7 +111,7 @@ export const CARS: Car[] = [
     horsepower: 831,
   },
   {
-    id: 7,
+    id: "7",
     model: "Audi R8 V10 Performance",
     brand: "Audi",
     type: "Supercar",

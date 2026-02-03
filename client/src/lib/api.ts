@@ -1,7 +1,7 @@
 import { Car, Booking } from "@/types";
 import { supabase } from "@/lib/supabase";
 
-const API_Base_URL = "http://localhost:3001/api";
+const API_Base_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 async function fetchAPI<T>(
   endpoint: string,
