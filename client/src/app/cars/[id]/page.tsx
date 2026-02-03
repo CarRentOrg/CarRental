@@ -2,7 +2,7 @@
 import { Users, Fuel, Gauge, ShieldCheck, Zap, Bluetooth } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import VehiclePhotoGallery from "@/components/cars/VehiclePhotoGallery";
+import ThumbnailImageGallery from "@/components/cars/ThumbnailImageGallery";
 import Returnbutton from "@/components/shared/returnbutton";
 import Button from "@/components/shared/button";
 import HowToRentSection from "@/components/_sections/HowToRentSection";
@@ -44,12 +44,12 @@ export default function CarDetailPage() {
     );
   }
 
-  // Build image list - Version 0.1.1-force-build
-  const images = ([
+  // Build image list - strictly filtered for strings to satisfy TypeScript
+  const images = [
     ...(car.images || []),
     car.thumbnail_url,
     car.image_url
-  ].filter(img => typeof img === 'string' && img !== '')) as any;
+  ].filter((img): img is string => typeof img === 'string' && img.length > 0);
 
   // Build trigger: v4-strict-typing
   const rates = [
@@ -73,7 +73,7 @@ export default function CarDetailPage() {
           </div>
           {/* EXTREME_BUILD_TRIGGER_PAGE_REF_040_UNIQUE_789234 */}
           {images.length > 0 && (
-            <VehiclePhotoGallery photos={images} alt={car.model} />
+            <ThumbnailImageGallery images={images} alt={car.model} />
           )}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
             {[
