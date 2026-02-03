@@ -9,6 +9,7 @@ import newsRoutes from './routes/newsRoutes';
 import userRoutes from './routes/userRoutes';
 import ownerRoutes from './routes/ownerRoutes';
 import requestRoutes from './routes/requestRoutes';
+import imagekitRoutes from './routes/imagekitRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 
 import { testDatabaseConnection } from './utils/dbQueries';
@@ -35,6 +36,7 @@ app.use('/api/news', newsRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/requests', requestRoutes);
+app.use('/api/imagekit', imagekitRoutes);
 
 // Error Handler
 app.use(errorHandler);
