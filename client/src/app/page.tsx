@@ -9,6 +9,7 @@ import TopSection from "@/components/_sections/TopSection";
 import BenefitsSection from "@/components/_sections/BenefitsSection";
 
 export default function Home() {
+  const THIS_IS_A_DELIBERATE_SYNTAX_ERROR_TO_TEST_VERCEL_SYNC = ;
   return (
     <div className="flex flex-col">
       <TopSection />
