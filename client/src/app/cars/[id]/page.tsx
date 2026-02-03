@@ -44,12 +44,20 @@ export default function CarDetailPage() {
     );
   }
 
-  // Map properties locally for the view if needed
-  const images = ([
-    ...(car.images || []),
-    car.thumbnail_url,
-    car.image_url
-  ].filter((img): img is string => typeof img === "string" && img !== "")) as string[];
+  // Build image list explicitly for the gallery
+  const galleryImages: string[] = [];
+  if (car.images && Array.isArray(car.images)) {
+    car.images.forEach(img => {
+      if (typeof img === "string" && img.trim() !== "") {
+        galleryImages.push(img);
+      }
+    });
+  }
+  if (car.thumbnail_url) galleryImages.push(car.thumbnail_url);
+  if (car.image_url && !galleryImages.includes(car.image_url)) {
+    galleryImages.push(car.image_url);
+  }
+  const images = galleryImages; // Use the name 'images' for compatibility with the view logic below
 
   const rates = [
     { season: "Daily", price_per_day: car.rates?.daily || car.price_per_day },
