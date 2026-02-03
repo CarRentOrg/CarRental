@@ -50,7 +50,9 @@ export default function CarForm({
     },
   });
 
-  const [images, setImages] = useState<string[]>(initialData?.images || []);
+  const [images, setImages] = useState<string[]>(
+    (initialData?.images || []).filter((img): img is string => !!img)
+  );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleChange = (

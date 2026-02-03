@@ -3,9 +3,9 @@ import { Database } from "./supabase";
 export type Car = Database["public"]["Tables"]["cars"]["Row"] & {
   year?: number;
   plate_number?: string;
-  images?: string[];
+  images?: (string | null)[];
   status?: string;
-  rates?: any; // Override Json type for easier access
+  rates?: any;
 };
 export type Booking = Database["public"]["Tables"]["bookings"]["Row"] & {
   car?: Car;
