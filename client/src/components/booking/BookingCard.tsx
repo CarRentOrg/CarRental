@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Calendar, DollarSign, Clock } from "lucide-react";
-import { Booking } from "@/lib/mockData";
+import { Booking } from "@/types";
 import { format } from "date-fns";
 
 interface BookingCardProps {

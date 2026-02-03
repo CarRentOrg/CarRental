@@ -4,11 +4,11 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Newspaper, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
 import { AdminTable, Column } from "@/components/admin/AdminTable";
 import { NewsPost } from "@/types";
 import Image from "next/image";
 import ConfirmModal from "@/components/shared/ConfirmModal";
+import { api } from "@/lib/api";
 
 export default function AdminNewsPage() {
   const [news, setNews] = useState<NewsPost[]>([]);

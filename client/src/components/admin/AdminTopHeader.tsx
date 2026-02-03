@@ -13,9 +13,17 @@ import {
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { mockApi, Notification } from "@/lib/mockData";
 import { formatDistanceToNow } from "date-fns";
 import { usePathname } from "next/navigation";
+import { api } from "@/lib/api";
+
+interface Notification {
+  id: string;
+  message: string;
+  createdAt: string;
+  isRead: boolean;
+  bookingId?: string;
+}
 
 interface AdminTopHeaderProps {
   onMenuClick: () => void;
@@ -54,8 +62,10 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const data = await mockApi.notifications.getAll();
-        setNotifications(data);
+        // TODO: Implement notifications API endpoint
+        // const data = await api.notifications.getAll();
+        // setNotifications(data);
+        setNotifications([]); // Empty for now
       } catch (error) {
         console.error("Failed to fetch notifications", error);
       }
@@ -64,20 +74,22 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
     fetchNotifications();
 
     // Poll every 5 seconds to simulate real-time
-    const interval = setInterval(fetchNotifications, 5000);
+    const interval = setInterval(fetchNotifications, 30000); // Changed to 30s to reduce calls
     return () => clearInterval(interval);
   }, []);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleMarkAllRead = async () => {
-    await mockApi.notifications.markAllRead();
+    // TODO: Implement notifications API endpoint
+    // await api.notifications.markAllRead();
     // Optimistic update
     setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
   };
 
   const handleNotificationClick = async (id: string, bookingId?: string) => {
-    await mockApi.notifications.markRead(id);
+    // TODO: Implement notifications API endpoint
+    // await api.notifications.markRead(id);
     // Optimistic update
     setNotifications(
       notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n)),

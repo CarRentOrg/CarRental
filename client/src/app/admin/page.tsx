@@ -11,8 +11,9 @@ import {
   Clock,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { mockApi, Activity } from "@/lib/mockData"; // Use mockApi
 import { motion } from "framer-motion";
+import { api } from "@/lib/api";
+import { Activity } from "@/types";
 
 interface DashboardStats {
   revenue: number;
@@ -35,8 +36,8 @@ export default function AdminDashboard() {
     async function loadData() {
       try {
         const [statsData, activityData] = await Promise.all([
-          mockApi.stats.getDashboard(),
-          mockApi.stats.getRecentActivity(),
+          api.stats.getDashboard(),
+          api.stats.getRecentActivity(),
         ]);
         setStats(statsData);
         setActivities(activityData || []);
@@ -226,15 +227,14 @@ export default function AdminDashboard() {
               activities.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex gap-4 items-start">
                   <div
-                    className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
-                      activity.type === "booking_new"
+                    className={`mt-1 h-2 w-2 rounded-full shrink-0 ${activity.type === "booking_new"
                         ? "bg-blue-500"
                         : activity.type === "booking_cancelled"
                           ? "bg-red-500"
                           : activity.type === "car_added"
                             ? "bg-emerald-500"
                             : "bg-purple-500"
-                    }`}
+                      }`}
                   />
                   <div className="space-y-1">
                     <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">

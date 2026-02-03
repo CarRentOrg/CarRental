@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Lock, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
-import { mockApi } from "@/lib/mockData";
+import { api } from "@/lib/api";
+import toast from "react-hot-toast";
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -54,11 +55,12 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
     setLoading(true);
 
     try {
-      await mockApi.auth.changePassword({
+      await api.auth.changePassword({
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
       });
       setSuccess(true);
+      toast.success("Password changed successfully!");
       setTimeout(() => {
         onClose();
         setSuccess(false);
@@ -69,7 +71,9 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
         });
       }, 2000);
     } catch (err: any) {
-      setError(err.message || "Failed to change password");
+      const msg = err.message || "Failed to change password";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

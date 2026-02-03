@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CalendarDays, Car, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
-import { Car as CarType } from "@/lib/mockData";
+import { Car as CarType } from "@/types";
 import { useState } from "react";
 
 interface BookingModalProps {

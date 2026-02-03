@@ -1,4 +1,6 @@
 "use client";
+import { api } from "@/lib/api";
+
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,16 +48,15 @@ export default function BookingForm() {
         return;
       }
 
-      const { createBooking } = await import("@/lib/car-api");
       const bookingData = {
         car_id: carId,
         start_date: data.pickupDate,
         end_date: data.dropoffDate,
         status: "pending" as const,
-        total_price: 0, // Placeholder, usually calculated based on days * price_per_day
+        total_price: 0,
       };
 
-      const result = await createBooking(bookingData);
+      const result = await api.bookings.create(bookingData);
       if (result) {
         router.push("/confirmation");
       } else {

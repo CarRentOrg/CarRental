@@ -1,4 +1,6 @@
 "use client";
+import { api } from '@/lib/api';
+
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Mail, MapPin, Phone, Send, ArrowRight, Plus } from 'lucide-react';
@@ -72,13 +74,17 @@ export default function ContactPage() {
                                         message: formData.get('message') as string,
                                     };
 
-                                    const { requestCar } = await import('@/lib/car-api');
-                                    const success = await requestCar(data);
-                                    if (success) {
-                                        alert('Request submitted successfully!');
-                                        (e.target as HTMLFormElement).reset();
-                                    } else {
-                                        alert('Failed to submit request.');
+                                    try {
+                                        const success = await api.requests.create(data);
+                                        if (success) {
+                                            alert('Request submitted successfully!');
+                                            (e.target as HTMLFormElement).reset();
+                                        } else {
+                                            alert('Failed to submit request.');
+                                        }
+                                    } catch (err) {
+                                        console.error('Request error:', err);
+                                        alert('Error submitting request. Please try again.');
                                     }
                                 }}
                             >
@@ -97,12 +103,21 @@ export default function ContactPage() {
                                         placeholder="Email Address"
                                     />
                                 </div>
-                                <input
-                                    name="model"
-                                    required
-                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors"
-                                    placeholder="Desired Car Model (e.g. 2024 Ferrari SF90)"
-                                />
+                                <div className="space-y-2">
+                                    <input
+                                        name="model"
+                                        required
+                                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors"
+                                        placeholder="Desired Car Model (e.g. 2024 Tesla Model S)"
+                                        list="car-suggestions"
+                                    />
+                                    <datalist id="car-suggestions">
+                                        <option value="Lexus LX600" />
+                                        <option value="Toyota Camry" />
+                                        <option value="Mercedes S-Class" />
+                                        <option value="Tesla Model 3" />
+                                    </datalist>
+                                </div>
                                 <textarea
                                     name="message"
                                     rows={3}
@@ -114,6 +129,7 @@ export default function ContactPage() {
                                 </button>
                             </form>
                         </div>
+
 
                         <div className="grid grid-cols-1 gap-6">
                             <div className="flex items-start space-x-4 p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-colors">

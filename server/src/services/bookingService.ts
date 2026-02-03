@@ -11,8 +11,8 @@ export class BookingService {
         car_id?: string,
         page?: number,
         limit?: number
-    } = {}): Promise<Booking[]> {
-        let query = supabase.from('bookings').select('*');
+    } = {}): Promise<any[]> {
+        let query = supabase.from('bookings').select('*, car:cars(*), user:profiles(*)');
 
         if (filters.status) query = query.eq('status', filters.status);
         if (filters.car_id) query = query.eq('car_id', filters.car_id);

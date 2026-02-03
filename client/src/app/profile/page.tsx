@@ -7,7 +7,7 @@ import { User, Mail, Phone, Calendar, Star, Clock, Car } from "lucide-react";
 import BookingCard from "@/components/booking/BookingCard";
 import BookingDetailModal from "@/components/booking/BookingDetailModal";
 import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
-import { Booking } from "@/lib/mockData";
+import { Booking } from "@/types";
 import { Shield, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
@@ -56,7 +56,7 @@ export default function ProfilePage() {
                   user.avatar_url ||
                   "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80"
                 }
-                alt={user.full_name}
+                alt={user.full_name || "User"}
                 width={128}
                 height={128}
                 className="h-full w-full object-cover rounded-full"

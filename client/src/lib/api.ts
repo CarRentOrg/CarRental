@@ -1,5 +1,4 @@
-import { Car, Booking } from "@/types";
-import { supabase } from "@/lib/supabase";
+import { Car, Booking, NewsPost } from "@/types";
 
 const API_Base_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -50,6 +49,11 @@ export const api = {
         body: JSON.stringify(data),
       }),
     getMe: () => fetchAPI<any>("/user/data"),
+    changePassword: (data: any) =>
+      fetchAPI<any>("/user/change-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
   },
   cars: {
     getAll: () => fetchAPI<Car[]>("/cars"),
@@ -78,6 +82,16 @@ export const api = {
       }),
     delete: (id: string) =>
       fetchAPI<void>(`/bookings/${id}`, { method: "DELETE" }),
+    approve: (id: string) =>
+      fetchAPI<Booking>(`/bookings/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "confirmed" }),
+      }),
+    reject: (id: string) =>
+      fetchAPI<Booking>(`/bookings/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "cancelled" }),
+      }),
   },
   stats: {
     getDashboard: () =>
@@ -87,14 +101,22 @@ export const api = {
         activeFleet: number;
         newCustomers: number;
       }>("/stats/dashboard"),
+    getRecentActivity: () => fetchAPI<any[]>("/stats/activity"),
+  },
+  customers: {
+    getAll: (params?: { page?: number; limit?: number }) =>
+      fetchAPI<any>("/customers", {
+        method: "GET",
+        // In a real app, you'd convert params to query string
+      }),
   },
   news: {
-    getAll: () => fetchAPI<any[]>("/news"),
-    getById: (id: string) => fetchAPI<any>(`/news/${id}`),
-    create: (data: any) =>
-      fetchAPI<any>("/news", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: any) =>
-      fetchAPI<any>(`/news/${id}`, {
+    getAll: () => fetchAPI<NewsPost[]>("/news"),
+    getById: (id: string) => fetchAPI<NewsPost>(`/news/${id}`),
+    create: (data: Partial<NewsPost>) =>
+      fetchAPI<NewsPost>("/news", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<NewsPost>) =>
+      fetchAPI<NewsPost>(`/news/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
       }),
@@ -114,5 +136,16 @@ export const api = {
       }),
     changeRoleToOwner: () =>
       fetchAPI<any>("/owner/change-role", { method: "POST" }),
+  },
+  requests: {
+    getAll: () => fetchAPI<any[]>("/requests"),
+    create: (data: any) =>
+      fetchAPI<any>("/requests", { method: "POST", body: JSON.stringify(data) }),
+    updateStatus: (id: string, status: string) =>
+      fetchAPI<any>(`/requests/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      }),
+    delete: (id: string) => fetchAPI<void>(`/requests/${id}`, { method: "DELETE" }),
   },
 };

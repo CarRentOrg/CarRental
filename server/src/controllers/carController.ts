@@ -3,12 +3,12 @@ import { carService } from '../services/carService';
 
 export const getCars = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { brand, model, transmission, fuel, is_available, page, limit } = req.query;
+        const { brand, model, transmission, fuel_type, is_available, page, limit } = req.query;
         const cars = await carService.getAllCars({
             brand: brand as string,
             model: model as string,
             transmission: transmission as string,
-            fuel: fuel as string,
+            fuel_type: fuel_type as string,
             is_available: is_available !== undefined ? is_available === 'true' : undefined,
             page: page ? parseInt(page as string) : undefined,
             limit: limit ? parseInt(limit as string) : undefined
@@ -35,12 +35,23 @@ export const getCarById = async (req: Request, res: Response, next: NextFunction
 
 export const createCar = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { brand, model, price_per_day } = req.body;
-        if (!brand || !model || !price_per_day) {
-            res.status(400).json({ success: false, message: 'Missing required fields: brand, model, and price_per_day are required.' });
+        const { brand, model, price_per_day, type } = req.body;
+
+        if (!brand || !model || !price_per_day || !type) {
+            res.status(400).json({
+                success: false,
+                message: 'Missing required fields: brand, model, price_per_day, and type are required.'
+            });
             return;
         }
-        const car = await carService.createCar(req.body);
+
+        const carData = {
+            ...req.body,
+            is_available: req.body.is_available ?? true,
+            year: req.body.year ? parseInt(req.body.year.toString()) : new Date().getFullYear(),
+        };
+
+        const car = await carService.createCar(carData);
         res.status(201).json({ success: true, data: car });
     } catch (error) {
         next(error);

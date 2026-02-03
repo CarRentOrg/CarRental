@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Car } from "@/lib/mockData";
+import { Car } from "@/types";
 import { ChevronRight, Fuel, Gauge, User } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 

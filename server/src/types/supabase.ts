@@ -14,39 +14,60 @@ export type Database = {
                     id: string
                     brand: string
                     model: string
+                    type: string
                     year: number | null
                     price_per_day: number
                     transmission: string | null
-                    fuel: string | null
+                    fuel_type: string | null
                     seats: number | null
                     image_url: string | null
+                    thumbnail_url: string | null
+                    description: string | null
                     is_available: boolean
+                    rates: Json | null
+                    max_speed_kmh: number | null
+                    acceleration_sec: number | null
+                    horsepower: number | null
                     created_at: string
                 }
                 Insert: {
                     id?: string
                     brand: string
                     model: string
+                    type: string
                     year?: number | null
                     price_per_day: number
                     transmission?: string | null
-                    fuel?: string | null
+                    fuel_type?: string | null
                     seats?: number | null
                     image_url?: string | null
+                    thumbnail_url?: string | null
+                    description?: string | null
                     is_available?: boolean
+                    rates?: Json | null
+                    max_speed_kmh?: number | null
+                    acceleration_sec?: number | null
+                    horsepower?: number | null
                     created_at?: string
                 }
                 Update: {
                     id?: string
                     brand?: string
                     model?: string
+                    type?: string
                     year?: number | null
                     price_per_day?: number
                     transmission?: string | null
-                    fuel?: string | null
+                    fuel_type?: string | null
                     seats?: number | null
                     image_url?: string | null
+                    thumbnail_url?: string | null
+                    description?: string | null
                     is_available?: boolean
+                    rates?: Json | null
+                    max_speed_kmh?: number | null
+                    acceleration_sec?: number | null
+                    horsepower?: number | null
                     created_at?: string
                 }
             }
@@ -57,6 +78,7 @@ export type Database = {
                     user_email: string
                     car_model: string
                     message: string
+                    status: string
                     created_at: string
                 }
                 Insert: {
@@ -65,6 +87,7 @@ export type Database = {
                     user_email: string
                     car_model: string
                     message: string
+                    status?: string
                     created_at?: string
                 }
                 Update: {
@@ -73,6 +96,7 @@ export type Database = {
                     user_email?: string
                     car_model?: string
                     message?: string
+                    status?: string
                     created_at?: string
                 }
             }

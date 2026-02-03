@@ -9,7 +9,7 @@ import HowToRentSection from "@/components/_sections/HowToRentSection";
 import RentalTermsSection from "@/components/_sections/RentalTermsSection";
 import FAQSection from "@/components/_sections/FAQSection";
 import { useApp } from "@/contexts/AppContext";
-import { Car } from "@/lib/mockData";
+import { Car } from "@/types";
 
 export default function CarDetailPage() {
   const { id } = useParams();

@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { useAppContext } from "../../contexts/App.Context";
 import toast from "react-hot-toast";
-import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
+import { api } from "@/lib/api";
 
 const Login = () => {
     const {

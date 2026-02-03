@@ -1,8 +1,43 @@
 import { Database } from "./supabase";
 
-export type Car = Database["public"]["Tables"]["cars"]["Row"];
-export type Booking = Database["public"]["Tables"]["bookings"]["Row"];
+export type Car = Database["public"]["Tables"]["cars"]["Row"] & {
+  year?: number;
+  plate_number?: string;
+  images?: string[];
+  status?: string;
+  rates?: any; // Override Json type for easier access
+};
+export type Booking = Database["public"]["Tables"]["bookings"]["Row"] & {
+  car?: Car;
+  user?: User;
+  rate_applied?: string;
+};
 export type NewsPost = Database["public"]["Tables"]["news"]["Row"];
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  full_name?: string;
+  avatar_url?: string;
+  phone?: string;
+  created_at: string;
+}
+
+export interface Activity {
+  id: string;
+  type: "booking_new" | "booking_cancelled" | "car_added" | "user_registered" | any;
+  title: string;
+  message: string;
+  time: string;
+  createdAt?: string;
+  user?: {
+    name: string;
+    avatar: string;
+  };
+}
+
 
 export interface TitleProps {
   title: string;

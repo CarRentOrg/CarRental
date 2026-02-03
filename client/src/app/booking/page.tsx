@@ -13,7 +13,6 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react";
-import { mockApi, Car, Booking } from "@/lib/mockData";
 import {
   format,
   eachDayOfInterval,
@@ -23,6 +22,9 @@ import {
 import { useApp } from "@/contexts/AppContext";
 import DateRangePicker from "@/components/ui/DateRangePicker";
 import Returnbutton from "@/components/shared/returnbutton";
+import { api } from "@/lib/api";
+import { Car, Booking } from "@/types";
+import toast from "react-hot-toast";
 
 // Component to handle Search Params (needed for Suspense boundary)
 function BookingContent() {
@@ -63,13 +65,13 @@ function BookingContent() {
         if (carData) {
           setCar(carData);
 
-          // 2. Fetch Bookings (Direct API for now, could be context later)
-          const allBookings = await mockApi.bookings.getAll({ limit: 1000 });
-          const carBookings = allBookings.data.filter(
-            (b) =>
+          // 2. Fetch Bookings
+          const carBookings = await api.bookings.getAll();
+          const filteredBookings = carBookings.filter(
+            (b: Booking) =>
               b.car_id === carId && ["confirmed", "pending"].includes(b.status),
           );
-          setExistingBookings(carBookings);
+          setExistingBookings(filteredBookings);
         } else {
           setError("Car not found");
         }
@@ -103,27 +105,21 @@ function BookingContent() {
   const priceDetails = useMemo(() => {
     if (!car || !startDate || !endDate) return null;
 
-    // Simple duration calc (inclusive or standard rental days logic)
-    // Typically: Checkout - Checkin days? Or standard 24h blocks?
-    // Using simple difference in days, min 1 day.
     const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const days = diffDays === 0 ? 1 : diffDays; // Minimum 1 day assumption or 0 nights?
-    // Usually car rental is by day. If start==end same day, counts as 1 day?
-    // Let's assume start and end are inclusive dates?
-    // If I pick Jan 1 to Jan 2, is that 1 day or 2 days?
-    // Usually 24h blocks. Let's assume simple days count for now.
+    const days = diffDays === 0 ? 1 : diffDays;
 
-    let rate = car.rates?.daily || car.price_per_day;
+    const rates = car.rates as any;
+    let rate = rates?.daily || car.price_per_day;
     let rateName = "Daily Rate";
     let discount = 0;
 
     if (days >= 30) {
-      rate = car.rates?.monthly || rate * 0.7;
+      rate = rates?.monthly || rate * 0.7;
       rateName = "Monthly Rate";
-      discount = 30; // approx %
+      discount = 30;
     } else if (days >= 7) {
-      rate = car.rates?.weekly || rate * 0.85;
+      rate = rates?.weekly || rate * 0.85;
       rateName = "Weekly Rate";
       discount = 15;
     }
@@ -133,7 +129,7 @@ function BookingContent() {
       rate,
       rateName,
       discount,
-      subtotal: days * car.price_per_day, // Base price logic for display?
+      subtotal: days * car.price_per_day,
       total: days * rate,
     };
   }, [car, startDate, endDate]);
@@ -143,7 +139,7 @@ function BookingContent() {
 
     setIsSubmitting(true);
     try {
-      await mockApi.bookings.create({
+      await api.bookings.create({
         car_id: car.id,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
@@ -151,12 +147,13 @@ function BookingContent() {
         // note: note // MockAPI doesn't store note but real app would
       });
       setSubmitSuccess(true);
+      toast.success("Booking request sent successfully!");
       // Redirect after minor delay
       setTimeout(() => {
         router.push("/admin/bookings"); // Or user dashboard
       }, 2000);
     } catch (err: any) {
-      alert(err.message || "Failed to book");
+      toast.error(err.message || "Failed to book");
     } finally {
       setIsSubmitting(false);
     }
@@ -178,7 +175,7 @@ function BookingContent() {
   }, [startDate, endDate, disabledDates]);
 
   // Safe Image Logic
-  const carImage = car?.thumbnail_url || car?.images?.[0];
+  const carImage = car?.thumbnail_url || car?.image_url;
 
   if (loading) {
     return (
@@ -241,6 +238,8 @@ function BookingContent() {
     );
   }
 
+  const rates = car.rates as any;
+
   return (
     <div className="min-h-screen bg-black text-white py-26 px-3 sm:px-12 mx-auto">
       {/* Mobile Sticky Header */}
@@ -273,7 +272,7 @@ function BookingContent() {
                   {carImage ? (
                     <Image
                       src={carImage}
-                      alt={car.name}
+                      alt={car.model}
                       fill
                       className="object-cover"
                       priority
@@ -292,14 +291,14 @@ function BookingContent() {
                         <Star className="h-3 w-3 fill-white" /> 5.0
                       </span>
                       <span
-                        className={`px-2 py-1 rounded-lg text-xs font-bold ${car.status === "available" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
+                        className={`px-2 py-1 rounded-lg text-xs font-bold ${car.is_available ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
                       >
-                        {car.status === "available"
+                        {car.is_available
                           ? "Available"
                           : "Unavailable"}
                       </span>
                     </div>
-                    <h2 className="text-2xl font-bold">{car.name}</h2>
+                    <h2 className="text-2xl font-bold">{car.brand} {car.model}</h2>
                   </div>
                 </div>
 
@@ -335,14 +334,14 @@ function BookingContent() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Daily (1-6 days)</span>
                     <span className="font-bold text-white">
-                      ${car.rates?.daily || car.price_per_day}
+                      ${rates?.daily || car.price_per_day}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-gray-400">
                     <span>Weekly (7+ days)</span>
                     <span className="font-bold text-white">
                       $
-                      {car.rates?.weekly ||
+                      {rates?.weekly ||
                         Math.floor(car.price_per_day * 0.85)}
                     </span>
                   </div>
@@ -350,7 +349,7 @@ function BookingContent() {
                     <span>Monthly (30+ days)</span>
                     <span className="font-bold text-white">
                       $
-                      {car.rates?.monthly ||
+                      {rates?.monthly ||
                         Math.floor(car.price_per_day * 0.7)}
                     </span>
                   </div>

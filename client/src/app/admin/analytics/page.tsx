@@ -2,9 +2,9 @@
 
 import { TrendingUp, Users, Car, DollarSign, Activity } from "lucide-react";
 import { useState, useEffect } from "react";
-import { mockApi } from "@/lib/mockData";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { motion } from "framer-motion";
+import { api } from "@/lib/api";
 
 export default function AdminAnalyticsPage() {
   const [stats, setStats] = useState({
@@ -21,7 +21,7 @@ export default function AdminAnalyticsPage() {
 
   async function loadStats() {
     try {
-      const data = await mockApi.stats.getDashboard();
+      const data = await api.stats.getDashboard();
       setStats(data);
     } catch (error) {
       console.error(error);

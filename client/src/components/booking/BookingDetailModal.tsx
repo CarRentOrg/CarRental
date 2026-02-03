@@ -11,10 +11,11 @@ import {
   Info,
   AlertCircle,
 } from "lucide-react";
-import { Booking, mockApi } from "@/lib/mockData";
 import { format, differenceInDays } from "date-fns";
 import { useApp } from "@/contexts/AppContext";
 import ConfirmModal from "../shared/ConfirmModal";
+import { api } from "@/lib/api";
+import { Booking } from "@/types";
 
 interface BookingDetailModalProps {
   booking: Booking | null;
@@ -43,7 +44,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
     setShowConfirmCancel(false);
     setIsCancelling(true);
     try {
-      await mockApi.bookings.reject(booking.id);
+      await api.bookings.reject(booking.id);
       await fetchMyBookings();
       onClose();
     } catch (error) {
@@ -93,7 +94,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
             {car?.thumbnail_url && (
               <Image
                 src={car.thumbnail_url}
-                alt={car.name}
+                alt={car.model}
                 fill
                 className="object-cover"
               />
@@ -101,7 +102,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
             <div className="absolute inset-0 bg-linear-to-t from-zinc-900 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6">
               <div
-                className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border ${statusColors[booking.status]}`}
+                className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border ${statusColors[booking.status as keyof typeof statusColors]}`}
               >
                 {booking.status}
               </div>

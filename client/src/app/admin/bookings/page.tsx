@@ -10,11 +10,14 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { mockApi, Booking } from "@/lib/mockData";
 import { AdminTable, Column } from "@/components/admin/AdminTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import { api } from "@/lib/api";
+import { Booking } from "@/types";
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -39,6 +42,20 @@ export default function AdminBookingsPage() {
     loadBookings();
   }, [page]); // Reload when page changes
 
+  async function loadBookings() {
+    try {
+      setLoading(true);
+      const data = await api.bookings.getAll();
+      setBookings(data || []);
+      setTotal(data?.length || 0);
+      setFilteredBookings(data || []);
+    } catch (error) {
+      console.error("Failed to load bookings:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     const lowerSearch = search.toLowerCase();
     setFilteredBookings(
@@ -48,27 +65,13 @@ export default function AdminBookingsPage() {
         const nameMatch = b.user?.full_name
           ?.toLowerCase()
           .includes(lowerSearch);
-        const carMatch = (b.car?.name || b.car?.model)
+        const carMatch = (b.car?.model)
           ?.toLowerCase()
           .includes(lowerSearch);
         return idMatch || statusMatch || nameMatch || carMatch;
       }),
     );
   }, [search, bookings]);
-
-  async function loadBookings() {
-    try {
-      setLoading(true);
-      const response = await mockApi.bookings.getAll({ page, limit: LIMIT });
-      setBookings(response.data || []);
-      setTotal(response.total || 0);
-      setFilteredBookings(response.data || []);
-    } catch (error) {
-      console.error("Failed to load bookings:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const openApproveModal = (booking: Booking) => {
     setSelectedBooking(booking);
@@ -94,7 +97,7 @@ export default function AdminBookingsPage() {
       setActionLoading(true);
 
       if (modalAction === "approve") {
-        await mockApi.bookings.approve(selectedBooking.id);
+        await api.bookings.approve(selectedBooking.id);
 
         // Update local state
         const updatedBookings = bookings.map((b) =>
@@ -111,7 +114,7 @@ export default function AdminBookingsPage() {
           ),
         );
       } else {
-        await mockApi.bookings.reject(selectedBooking.id);
+        await api.bookings.reject(selectedBooking.id);
 
         // Update local state
         const updatedBookings = bookings.map((b) =>
@@ -129,9 +132,10 @@ export default function AdminBookingsPage() {
         );
       }
 
+      toast.success(`Booking successfully ${modalAction === "approve" ? "approved" : "rejected"}`);
       closeModal();
     } catch (error: any) {
-      alert(error.message || `Failed to ${modalAction} booking`);
+      toast.error(error.message || `Failed to ${modalAction} booking`);
     } finally {
       setActionLoading(false);
     }
@@ -181,20 +185,15 @@ export default function AdminBookingsPage() {
         <div className="flex items-center gap-3">
           <div className="h-10 w-14 rounded-lg bg-gray-100 overflow-hidden relative">
             <img
-              src={row.car?.thumbnail_url || row.car?.images?.[0]}
+              src={row.car?.thumbnail_url || row.car?.image_url}
               alt=""
               className="h-full w-full object-cover"
             />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-bold text-gray-900 leading-none mb-1">
-              {row.car?.name || "Unknown Car"}
+              {row.car?.model || "Unknown Car"}
             </span>
-            <div className="flex items-center gap-1">
-              <span className="px-1.5 py-0.5 rounded-md bg-gray-100 text-[10px] font-bold text-gray-600 uppercase">
-                {row.car?.plate_number}
-              </span>
-            </div>
           </div>
         </div>
       ),
@@ -216,13 +215,12 @@ export default function AdminBookingsPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
-                  row.rate_applied === "daily"
-                    ? "bg-gray-100 text-gray-600"
-                    : row.rate_applied === "weekly"
-                      ? "bg-blue-50 text-blue-600"
-                      : "bg-purple-50 text-purple-600"
-                }`}
+                className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${row.rate_applied === "daily"
+                  ? "bg-gray-100 text-gray-600"
+                  : row.rate_applied === "weekly"
+                    ? "bg-blue-50 text-blue-600"
+                    : "bg-purple-50 text-purple-600"
+                  }`}
               >
                 {row.rate_applied} Rate
               </span>
@@ -245,7 +243,7 @@ export default function AdminBookingsPage() {
               Math.ceil(
                 (new Date(row.end_date).getTime() -
                   new Date(row.start_date).getTime()) /
-                  (1000 * 60 * 60 * 24),
+                (1000 * 60 * 60 * 24),
               )
             ).toFixed(0)}{" "}
             / day
@@ -361,8 +359,8 @@ export default function AdminBookingsPage() {
         title={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
         message={
           modalAction === "approve"
-            ? `Та ${selectedBooking?.car?.name || selectedBooking?.car?.model || "сонгосон"} машины захиалгыг баталгаажуулахдаа итгэлтэй байна уу?`
-            : `Та ${selectedBooking?.car?.name || selectedBooking?.car?.model || "сонгосон"} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
+            ? `Та ${selectedBooking?.car?.model || "сонгосон"} машины захиалгыг баталгаажуулахдаа итгэлтэй байна уу?`
+            : `Та ${selectedBooking?.car?.model || "сонгосон"} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
         }
         confirmText={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
         type={modalAction === "approve" ? "success" : "danger"}

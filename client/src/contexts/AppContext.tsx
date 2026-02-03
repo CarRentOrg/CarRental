@@ -8,7 +8,8 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { mockApi, Car, Booking, User, USERS } from "@/lib/mockData";
+import { Car, Booking, User } from "@/types";
+import { api } from "@/lib/api";
 
 interface AppContextType {
   user: User | null;
@@ -28,7 +29,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [user] = useState<User | null>(USERS[0]); // Mock logged in user
+  const [user, setUser] = useState<User | null>(null);
   const [cars, setCars] = useState<Car[]>([]);
   const [availableCars, setAvailableCars] = useState<Car[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -43,14 +44,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     endDate: null,
   });
 
+  // Fetch user data on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      api.auth.getMe()
+        .then(userData => setUser(userData))
+        .catch(err => console.error('Failed to fetch user:', err));
+    }
+  }, []);
+
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await mockApi.cars.getAll({ limit: 100 }); // Fetch more for filtering
-      setCars(response.data || []);
-      setTotalCars(response.total || 0);
+      const carsData = await api.cars.getAll();
+      setCars(carsData || []);
+      setTotalCars(carsData?.length || 0);
     } catch (error) {
       console.error("Failed to fetch cars:", error);
+      setCars([]);
     } finally {
       setLoading(false);
     }
@@ -60,11 +72,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     setLoadingBookings(true);
     try {
-      const response = await mockApi.bookings.getAll({ limit: 1000 });
-      const myBookings = response.data.filter((b) => b.user_id === user.id);
-      setBookings(myBookings);
+      const bookingsData = await api.bookings.getAll();
+      // Filter by current user if needed
+      setBookings(bookingsData || []);
     } catch (error) {
       console.error("Failed to fetch user bookings:", error);
+      setBookings([]);
     } finally {
       setLoadingBookings(false);
     }
@@ -74,10 +87,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (dateRange.startDate && dateRange.endDate) {
       setLoading(true);
       try {
-        const available = await mockApi.cars.getAvailableCars({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-        });
+        // For now, just filter available cars from all cars
+        // Using !== false to include null/undefined as available by default
+        const available = cars.filter(car => car.is_available !== false);
         setAvailableCars(available);
       } catch (error) {
         console.error("Failed to fetch available cars:", error);
@@ -85,14 +97,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     } else {
-      setAvailableCars(cars);
+      const available = cars.filter(car => car.is_available !== false);
+      setAvailableCars(available);
     }
   }, [dateRange, cars]);
 
   useEffect(() => {
+    console.log("🚗 Current cars in state:", cars);
+    console.log("✅ Available cars in state:", availableCars);
+  }, [cars, availableCars]);
+
+  useEffect(() => {
     fetchCars();
-    fetchMyBookings();
-  }, [fetchCars, fetchMyBookings]);
+  }, [fetchCars]);
+
+  useEffect(() => {
+    if (user) {
+      fetchMyBookings();
+    }
+  }, [user, fetchMyBookings]);
 
   useEffect(() => {
     fetchAvailableCars();
@@ -110,7 +133,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // 2. If not, fetch from API
       try {
-        const car = await mockApi.cars.getById(id);
+        const car = await api.cars.getById(id);
         return car;
       } catch (error) {
         console.error("Failed to get car:", error);

@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppProvider as AuthProvider } from "@/contexts/App.Context";
 import { AppProvider as DataProvider } from "@/contexts/AppContext";
 import { usePathname } from "next/navigation";
+import { Toaster } from "react-hot-toast";
 
 const interDisplay = Inter({
   weight: "400",
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body
         className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col bg-black`}
       >
+        <Toaster position="top-right" />
         <AuthProvider>
           <DataProvider>
             <LanguageProvider>

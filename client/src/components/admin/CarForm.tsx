@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Car } from "@/lib/mockData";
+import { Car } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface CarFormProps {
@@ -41,7 +41,7 @@ export default function CarForm({
     transmission: initialData?.transmission || "Automatic",
     fuel_type: initialData?.fuel_type || "Petrol",
     description: initialData?.description || "",
-    status: initialData?.status || "available",
+    status: initialData?.is_available === false ? "rented" : "available",
     thumbnail_url: initialData?.thumbnail_url || "",
     rates: {
       daily: initialData?.rates?.daily || initialData?.price_per_day || 0,

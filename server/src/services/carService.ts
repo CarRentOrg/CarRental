@@ -10,7 +10,7 @@ export class CarService {
         brand?: string,
         model?: string,
         transmission?: string,
-        fuel?: string,
+        fuel_type?: string,
         is_available?: boolean,
         page?: number,
         limit?: number
@@ -20,7 +20,7 @@ export class CarService {
         if (filters.brand) query = query.ilike('brand', `%${filters.brand}%`);
         if (filters.model) query = query.ilike('model', `%${filters.model}%`);
         if (filters.transmission) query = query.eq('transmission', filters.transmission);
-        if (filters.fuel) query = query.eq('fuel', filters.fuel);
+        if (filters.fuel_type) query = query.eq('fuel_type', filters.fuel_type);
         if (filters.is_available !== undefined) query = query.eq('is_available', filters.is_available);
 
         if (filters.page && filters.limit) {
@@ -49,8 +49,11 @@ export class CarService {
     }
 
     async createCar(carData: CarInsert): Promise<Car> {
+        console.log('🚀 Attempting to create car in Supabase:', carData);
         const { data, error } = await (supabase.from('cars') as any).insert(carData).select().single();
+
         if (error) {
+            console.error('❌ Supabase Create Car Error:', JSON.stringify(error, null, 2));
             if (error.message?.includes('cache') || error.message?.includes('not found')) {
                 throw new Error('Cars table is not created in Supabase.');
             }
@@ -58,6 +61,7 @@ export class CarService {
         }
         return data;
     }
+
 
     async updateCar(id: string, carData: CarUpdate): Promise<Car> {
         const { data, error } = await (supabase.from('cars') as any).update(carData).eq('id', id).select().single();
