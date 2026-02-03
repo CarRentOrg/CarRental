@@ -39,10 +39,16 @@ app.use('/api/requests', requestRoutes);
 // Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, async () => {
-    console.log((colors as any).rainbow(`Server started at http://localhost:${PORT}`));
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, async () => {
+        console.log((colors as any).rainbow(`Server started at http://localhost:${PORT}`));
 
-    // Test DB connections
-    await testDatabaseConnection();
-});
+        // Test DB connections
+        await testDatabaseConnection();
+    });
+}
+
+export default app;
+
+
 

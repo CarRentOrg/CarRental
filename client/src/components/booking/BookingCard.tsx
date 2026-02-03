@@ -14,12 +14,14 @@ const BookingCard = ({ booking, onClick }: BookingCardProps) => {
   const car = booking.car;
   if (!car) return null;
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
     confirmed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
     cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
     completed: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    default: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
   };
+
 
   return (
     <div
@@ -30,8 +32,8 @@ const BookingCard = ({ booking, onClick }: BookingCardProps) => {
         {/* Car Thumbnail */}
         <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-2xl overflow-hidden bg-zinc-800 shrink-0">
           <Image
-            src={car.thumbnail_url}
-            alt={car.name}
+            src={car.thumbnail_url || car.image_url}
+            alt={`${car.brand} ${car.model}`}
             width={96}
             height={96}
             className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -45,7 +47,7 @@ const BookingCard = ({ booking, onClick }: BookingCardProps) => {
               {car.brand} {car.model}
             </h3>
             <span
-              className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${statusColors[booking.status]}`}
+              className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${statusColors[booking.status] || statusColors.default}`}
             >
               {booking.status}
             </span>

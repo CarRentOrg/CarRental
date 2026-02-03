@@ -48,8 +48,8 @@ export default function BookingModal({
             {/* Header */}
             <div className="relative h-48 bg-gray-100">
               <img
-                src={car.images[0] || car.thumbnail_url}
-                alt={car.name}
+                src={car.images?.[0] || car.thumbnail_url || car.image_url}
+                alt={car.model}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -61,7 +61,7 @@ export default function BookingModal({
               </button>
               <div className="absolute bottom-4 left-6 text-white">
                 <p className="text-sm font-medium opacity-90">{car.brand}</p>
-                <h3 className="text-2xl font-bold">{car.name}</h3>
+                <h3 className="text-2xl font-bold">{car.brand} {car.model}</h3>
               </div>
             </div>
 
@@ -103,7 +103,7 @@ export default function BookingModal({
                   <span>
                     {Math.ceil(
                       (endDate.getTime() - startDate.getTime()) /
-                        (1000 * 60 * 60 * 24),
+                      (1000 * 60 * 60 * 24),
                     )}{" "}
                     Days
                   </span>
