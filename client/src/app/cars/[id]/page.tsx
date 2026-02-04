@@ -78,7 +78,11 @@ export default function CarDetailPage() {
           </div>
           {/* FORCE_BUILD_TRIGGER_REF_050_STRICT_CAST_APPLIED */}
           {images.length > 0 && (
-            <ThumbnailImageGallery images={images} alt={car.model} />
+            <ThumbnailImageGallery
+              images={images.filter((img): img is string => img !== null)}
+              alt={car.model}
+            />
+
           )}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
             {[
