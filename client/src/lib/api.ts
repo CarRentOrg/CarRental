@@ -28,15 +28,34 @@ async function fetchAPI<T>(
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    const errorMessage = error.message || error.error || `HTTP ${res.status}: ${res.statusText}`;
-    console.error('API Error:', {
-      endpoint,
+    const text = await res.text();
+    let error: any;
+    let isJson = false;
+
+    try {
+      error = JSON.parse(text);
+      isJson = true;
+    } catch {
+      // Response was not JSON
+    }
+
+    // Determine the error message
+    let message = `HTTP ${res.status}: ${res.statusText}`;
+    if (isJson) {
+      message = error.message || error.error || message;
+    } else if (text && text.length < 200) {
+      // If text is short/readable, include it (e.g. "Not Found")
+      message = `${message} - ${text}`;
+    }
+
+    console.error(`API Error [${endpoint}]:`, {
       status: res.status,
       statusText: res.statusText,
-      error
+      rawResponse: text,
+      parsedError: error
     });
-    throw new Error(errorMessage);
+
+    throw new Error(message);
   }
 
   const json = await res.json();
