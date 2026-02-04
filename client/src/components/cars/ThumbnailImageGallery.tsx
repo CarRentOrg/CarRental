@@ -6,7 +6,7 @@ import clsx from "clsx";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 
 interface Props {
-  images: string[];
+  images?: string[];
   alt?: string;
 }
 

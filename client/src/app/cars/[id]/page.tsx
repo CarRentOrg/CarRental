@@ -14,7 +14,7 @@ import { Car } from "@/types";
 export default function CarDetailPage() {
   const { id } = useParams();
   const { getCarById } = useApp();
-  const [car, setCar] = useState<Car | null>(null);
+  const [car, setCar] = useState<Car>();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function CarDetailPage() {
       if (!id) return;
       setLoading(true);
       const data = await getCarById(id as string);
-      setCar(data || null);
+      setCar(data);
       setLoading(false);
     };
     fetchCar();
