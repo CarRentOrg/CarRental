@@ -29,7 +29,14 @@ async function fetchAPI<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message || "An error occurred");
+    const errorMessage = error.message || error.error || `HTTP ${res.status}: ${res.statusText}`;
+    console.error('API Error:', {
+      endpoint,
+      status: res.status,
+      statusText: res.statusText,
+      error
+    });
+    throw new Error(errorMessage);
   }
 
   const json = await res.json();
