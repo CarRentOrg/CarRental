@@ -32,7 +32,7 @@ const variants = {
 
 export default function ThumbnailImageGallery({
   images,
-  alt = "vehicle image",
+  alt = "car image",
 }: Props) {
   const [[index, direction], setState] = useState<[number, number]>([0, 0]);
 
