@@ -6,6 +6,9 @@ export type Car = Database["public"]["Tables"]["cars"]["Row"] & {
   images?: (string | null)[];
   status?: string;
   rates?: any;
+  image_gallery?: any;
+  price_rate?: any;
+  name?: string;
 };
 export type Booking = Database["public"]["Tables"]["bookings"]["Row"] & {
   car?: Car;

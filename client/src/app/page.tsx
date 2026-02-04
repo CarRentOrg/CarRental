@@ -9,6 +9,7 @@ import TopSection from "@/components/_sections/TopSection";
 import BenefitsSection from "@/components/_sections/BenefitsSection";
 
 export default function Home() {
+
   return (
     <div className="flex flex-col">
       <TopSection />

@@ -3,11 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { useAppContext } from "@/contexts/App.Context";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AuthCallback() {
     const router = useRouter();
-    const { setToken } = useAppContext();
+    const { setToken } = useAuth();
 
     useEffect(() => {
         const handleAuthCallback = async () => {

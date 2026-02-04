@@ -96,7 +96,7 @@ export const getUserData = async (req: any, res: Response, next: NextFunction) =
     try {
         const { data: user, error } = await supabase
             .from('users')
-            .select('id, name, email, role')
+            .select('id, name, email, role, created_at')
             .eq('id', req.user.id)
             .single() as { data: Partial<UserRow> | null, error: any };
 

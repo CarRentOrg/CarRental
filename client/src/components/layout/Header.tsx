@@ -16,7 +16,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAppContext } from "@/contexts/App.Context";
+import { useAuth } from "@/contexts/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
 
 interface NavLinkProps {
@@ -71,7 +71,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { language, setLanguage, t } = useLanguage();
-  const { token, setShowLogin, logout } = useAppContext();
+  const { token, setShowLogin, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);

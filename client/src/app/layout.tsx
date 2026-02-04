@@ -6,7 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Login from "@/components/auth/Login";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AppProvider as AuthProvider } from "@/contexts/App.Context";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AppProvider as DataProvider } from "@/contexts/AppContext";
 import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";

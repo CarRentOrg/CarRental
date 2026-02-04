@@ -34,18 +34,60 @@ export class CarService {
             if (error.code === 'PGRST116' || error.message?.includes('cache')) return [];
             throw error;
         }
-        return data || [];
+
+        // Transform to match requested API shape (model -> name), but keep model for compatibility
+        return (data || []).map((car: any) => ({
+            id: car.id,
+            name: car.model, // Map model to name as requested
+            model: car.model, // Keep model for backward compatibility
+            brand: car.brand,
+            type: car.type,
+            price_per_day: car.price_per_day,
+            thumbnail_url: car.thumbnail_url,
+            transmission: car.transmission,
+            fuel_type: car.fuel_type,
+            seats: car.seats,
+            is_available: car.is_available
+        })) as any[];
     }
 
     async getCarById(id: string): Promise<Car | null> {
         try {
-            const { data, error } = await supabase.from('cars').select('*').eq('id', id).single();
+            const { data, error } = await supabase
+                .from('cars')
+                .select(`
+                    *,
+                    car_details (
+                        image_gallery,
+                        price_rate
+                    )
+                `)
+                .eq('id', id)
+                .single();
+
             if (error) {
                 if (error.code === 'PGRST116' || error.message?.includes('cache')) return null;
                 throw error;
             }
-            return data;
-        } catch (err) { return null; }
+
+            if (!data) return null;
+
+            // Cast data to any to handle the join property that isn't in Car type
+            const carData = data as any;
+
+            // Flatten the structure
+            const details = Array.isArray(carData.car_details) ? carData.car_details[0] : carData.car_details;
+
+            return {
+                ...carData,
+                car_details: undefined, // Remove the nested object
+                image_gallery: details?.image_gallery || [],
+                price_rate: details?.price_rate || {}
+            };
+        } catch (err) {
+            console.error('getCarById fetch error:', err);
+            return null;
+        }
     }
 
     async createCar(carData: CarInsert): Promise<Car> {

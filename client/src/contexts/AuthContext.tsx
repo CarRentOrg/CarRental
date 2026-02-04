@@ -1,12 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios, { AxiosInstance } from 'axios';
 
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-}
+import { User } from '@/types';
 
 interface AppContextType {
     showLogin: boolean;
@@ -25,13 +20,13 @@ interface AppContextType {
 
 import { api } from '@/lib/api';
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
+const AuthContext = createContext<AppContextType | undefined>(undefined);
 
 const apiAxios = axios.create({
     baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace('/api', ''),
 });
 
-export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [showLogin, setShowLogin] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
@@ -95,7 +90,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     return (
-        <AppContext.Provider
+        <AuthContext.Provider
             value={{
                 showLogin,
                 setShowLogin,
@@ -112,14 +107,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }}
         >
             {children}
-        </AppContext.Provider>
+        </AuthContext.Provider>
     );
 };
 
-export const useAppContext = () => {
-    const context = useContext(AppContext);
+export const useAuth = () => {
+    const context = useContext(AuthContext);
     if (context === undefined) {
-        throw new Error('useAppContext must be used within an AppProvider');
+        throw new Error('useAuth must be used within an AuthProvider');
     }
     return context;
 };

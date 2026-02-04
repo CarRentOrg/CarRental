@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAppContext } from "../../contexts/App.Context";
+import { useAuth } from "@/contexts/AuthContext";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
@@ -14,7 +14,7 @@ const Login = () => {
         axios,
         navigate,
         setToken,
-    } = useAppContext();
+    } = useAuth();
 
     const [state, setState] = useState<"login" | "register">("login");
     const [name, setName] = useState("");

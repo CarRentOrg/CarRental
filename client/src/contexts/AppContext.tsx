@@ -11,6 +11,8 @@ import {
 import { Car, Booking, User } from "@/types";
 import { api } from "@/lib/api";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 interface AppContextType {
   user: User | null;
   cars: Car[];
@@ -29,7 +31,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth(); // Use user from AuthContext
   const [cars, setCars] = useState<Car[]>([]);
   const [availableCars, setAvailableCars] = useState<Car[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -44,15 +46,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     endDate: null,
   });
 
-  // Fetch user data on mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      api.auth.getMe()
-        .then(userData => setUser(userData))
-        .catch(err => console.error('Failed to fetch user:', err));
-    }
-  }, []);
+  // User fetch logic removed - handled by AuthContext
 
   const fetchCars = useCallback(async () => {
     setLoading(true);

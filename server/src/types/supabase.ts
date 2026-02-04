@@ -29,6 +29,7 @@ export type Database = {
                     acceleration_sec: number | null
                     horsepower: number | null
                     created_at: string
+                    owner_id: string | null
                 }
                 Insert: {
                     id?: string
@@ -97,6 +98,29 @@ export type Database = {
                     car_model?: string
                     message?: string
                     status?: string
+                    created_at?: string
+                }
+            }
+            car_details: {
+                Row: {
+                    id: string
+                    car_id: string
+                    image_gallery: Json[]
+                    price_rate: Json
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    car_id: string
+                    image_gallery?: Json[]
+                    price_rate?: Json
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    car_id?: string
+                    image_gallery?: Json[]
+                    price_rate?: Json
                     created_at?: string
                 }
             }
@@ -171,6 +195,7 @@ export type Database = {
                     email: string
                     password: string
                     role: string
+                    avatar_url: string | null
                     created_at: string
                 }
                 Insert: {

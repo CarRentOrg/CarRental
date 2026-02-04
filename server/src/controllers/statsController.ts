@@ -9,3 +9,12 @@ export const getDashboardStats = async (req: Request, res: Response, next: NextF
         next(error);
     }
 };
+
+export const getRecentActivity = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const activity = await statsService.getRecentActivity();
+        res.status(200).json({ success: true, data: activity });
+    } catch (error) {
+        next(error);
+    }
+};
