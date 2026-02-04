@@ -44,16 +44,17 @@ export default function CarDetailPage() {
     );
   }
 
-  // Build image list with proper type narrowing
-  const isValidImageUrl = (img: unknown): img is string => {
-    return typeof img === 'string' && img.trim() !== '';
-  };
-
+  // Build image list - explicitly typed as string[]
   const images: string[] = [
     ...(car.images || []),
     car.thumbnail_url,
     car.image_url
-  ].filter(isValidImageUrl);
+  ].reduce<string[]>((acc, img) => {
+    if (typeof img === 'string' && img.trim() !== '') {
+      acc.push(img);
+    }
+    return acc;
+  }, []);
 
   // Build trigger: v4-strict-typing
   const rates = [
