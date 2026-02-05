@@ -126,8 +126,8 @@ export const api = {
         bookings: number;
         activeFleet: number;
         newCustomers: number;
-      }>("/stats/dashboard"),
-    getRecentActivity: () => fetchAPI<any[]>("/stats/activity"),
+      }>("/owner/dashboard"),
+    getRecentActivity: () => fetchAPI<any[]>("/owner/activity"),
   },
   customers: {
     getAll: (params?: { page?: number; limit?: number }) =>

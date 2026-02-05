@@ -1,10 +1,11 @@
-import { Router } from 'express';
-// We need to see where controller is. Assuming statsController.
-import { getDashboardStats, getRecentActivity } from '../controllers/statsController';
+// import { Router } from 'express';
+// // We need to see where controller is. Assuming statsController.
+// import { getDashboardStats, getRecentActivity } from '../controllers/statsController';
 
-const router = Router();
+// const router = Router();
 
-router.get('/dashboard', getDashboardStats);
-router.get('/activity', getRecentActivity);
+// router.get('/dashboard', getDashboardStats);
 
-export default router;
+
+// export default router;
+// // 

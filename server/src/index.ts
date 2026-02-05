@@ -4,7 +4,7 @@ import colors from 'colors';
 import dotenv from 'dotenv';
 import carRoutes from './routes/carRoutes';
 import bookingRoutes from './routes/bookingRoutes';
-import statsRoutes from './routes/statsRoutes';
+// import statsRoutes from './routes/statsRoutes';
 import newsRoutes from './routes/newsRoutes';
 import userRoutes from './routes/userRoutes';
 import ownerRoutes from './routes/ownerRoutes';
@@ -31,7 +31,6 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use('/api/cars', carRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/stats', statsRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/owner', ownerRoutes);

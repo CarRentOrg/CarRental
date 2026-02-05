@@ -29,7 +29,7 @@ export class StatsService {
             const totalBookings = bookings.length;
 
             // Pseudo-random new customers for now
-            const newCustomers = 12;
+            const newCustomers = 120;
 
             return {
                 revenue,
@@ -50,45 +50,71 @@ export class StatsService {
 
     async getRecentActivity() {
         try {
-            const { data: bookings, error } = await supabase
-                .from('bookings')
+            const { data: cars, error } = await supabase
+                .from('cars')
                 .select(`
-                    id, 
-                    created_at, 
-                    status,
-                    users ( name, avatar_url )
-                `)
+                id,
+                created_at,
+                status,
+            `)
                 .order('created_at', { ascending: false })
                 .limit(5);
 
             if (error) throw error;
 
-            return bookings.map((booking: any) => ({
-                id: booking.id,
-                type: booking.status === 'confirmed' ? 'booking_new' : 'booking_cancelled',
-                title: 'New Booking',
-                message: `New booking from ${booking.users?.name || 'User'}`,
-                time: booking.created_at,
-                user: {
-                    name: booking.users?.name || 'Unknown',
-                    avatar: booking.users?.avatar_url || 'https://via.placeholder.com/40'
+            return cars.map((car: any) => {
+                let type = 'cars_update';
+                let title = 'Car Update';
+                let message = '';
+
+                switch (car.status) {
+                    case 'available':
+                        type = 'cars_available';
+                        title = 'Car Available';
+                        message = 'A car is now available for rent';
+                        break;
+
+                    case 'rented':
+                        type = 'cars_rented';
+                        title = 'Car Rented';
+                        message = 'A car has been rented';
+                        break;
+
+                    case 'maintenance':
+                        type = 'cars_maintenance';
+                        title = 'Car in Maintenance';
+                        message = 'A car is under maintenance';
+                        break;
                 }
-            }));
+
+                return {
+                    id: car.id,
+                    type,
+                    title,
+                    message: `${message} by ${car.users?.name || 'User'}`,
+                    time: car.created_at,
+                    user: {
+                        name: car.users?.name || 'Unknown',
+                        avatar: car.users?.avatar_url || 'https://via.placeholder.com/40'
+                    }
+                };
+            });
         } catch (error) {
             console.error('Error fetching activities:', error);
-            // Return dummy data if DB fails or is empty, to prevent 404s
+
             return [
                 {
                     id: '1',
-                    type: 'booking_new',
-                    title: 'New Booking',
-                    message: 'New booking from John Doe',
+                    type: 'cars_rented',
+                    title: 'Car Rented',
+                    message: 'A car has been rented by John Doe',
                     time: new Date().toISOString(),
-                    user: { name: 'John Doe', avatar: 'https://via.placeholder.com/40' }
+
                 }
             ];
         }
     }
+
 }
 
 export const statsService = new StatsService();
