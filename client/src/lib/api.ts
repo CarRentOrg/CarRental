@@ -120,21 +120,11 @@ export const api = {
       }),
   },
   stats: {
-    getDashboard: () =>
-      fetchAPI<{
-        revenue: number;
-        bookings: number;
-        activeFleet: number;
-        newCustomers: number;
-      }>("/owner/dashboard"),
+    getDashboard: () => fetchAPI<any>("/owner/dashboard"),
     getRecentActivity: () => fetchAPI<any[]>("/owner/activity"),
   },
   customers: {
-    getAll: (params?: { page?: number; limit?: number }) =>
-      fetchAPI<any>("/customers", {
-        method: "GET",
-        // In a real app, you'd convert params to query string
-      }),
+    getAll: () => fetchAPI<any[]>("/customers"),
   },
   news: {
     getAll: () => fetchAPI<NewsPost[]>("/news"),
@@ -152,7 +142,6 @@ export const api = {
     addCar: (formData: FormData) =>
       fetchAPI<any>("/owner/add-car", { method: "POST", body: formData }),
     getCars: () => fetchAPI<any[]>("/owner/cars"),
-    getDashboard: () => fetchAPI<any>("/owner/dashboard"),
     updateImage: (formData: FormData) =>
       fetchAPI<any>("/owner/update-image", { method: "POST", body: formData }),
     deleteCar: (id: string) =>

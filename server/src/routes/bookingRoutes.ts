@@ -12,7 +12,6 @@ router.delete('/:id', protect, deleteBooking);
 
 // New specific routes
 router.post("/check-availability", checkAvailabilityofCar);
-router.post("/create", protect, createBooking);
 router.get("/user", protect, getUserBookings);
 router.get("/owner", protect, getOwnerBookings);
 router.post("/change-status", protect, changeBookingStatus);

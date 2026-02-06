@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
 import CarCard from "@/components/cars/CarCard";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -11,8 +11,6 @@ import Title from "@/components/shared/title";
 export default function CarsPage() {
   const { t } = useLanguage();
   const { availableCars: cars, loading } = useApp();
-
-  // Filter States - Arrays for Multi-Select
 
   // Filter States - Arrays for Multi-Select
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -68,7 +66,7 @@ export default function CarsPage() {
   }, [selectedBrands, selectedTypes, selectedTransmissions, sortOption, cars]);
 
   // Reset pagination when filters change
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [selectedBrands, selectedTypes, selectedTransmissions, sortOption]);
 
@@ -190,11 +188,10 @@ export default function CarsPage() {
                     onClick={() => handlePageChange(page)}
                     className={`
                     flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all
-                    ${
-                      currentPage === page
+                    ${currentPage === page
                         ? "bg-white text-black"
                         : "text-gray-400 hover:bg-white/10 hover:text-white"
-                    }
+                      }
                   `}
                   >
                     {page}
@@ -216,5 +213,3 @@ export default function CarsPage() {
     </div>
   );
 }
-
-// window.scrollTo({ top: 0, behavior: "smooth" });

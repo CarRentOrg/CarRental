@@ -6,11 +6,11 @@ import {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 import { Car, Booking, User } from "@/types";
 import { api } from "@/lib/api";
-
 import { useAuth } from "@/contexts/AuthContext";
 
 interface AppContextType {
@@ -31,13 +31,11 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth(); // Use user from AuthContext
+  const { user } = useAuth();
   const [cars, setCars] = useState<Car[]>([]);
-  const [availableCars, setAvailableCars] = useState<Car[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingBookings, setLoadingBookings] = useState(false);
-  const [totalCars, setTotalCars] = useState(0);
   const [dateRange, setDateRangeState] = useState<{
     startDate: string | null;
     endDate: string | null;
@@ -46,14 +44,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     endDate: null,
   });
 
-  // User fetch logic removed - handled by AuthContext
+  const availableCars = useMemo(() => {
+    return cars.filter(car => car.is_available !== false);
+  }, [cars]);
 
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
       const carsData = await api.cars.getAll();
       setCars(carsData || []);
-      setTotalCars(carsData?.length || 0);
     } catch (error) {
       console.error("Failed to fetch cars:", error);
       setCars([]);
@@ -67,7 +66,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoadingBookings(true);
     try {
       const bookingsData = await api.bookings.getAll();
-      // Filter by current user if needed
       setBookings(bookingsData || []);
     } catch (error) {
       console.error("Failed to fetch user bookings:", error);
@@ -76,30 +74,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLoadingBookings(false);
     }
   }, [user]);
-
-  const fetchAvailableCars = useCallback(async () => {
-    if (dateRange.startDate && dateRange.endDate) {
-      setLoading(true);
-      try {
-        // For now, just filter available cars from all cars
-        // Using !== false to include null/undefined as available by default
-        const available = cars.filter(car => car.is_available !== false);
-        setAvailableCars(available);
-      } catch (error) {
-        console.error("Failed to fetch available cars:", error);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      const available = cars.filter(car => car.is_available !== false);
-      setAvailableCars(available);
-    }
-  }, [dateRange, cars]);
-
-  useEffect(() => {
-    console.log("🚗 Current cars in state:", cars);
-    console.log("✅ Available cars in state:", availableCars);
-  }, [cars, availableCars]);
 
   useEffect(() => {
     fetchCars();
@@ -111,24 +85,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [user, fetchMyBookings]);
 
-  useEffect(() => {
-    fetchAvailableCars();
-  }, [fetchAvailableCars]);
-
   const setDateRange = (startDate: string | null, endDate: string | null) => {
     setDateRangeState({ startDate, endDate });
   };
 
   const getCarById = useCallback(
     async (id: string) => {
-      // 1. Check if we already have it in state
       const existing = cars.find((c) => c.id === id);
       if (existing) return existing;
 
-      // 2. If not, fetch from API
       try {
-        const car = await api.cars.getById(id);
-        return car;
+        return await api.cars.getById(id);
       } catch (error) {
         console.error("Failed to get car:", error);
         return undefined;
@@ -146,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         bookings,
         loading,
         loadingBookings,
-        totalCars,
+        totalCars: cars.length,
         dateRange,
         setDateRange,
         refreshCars: fetchCars,
