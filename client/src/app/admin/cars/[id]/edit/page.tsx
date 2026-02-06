@@ -58,7 +58,9 @@ export default function AdminEditCarPage({
         is_available: data.status === "available",
         rates: data.rates || null,
         max_speed_kmh: data.max_speed_kmh ? parseInt(data.max_speed_kmh) : null,
-        acceleration_sec: data.acceleration_sec ? parseFloat(data.acceleration_sec) : null,
+        acceleration_sec: data.acceleration_sec
+          ? parseFloat(data.acceleration_sec)
+          : null,
         horsepower: data.horsepower ? parseInt(data.horsepower) : null,
       };
 

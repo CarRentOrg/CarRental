@@ -26,11 +26,13 @@ export default function AdminNewCarPage() {
         is_available: data.status === "available",
         rates: data.rates || null,
         max_speed_kmh: data.max_speed_kmh ? parseInt(data.max_speed_kmh) : null,
-        acceleration_sec: data.acceleration_sec ? parseFloat(data.acceleration_sec) : null,
+        acceleration_sec: data.acceleration_sec
+          ? parseFloat(data.acceleration_sec)
+          : null,
         horsepower: data.horsepower ? parseInt(data.horsepower) : null,
       };
 
-      await api.cars.create(carData);
+      await api.owner.addCar(carData);
       toast.success("Car created successfully!");
       router.push("/admin/cars");
     } catch (error: any) {

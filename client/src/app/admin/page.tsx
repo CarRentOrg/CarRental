@@ -12,22 +12,31 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { api } from "@/lib/api";
 import { Activity } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
 
 interface DashboardStats {
-  revenue: number;
-  bookings: number;
-  activeFleet: number;
-  newCustomers: number;
+  totalCars: number;
+  totalBookings: number;
+  totalPending: number;
+  totalRevenue: number;
+  carStatus: {
+    available: number;
+    rented: number;
+  };
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    revenue: 0,
-    bookings: 0,
-    activeFleet: 0,
-    newCustomers: 0,
+  const [data, setData] = useState({
+    totalCars: 0,
+    totalBookings: 0,
+    totalPending: 0,
+    totalRevenue: 0,
+    carStatus: {
+      available: 0,
+      rented: 0,
+    },
   });
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,11 +45,11 @@ export default function AdminDashboard() {
     async function loadData() {
       try {
         const [statsData, activityData] = await Promise.all([
-          api.stats.getDashboard(),
-          api.stats.getRecentActivity(),
+          api.owner.dashboard(),
+          api.owner.activity(),
         ]);
-        setStats(statsData);
-        setActivities(activityData || []);
+        setData(statsData);
+        // setActivities(activityData || []);
       } catch (error) {
         console.error("Failed to load dashboard data", error);
       } finally {
@@ -53,7 +62,7 @@ export default function AdminDashboard() {
   const STAT_CARDS = [
     {
       label: "Нийт орлого",
-      value: `$${stats.revenue.toLocaleString()}`,
+      value: `${data.totalRevenue.toLocaleString()}`,
       change: "+12.5%",
       isUp: true,
       icon: DollarSign,
@@ -61,17 +70,8 @@ export default function AdminDashboard() {
       bg: "bg-emerald-50",
     },
     {
-      label: "Нийт захиалга",
-      value: stats.bookings.toString(),
-      change: "+8.2%",
-      isUp: true,
-      icon: CalendarCheck,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
-    },
-    {
       label: "Нийт машин",
-      value: stats.activeFleet.toString(),
+      value: data.totalCars.toString(),
       change: "-2.1%",
       isUp: false,
       icon: Car,
@@ -79,8 +79,17 @@ export default function AdminDashboard() {
       bg: "bg-orange-50",
     },
     {
-      label: "Шинэ хэрэглэгчид",
-      value: stats.newCustomers.toString(),
+      label: "Нийт захиалга",
+      value: data.totalBookings.toString(),
+      change: "+8.2%",
+      isUp: true,
+      icon: CalendarCheck,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      label: "Хүлээгдсэж буй захиалга",
+      value: data.totalPending.toString(),
       change: "+18.4%",
       isUp: true,
       icon: Users,
@@ -153,8 +162,8 @@ export default function AdminDashboard() {
               <div className="flex justify-between text-sm font-bold">
                 <span className="text-gray-500">Түрээслэгдэх боломжтой</span>
                 <span className="text-gray-900">
-                  {stats.activeFleet > 0
-                    ? Math.floor(stats.activeFleet * 0.7)
+                  {data.carStatus.available > 0
+                    ? Math.floor(data.carStatus.available * 0.7)
                     : 0}{" "}
                   Машин
                 </span>
@@ -172,8 +181,8 @@ export default function AdminDashboard() {
               <div className="flex justify-between text-sm font-bold">
                 <span className="text-gray-500">Түрээслэгдсэн</span>
                 <span className="text-gray-900">
-                  {stats.activeFleet > 0
-                    ? Math.floor(stats.activeFleet * 0.2)
+                  {data.carStatus.rented > 0
+                    ? Math.floor(data.carStatus.rented * 0.2)
                     : 0}{" "}
                   Машин
                 </span>
@@ -184,25 +193,6 @@ export default function AdminDashboard() {
                   animate={{ width: "20%" }}
                   transition={{ duration: 1, delay: 0.4 }}
                   className="h-full bg-blue-500 rounded-full"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm font-bold">
-                <span className="text-gray-500">Засвартай</span>
-                <span className="text-gray-900">
-                  {stats.activeFleet > 0
-                    ? Math.floor(stats.activeFleet * 0.1)
-                    : 0}{" "}
-                  Машин
-                </span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "10%" }}
-                  transition={{ duration: 1, delay: 0.6 }}
-                  className="h-full bg-orange-500 rounded-full"
                 />
               </div>
             </div>
@@ -227,14 +217,15 @@ export default function AdminDashboard() {
               activities.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex gap-4 items-start">
                   <div
-                    className={`mt-1 h-2 w-2 rounded-full shrink-0 ${activity.type === "booking_new"
+                    className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
+                      activity.type === "booking_new"
                         ? "bg-blue-500"
                         : activity.type === "booking_cancelled"
                           ? "bg-red-500"
                           : activity.type === "car_added"
                             ? "bg-emerald-500"
                             : "bg-purple-500"
-                      }`}
+                    }`}
                   />
                   <div className="space-y-1">
                     <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">

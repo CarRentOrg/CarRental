@@ -3,26 +3,27 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useState,
+  useEffect,
   useCallback,
   ReactNode,
 } from "react";
-import { Car, Booking, User } from "@/types";
+import { Car, Booking } from "@/types";
 import { api } from "@/lib/api";
-
 import { useAuth } from "@/contexts/AuthContext";
 
 interface AppContextType {
-  user: User | null;
   cars: Car[];
   availableCars: Car[];
   bookings: Booking[];
+
   loading: boolean;
   loadingBookings: boolean;
   totalCars: number;
+
   dateRange: { startDate: string | null; endDate: string | null };
-  setDateRange: (startDate: string | null, endDate: string | null) => void;
+  setDateRange: (s: string | null, e: string | null) => void;
+
   refreshCars: () => Promise<void>;
   fetchMyBookings: () => Promise<void>;
   getCarById: (id: string) => Promise<Car | undefined>;
@@ -31,32 +32,27 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth(); // Use user from AuthContext
+  const { user } = useAuth();
+
   const [cars, setCars] = useState<Car[]>([]);
   const [availableCars, setAvailableCars] = useState<Car[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [totalCars, setTotalCars] = useState(0);
-  const [dateRange, setDateRangeState] = useState<{
-    startDate: string | null;
-    endDate: string | null;
-  }>({
-    startDate: null,
-    endDate: null,
+
+  const [dateRange, setDateRangeState] = useState({
+    startDate: null as string | null,
+    endDate: null as string | null,
   });
 
-  // User fetch logic removed - handled by AuthContext
-
-  const fetchCars = useCallback(async () => {
+  const refreshCars = useCallback(async () => {
     setLoading(true);
     try {
-      const carsData = await api.cars.getAll();
-      setCars(carsData || []);
-      setTotalCars(carsData?.length || 0);
-    } catch (error) {
-      console.error("Failed to fetch cars:", error);
-      setCars([]);
+      const data = await api.cars.getAll();
+      setCars(data || []);
+      setTotalCars(data?.length || 0);
     } finally {
       setLoading(false);
     }
@@ -66,81 +62,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     setLoadingBookings(true);
     try {
-      const bookingsData = await api.bookings.getAll();
-      // Filter by current user if needed
-      setBookings(bookingsData || []);
-    } catch (error) {
-      console.error("Failed to fetch user bookings:", error);
-      setBookings([]);
+      const data = await api.bookings.getAll();
+      setBookings(data || []);
     } finally {
       setLoadingBookings(false);
     }
   }, [user]);
 
-  const fetchAvailableCars = useCallback(async () => {
-    if (dateRange.startDate && dateRange.endDate) {
-      setLoading(true);
-      try {
-        // For now, just filter available cars from all cars
-        // Using !== false to include null/undefined as available by default
-        const available = cars.filter(car => car.is_available !== false);
-        setAvailableCars(available);
-      } catch (error) {
-        console.error("Failed to fetch available cars:", error);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      const available = cars.filter(car => car.is_available !== false);
-      setAvailableCars(available);
-    }
-  }, [dateRange, cars]);
+  const filterAvailableCars = useCallback(() => {
+    setAvailableCars(cars.filter((c) => c.is_available));
+  }, [cars]);
 
   useEffect(() => {
-    console.log("🚗 Current cars in state:", cars);
-    console.log("✅ Available cars in state:", availableCars);
-  }, [cars, availableCars]);
+    refreshCars();
+  }, [refreshCars]);
 
   useEffect(() => {
-    fetchCars();
-  }, [fetchCars]);
-
-  useEffect(() => {
-    if (user) {
-      fetchMyBookings();
-    }
+    if (user) fetchMyBookings();
   }, [user, fetchMyBookings]);
 
   useEffect(() => {
-    fetchAvailableCars();
-  }, [fetchAvailableCars]);
+    filterAvailableCars();
+  }, [filterAvailableCars]);
 
-  const setDateRange = (startDate: string | null, endDate: string | null) => {
+  const setDateRange = (startDate: string | null, endDate: string | null) =>
     setDateRangeState({ startDate, endDate });
-  };
 
-  const getCarById = useCallback(
-    async (id: string) => {
-      // 1. Check if we already have it in state
-      const existing = cars.find((c) => c.id === id);
-      if (existing) return existing;
-
-      // 2. If not, fetch from API
-      try {
-        const car = await api.cars.getById(id);
-        return car;
-      } catch (error) {
-        console.error("Failed to get car:", error);
-        return undefined;
-      }
-    },
-    [cars],
-  );
+  const getCarById = async (id: string) =>
+    cars.find((c) => c.id === id) || (await api.cars.getById(id));
 
   return (
     <AppContext.Provider
       value={{
-        user,
         cars,
         availableCars,
         bookings,
@@ -149,7 +102,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         totalCars,
         dateRange,
         setDateRange,
-        refreshCars: fetchCars,
+        refreshCars,
         fetchMyBookings,
         getCarById,
       }}
@@ -159,10 +112,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useApp() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error("useApp must be used within an AppProvider");
-  }
-  return context;
-}
+export const useApp = () => {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error("useApp must be used within AppProvider");
+  return ctx;
+};

@@ -16,7 +16,7 @@ import {
 import Image from "next/image";
 
 interface ProfileFormData {
-  fullName: string;
+  name: string;
   email: string;
   phone: string;
 }
@@ -33,7 +33,7 @@ export default function ProfileForm() {
     formState: { errors },
   } = useForm<ProfileFormData>({
     defaultValues: {
-      fullName: "Super Admin",
+      name: "Super Admin",
       email: "admin@carrental.com",
       phone: "+1 (555) 123-4567",
     },
@@ -136,7 +136,7 @@ export default function ProfileForm() {
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
-                    {...register("fullName", { required: true })}
+                    {...register("name", { required: true })}
                     disabled={!isEditing}
                     className="w-full pl-10 pr-4 py-3 bg-gray-50 border-gray-100 rounded-xl text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   />

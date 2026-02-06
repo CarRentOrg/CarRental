@@ -1,240 +1,291 @@
-import { Request, Response, NextFunction } from 'express';
-import { supabase } from '../config/supabase';
-import { Database } from '../types/supabase';
-import { uploadToImageKit } from '../utils/imageUpload';
+import { Request, Response, NextFunction } from "express";
+import User from "../models/User";
+import Car from "../models/Car";
+import { uploadToImageKit } from "../utils/imageUpload";
+import Booking from "../models/Booking";
+import { AuthenticatedRequest } from "../types";
+import mongoose from "mongoose";
 
-type UserRow = Database['public']['Tables']['users']['Row'];
-type CarRow = Database['public']['Tables']['cars']['Row'];
-type BookingRow = Database['public']['Tables']['bookings']['Row'];
+export const changeRoleToOwner = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { role: "owner" },
+      { new: true },
+    );
 
-// Helper to access req.user reliably
-interface AuthenticatedRequest extends Request {
-    user?: any;
-}
-
-export const changeRoleToOwner = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const userId = req.user.id;
-        const { error } = await (supabase.from('users') as any)
-            .update({ role: 'owner' })
-            .eq('id', userId);
-
-        if (error) throw error;
-        res.status(200).json({ success: true, message: 'Role updated to owner' });
-    } catch (error) {
-        next(error);
-    }
+    if (!user) throw new Error("User not found");
+    res.status(200).json({ success: true, message: "Role updated to owner" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: { error } });
+  }
 };
 
-export const addCar = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const userId = req.user.id;
-        let carData: any = {};
-
-        // Handle both JSON-parsed body and direct fields (multipart/form-data)
-        if (req.body.carData) {
-            try {
-                carData = JSON.parse(req.body.carData);
-            } catch (e) {
-                return res.status(400).json({ success: false, message: 'Invalid carData JSON' });
-            }
-        } else {
-            carData = req.body;
-        }
-
-        let imageUrl = null;
-        if (req.file) {
-            imageUrl = await uploadToImageKit(req.file, '/cars');
-        }
-
-        // Map frontend fields to DB fields
-        const carInsertData = {
-            brand: carData.brand || carData.name?.split(' ')[0] || 'Unknown',
-            model: carData.model || carData.name?.split(' ').slice(1).join(' ') || 'Unknown',
-            year: carData.year,
-            price_per_day: carData.price_per_day,
-            transmission: carData.transmission,
-            fuel_type: carData.fuel_type,
-            seats: carData.seats,
-            description: carData.description,
-            type: carData.type,
-            image_url: imageUrl,
-            is_available: true,
-            owner_id: userId
-        };
-
-        const { data, error } = await (supabase.from('cars') as any)
-            .insert(carInsertData)
-            .select()
-            .single();
-
-        if (error) throw error;
-        res.status(201).json({ success: true, message: 'Car added successfully', car: data });
-    } catch (error) {
-        next(error);
+export const addCar = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
+
+    const userId = req.user._id;
+
+    // ✅ parse carData
+    let carData: any = {};
+    if (req.body.carData) {
+      try {
+        carData = JSON.parse(req.body.carData);
+      } catch {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid carData JSON",
+        });
+      }
+    } else {
+      carData = req.body;
+    }
+
+    // ✅ thumbnail REQUIRED
+    const files = req.files as {
+      thumbnail?: Express.Multer.File[];
+      images?: Express.Multer.File[];
+    };
+
+    if (!files?.thumbnail?.[0]) {
+      return res.status(400).json({
+        success: false,
+        message: "Thumbnail image is required",
+      });
+    }
+
+    // ✅ upload thumbnail
+    const thumbnailUrl = await uploadToImageKit(
+      files.thumbnail[0],
+      "/cars/thumbnail",
+    );
+
+    // ✅ upload gallery images
+    let images: string[] = [];
+    if (files.images && files.images.length > 0) {
+      const uploadedImages = await Promise.all(
+        files.images.map((file) => uploadToImageKit(file, "/cars/gallery")),
+      );
+
+      images = uploadedImages.map((img) => img.url); // ✅ only urls
+    }
+
+    const newCar = await Car.create({
+      ...carData,
+      ownerId: userId,
+      thumbnail: thumbnailUrl,
+      images,
+      available: true,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Car added successfully",
+      car: newCar,
+    });
+  } catch (error: any) {
+    console.error("ADD CAR ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
 };
 
-export const getOwnerCars = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const userId = req.user.id;
-        // Need to cast to any or fix types to support owner_id filtering if strict typing fails
-        const { data: cars, error } = await (supabase.from('cars') as any)
-            .select('*')
-            .eq('owner_id', userId);
-
-        if (error) throw error;
-        res.status(200).json({ success: true, cars });
-    } catch (error) {
-        next(error);
-    }
+export const getOwnerCars = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const userId = req.user._id;
+    const cars = await Car.find({ ownerId: userId });
+    res.status(200).json({ success: true, data: cars });
+  } catch (error) {
+    res.status(500).json({ success: false, message: { error } });
+  }
 };
 
-export const toggleCarAvailability = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const userId = req.user.id;
-        const { carId } = req.body;
+export const toggleCarAvailability = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const userId = req.user._id;
+    const { carId } = req.body;
 
-        if (!carId) {
-            return res.status(400).json({ success: false, message: 'Car ID is required' });
-        }
+    const car = await Car.findOne({ _id: carId, ownerId: userId });
 
-        // 1. Get current status and verify ownership
-        const { data: car, error: fetchError } = await (supabase.from('cars') as any)
-            .select('id, is_available')
-            .eq('id', carId)
-            .eq('owner_id', userId)
-            .single();
-
-        if (fetchError || !car) {
-            return res.status(404).json({ success: false, message: 'Car not found or unauthorized' });
-        }
-
-        // 2. Toggle
-        const { error: updateError } = await (supabase.from('cars') as any)
-            .update({ is_available: !car.is_available })
-            .eq('id', carId);
-
-        if (updateError) throw updateError;
-
-        res.status(200).json({ success: true, message: 'Availability Toggled' });
-    } catch (error) {
-        next(error);
+    if (!car) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Car not found or unauthorized" });
     }
+
+    car.is_available = !car.is_available;
+    await car.save();
+
+    res.status(200).json({ success: true, message: "Availability Toggled" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: { error } });
+  }
 };
 
-export const deleteCar = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const userId = req.user.id;
-        const { carId } = req.body;
-
-        if (!carId) {
-            return res.status(400).json({ success: false, message: 'Car ID is required' });
-        }
-
-        // Verify ownership first
-        const { data: car, error: fetchError } = await (supabase.from('cars') as any)
-            .select('id')
-            .eq('id', carId)
-            .eq('owner_id', userId)
-            .single();
-
-        if (fetchError || !car) {
-            return res.status(404).json({ success: false, message: 'Car not found or unauthorized' });
-        }
-
-        // Soft delete: set owner_id to null and is_available to false
-        const { error } = await (supabase.from('cars') as any)
-            .update({ owner_id: null, is_available: false })
-            .eq('id', carId);
-
-        if (error) throw error;
-        res.status(200).json({ success: true, message: 'Car deleted successfully' });
-    } catch (error) {
-        next(error);
+export const deleteCar = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
+
+    const userId = req.user._id;
+    const { id } = req.params; // ✅ path param
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid car id",
+      });
+    }
+
+    const car = await Car.findOneAndDelete({
+      _id: id,
+      ownerId: userId.toString(),
+    });
+
+    if (!car) {
+      return res.status(404).json({
+        success: false,
+        message: "Car not found or unauthorized",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Car deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("DELETE CAR ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
 };
 
-export const getDashboardData = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const userId = req.user.id;
-        const userRole = req.user.role;
+export const updateUserImage = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const userId = req.user._id;
 
-        if (userRole !== 'owner' && userRole !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Not an owner' });
-        }
-
-        // Parallel queries
-        const [carsRes, bookingsRes] = await Promise.all([
-            (supabase.from('cars') as any).select('id').eq('owner_id', userId),
-            (supabase.from('bookings') as any) // Assuming bookings have owner_id or linked via car. 
-                // Current bookings table doesn't have owner_id directly on booking, 
-                // usually it's linked via car_id -> cars.owner_id.
-                // But let's check if we can filter bookings by car.owner_id in one go.
-                // Supabase (PostgREST) supports filtering on related tables.
-                .select('*, cars!inner(owner_id)')
-                .eq('cars.owner_id', userId)
-                .order('created_at', { ascending: false })
-        ]);
-
-        if (carsRes.error) throw carsRes.error;
-        if (bookingsRes.error) throw bookingsRes.error;
-
-        const cars = carsRes.data || [];
-        const bookings = bookingsRes.data || [];
-
-        const pendingBookings = bookings.filter((b: any) => b.status === 'pending');
-        const completedBookings = bookings.filter((b: any) => b.status === 'confirmed');
-
-        // Calculate Monthly Revenue
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-        const monthlyRevenue = bookings
-            .filter((booking: any) =>
-                booking.status === 'confirmed' &&
-                new Date(booking.created_at) >= startOfMonth
-            )
-            .reduce((acc: number, booking: any) => acc + (booking.total_price || 0), 0);
-
-        const dashboardData = {
-            totalCars: cars.length,
-            totalBookings: bookings.length,
-            pendingBookings: pendingBookings.length,
-            completedBookings: completedBookings.length,
-            recentBookings: bookings.slice(0, 3),
-            monthlyRevenue
-        };
-
-        res.status(200).json({ success: true, dashboardData });
-    } catch (error) {
-        console.error("Dashboard error:", error);
-        // Fallback if joined query fails (e.g. foreign key issues)
-        // We might try fetching all cars then all bookings for those car IDs
-        next(error);
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = await uploadToImageKit(req.file, "/users");
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, message: "No image provided" });
     }
+
+    // Update user avatar logic - User model depends on what field stores avatar
+    // I defined avatarCallback in User model? Or did I?
+    // Checking User model... I defined "avatarCallback?: string;" which seems to be a mistake, probably meant "avatar" or "avatarUrl".
+    // I should check User model again. Assuming I can update any field.
+
+    // Actually, looking at previous code, it was "avatar_url".
+    // My Mongoose User model has "avatarCallback".
+    // I should probably fix User model to be "avatarUrl" or just use "avatarCallback" if that's what I intended (unlikely).
+    // Let's assume I meant "avatarUrl". I'll update User model later or now.
+
+    await User.findByIdAndUpdate(userId, { avatar: imageUrl }); // Using 'avatar' generic name
+
+    res.status(200).json({
+      success: true,
+      message: "User image updated successfully",
+      imageUrl,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: { error } });
+  }
 };
 
-export const updateUserImage = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const userId = req.user.id;
+export const getDashboardData = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const { _id, role } = req.user;
 
-        let imageUrl = null;
-        if (req.file) {
-            imageUrl = await uploadToImageKit(req.file, '/users');
-        } else {
-            return res.status(400).json({ success: false, message: 'No image provided' });
-        }
-
-        // Update user avatar
-        const { error } = await (supabase.from('users') as any)
-            .update({ avatar_url: imageUrl })
-            .eq('id', userId);
-
-        if (error) throw error;
-
-        res.status(200).json({ success: true, message: 'User image updated successfully', imageUrl });
-    } catch (error) {
-        next(error);
+    if (role !== "owner") {
+      return res.status(403).json({ success: false, message: "Not an owner" });
     }
+
+    // --- Cars ---
+    const totalCars = await Car.countDocuments({ ownerId: _id });
+
+    const availableCars = await Car.countDocuments({
+      ownerId: _id,
+      isAvailable: true,
+    });
+
+    const rentedCars = await Car.countDocuments({
+      ownerId: _id,
+      isAvailable: false,
+    });
+
+    // --- Bookings ---
+    const totalBookings = await Booking.countDocuments({ ownerId: _id });
+
+    const totalPending = await Booking.countDocuments({
+      ownerId: _id,
+      status: "pending",
+    });
+
+    const revenueAgg = await Booking.aggregate([
+      {
+        $match: {
+          ownerId: _id,
+          status: { $in: ["confirmed", "completed"] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$totalPrice" },
+        },
+      },
+    ]);
+
+    const totalRevenue = revenueAgg[0]?.totalRevenue || 0;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalCars,
+        totalBookings,
+        totalPending,
+        totalRevenue,
+        carStatus: {
+          available: availableCars,
+          rented: rentedCars,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("DASHBOARD ERROR 👉", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 };

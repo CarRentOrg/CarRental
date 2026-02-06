@@ -1,6 +1,34 @@
-import { Car, Booking, NewsPost } from "@/types";
+import { Car, Booking, User } from "@/types";
 
-const API_Base_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+export const API_Base_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
+export interface GetMeResponse {
+  user: User;
+}
+export interface AuthResponse {
+  token: string;
+  user: User;
+  message?: string;
+}
+
+export interface DashboardStats {
+  totalCars: number;
+  totalBookings: number;
+  totalRevenue: number;
+  totalPending: number;
+  carStatus: {
+    available: number;
+    rented: number;
+  };
+}
+
+export interface Activity {
+  _id: string;
+  type: string;
+  message: string;
+  createdAt: string;
+}
 
 async function fetchAPI<T>(
   endpoint: string,
@@ -9,169 +37,86 @@ async function fetchAPI<T>(
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const headers: HeadersInit = {
-    ...options.headers,
-  };
+  const headers: Record<string, string> = {};
 
-  // Only set Content-Type if not FormData (fetch sets correctly for FormData)
   if (!(options.body instanceof FormData)) {
-    (headers as any)["Content-Type"] = "application/json";
+    headers["Content-Type"] = "application/json";
   }
 
   if (token) {
-    (headers as any)["Authorization"] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${API_Base_URL}${endpoint}`, {
     ...options,
-    headers,
+    headers: {
+      ...headers,
+      ...(options.headers || {}),
+    },
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    let error: any;
-    let isJson = false;
-
+    let message = `HTTP ${res.status}`;
     try {
-      error = JSON.parse(text);
-      isJson = true;
-    } catch {
-      // Response was not JSON
-    }
-
-    // Determine the error message
-    let message = `HTTP ${res.status}: ${res.statusText}`;
-    if (isJson) {
-      message = error.message || error.error || message;
-    } else if (text && text.length < 200) {
-      // If text is short/readable, include it (e.g. "Not Found")
-      message = `${message} - ${text}`;
-    }
-
-    console.error(`API Error [${endpoint}]:`, {
-      status: res.status,
-      statusText: res.statusText,
-      rawResponse: text,
-      parsedError: error
-    });
-
+      const err = await res.json();
+      message = err.message || message;
+    } catch {}
     throw new Error(message);
   }
 
   const json = await res.json();
-  return json.data || json;
+  return json.data ?? json;
 }
 
 export const api = {
   auth: {
     login: (data: any) =>
-      fetchAPI<any>("/user/login", {
+      fetchAPI<AuthResponse>("/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
       }),
+
     register: (data: any) =>
-      fetchAPI<any>("/user/register", {
+      fetchAPI<AuthResponse>("/auth/register", {
         method: "POST",
         body: JSON.stringify(data),
       }),
-    getMe: () => fetchAPI<any>("/user/data"),
-    changePassword: (data: any) =>
-      fetchAPI<any>("/user/change-password", {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
+
+    getMe: () => fetchAPI<GetMeResponse>("/auth/data"),
   },
+
   cars: {
-    getAll: () => fetchAPI<Car[]>("/cars"),
-    getById: (id: string) => fetchAPI<Car>(`/cars/${id}`),
-    create: (data: Partial<Car>) =>
-      fetchAPI<Car>("/cars", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: Partial<Car>) =>
-      fetchAPI<Car>(`/cars/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      }),
-    delete: (id: string) => fetchAPI<void>(`/cars/${id}`, { method: "DELETE" }),
+    getAll: () => fetchAPI<Car[]>("/user/cars"),
+    getById: (id: string) => fetchAPI<Car>(`/user/cars/${id}`),
   },
+
   bookings: {
-    getAll: () => fetchAPI<Booking[]>("/bookings"),
-    getById: (id: string) => fetchAPI<Booking>(`/bookings/${id}`),
-    create: (data: Partial<Booking>) =>
-      fetchAPI<Booking>("/bookings", {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    update: (id: string, data: Partial<Booking>) =>
-      fetchAPI<Booking>(`/bookings/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      }),
-    delete: (id: string) =>
-      fetchAPI<void>(`/bookings/${id}`, { method: "DELETE" }),
-    approve: (id: string) =>
-      fetchAPI<Booking>(`/bookings/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ status: "confirmed" }),
-      }),
-    reject: (id: string) =>
-      fetchAPI<Booking>(`/bookings/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ status: "cancelled" }),
-      }),
+    getAll: () => fetchAPI<Booking[]>("/user/bookings"),
+    getById: (id: string) => fetchAPI<Booking>(`/user/bookings/${id}`),
   },
-  stats: {
-    getDashboard: () =>
-      fetchAPI<{
-        revenue: number;
-        bookings: number;
-        activeFleet: number;
-        newCustomers: number;
-      }>("/owner/dashboard"),
-    getRecentActivity: () => fetchAPI<any[]>("/owner/activity"),
-  },
-  customers: {
-    getAll: (params?: { page?: number; limit?: number }) =>
-      fetchAPI<any>("/customers", {
-        method: "GET",
-        // In a real app, you'd convert params to query string
-      }),
-  },
-  news: {
-    getAll: () => fetchAPI<NewsPost[]>("/news"),
-    getById: (id: string) => fetchAPI<NewsPost>(`/news/${id}`),
-    create: (data: Partial<NewsPost>) =>
-      fetchAPI<NewsPost>("/news", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: Partial<NewsPost>) =>
-      fetchAPI<NewsPost>(`/news/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      }),
-    delete: (id: string) => fetchAPI<void>(`/news/${id}`, { method: "DELETE" }),
-  },
+
   owner: {
     addCar: (formData: FormData) =>
-      fetchAPI<any>("/owner/add-car", { method: "POST", body: formData }),
-    getCars: () => fetchAPI<any[]>("/owner/cars"),
-    getDashboard: () => fetchAPI<any>("/owner/dashboard"),
-    updateImage: (formData: FormData) =>
-      fetchAPI<any>("/owner/update-image", { method: "POST", body: formData }),
-    deleteCar: (id: string) =>
-      fetchAPI<any>("/owner/delete-car", {
+      fetchAPI("/owner/add-car", {
         method: "POST",
+        body: formData,
+      }),
+
+    updateCar: (id: string, data: any) =>
+      fetchAPI(`/owner/update-car/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+
+    deleteCar: (id: string) =>
+      fetchAPI(`/owner/cars/${id}`, {
+        method: "DELETE",
         body: JSON.stringify({ carId: id }),
       }),
-    changeRoleToOwner: () =>
-      fetchAPI<any>("/owner/change-role", { method: "POST" }),
-  },
-  requests: {
-    getAll: () => fetchAPI<any[]>("/requests"),
-    create: (data: any) =>
-      fetchAPI<any>("/requests", { method: "POST", body: JSON.stringify(data) }),
-    updateStatus: (id: string, status: string) =>
-      fetchAPI<any>(`/requests/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ status }),
-      }),
-    delete: (id: string) => fetchAPI<void>(`/requests/${id}`, { method: "DELETE" }),
+
+    getCars: () => fetchAPI<Car[]>("/owner/cars"),
+
+    dashboard: () => fetchAPI<DashboardStats>("/owner/dashboard"),
+    activity: () => fetchAPI<Activity[]>("/owner/activity"),
   },
 };

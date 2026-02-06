@@ -51,9 +51,10 @@ export default function CarForm({
   });
 
   const [images, setImages] = useState<string[]>(
-    (initialData?.images || []).filter((img): img is string => !!img)
+    (initialData?.images || []).filter((img): img is string => !!img),
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [weeklyEnabled, setWeeklyEnabled] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -71,7 +72,10 @@ export default function CarForm({
       // Create a preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, thumbnail_url: reader.result as string }));
+        setFormData((prev) => ({
+          ...prev,
+          thumbnail_url: reader.result as string,
+        }));
       };
       reader.readAsDataURL(file);
     }
@@ -133,14 +137,9 @@ export default function CarForm({
           <ArrowLeft className="h-5 w-5 text-gray-600" />
         </Link>
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-            {isEditing ? "Edit Car" : "Add New Car"}
+          <h1 className="text-xl font-black text-gray-900 tracking-tight">
+            {isEditing ? "Машин засах" : "Шинэ машин нэмэх"}
           </h1>
-          <p className="text-gray-500 font-medium">
-            {isEditing
-              ? "Update vehicle details."
-              : "Add a new vehicle to the fleet."}
-          </p>
         </div>
       </div>
 
@@ -150,12 +149,12 @@ export default function CarForm({
           <div>
             <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
               <CarIcon className="h-5 w-5 text-blue-600" />
-              Basic Information
+              Үндсэн мэдээлэл
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Make / Brand
+                  Үйлдвэрлэгч
                 </label>
                 <input
                   type="text"
@@ -163,13 +162,13 @@ export default function CarForm({
                   required
                   value={formData.brand}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
+                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 placeholder:text-xs placeholder:font-medium"
                   placeholder="e.g. Tesla"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Model
+                  Загвар
                 </label>
                 <input
                   type="text"
@@ -177,13 +176,13 @@ export default function CarForm({
                   required
                   value={formData.model}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
+                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 placeholder:text-xs placeholder:font-medium"
                   placeholder="e.g. Model S"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Year
+                  Үйлдвэрлэсэн он
                 </label>
                 <input
                   type="number"
@@ -191,21 +190,21 @@ export default function CarForm({
                   required
                   value={formData.year}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
+                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 placeholder:text-xs placeholder:font-medium"
+                  placeholder="e.g. 2022"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  License Plate
+                  Нэмэлт мэдээлэл
                 </label>
-                <input
-                  type="text"
-                  name="plate_number"
+                <textarea
+                  name="description"
                   required
-                  value={formData.plate_number}
+                  value={formData.description}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
-                  placeholder="e.g. ABC-1234"
+                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 placeholder:text-xs placeholder:font-medium"
+                  placeholder="Нэмэлт мэдээллийг бичих боломжтой"
                 />
               </div>
             </div>
@@ -217,13 +216,13 @@ export default function CarForm({
           <div>
             <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
               <ImageIcon className="h-5 w-5 text-blue-600" />
-              Media
+              Зургaнууд
             </h3>
 
             {/* Thumbnail */}
             <div className="mb-6 space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                Vehicle Image
+                Машины зураг
               </label>
               <div className="flex gap-4 items-center">
                 <input
@@ -238,7 +237,7 @@ export default function CarForm({
                   className="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl font-bold cursor-pointer hover:bg-blue-100 transition-colors flex items-center gap-2"
                 >
                   <Upload className="h-4 w-4" />
-                  Select Image
+                  Зураг сонгох
                 </label>
                 {formData.thumbnail_url && (
                   <div className="h-20 w-32 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
@@ -256,14 +255,14 @@ export default function CarForm({
             <div className="space-y-2">
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Gallery Images
+                  Нэмэлт зурагнууд
                 </label>
                 <button
                   type="button"
                   onClick={handleAddImage}
                   className="text-xs font-bold text-blue-600 hover:text-blue-700"
                 >
-                  + Add Mock Image
+                  + Нэмэлт зураг нэмэх
                 </button>
               </div>
 
@@ -297,7 +296,7 @@ export default function CarForm({
                     className="aspect-square rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col gap-2 items-center justify-center text-gray-400 hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-500 transition-all"
                   >
                     <Upload className="h-6 w-6" />
-                    <span className="text-xs font-bold">Upload</span>
+                    <span className="text-xs font-bold">Зураг нэмэх</span>
                   </button>
                 </AnimatePresence>
               </div>
@@ -310,12 +309,12 @@ export default function CarForm({
           <div>
             <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
               <Fuel className="h-5 w-5 text-blue-600" />
-              Specifications
+              Техникийн үзүүлэлтүүд
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Transmission
+                  Хурдны хайрцаг
                 </label>
                 <select
                   name="transmission"
@@ -323,13 +322,13 @@ export default function CarForm({
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
                 >
-                  <option value="Automatic">Automatic</option>
-                  <option value="Manual">Manual</option>
+                  <option value="Automatic">Автомат</option>
+                  <option value="Manual">Механик</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Fuel Type
+                  Түлшний төрөл
                 </label>
                 <select
                   name="fuel_type"
@@ -337,15 +336,15 @@ export default function CarForm({
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
                 >
-                  <option value="Petrol">Petrol</option>
-                  <option value="Diesel">Diesel</option>
-                  <option value="Electric">Electric</option>
-                  <option value="Hybrid">Hybrid</option>
+                  <option value="Petrol">Бензин</option>
+                  <option value="Diesel">Дизель</option>
+                  <option value="Electric">Цахилгаан</option>
+                  <option value="Gas">Хийн түлш</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Seats
+                  Суудлын тоо
                 </label>
                 <input
                   type="number"
@@ -366,16 +365,19 @@ export default function CarForm({
           <div>
             <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-blue-600" />
-              Pricing & Status
+              Үнэ & Төлөв
             </h3>
-
             {/* Rates Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {" "}
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex justify-between">
-                  <span>Daily Rate</span>
-                  <span className="text-blue-600">&le; 6 days</span>
+                  <span>Өдрийн үнэ</span>
+                  <span className="text-blue-600 text-[10px]">
+                    6 хүртэл хоног
+                  </span>
                 </label>
+
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
                     $
@@ -392,62 +394,58 @@ export default function CarForm({
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex justify-between">
-                  <span>Weekly Rate</span>
-                  <span className="text-blue-600">7+ days</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={formData.rates.weekly || ""}
-                    onChange={(e) => handleRateChange("weekly", e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 bg-blue-50/50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-blue-900"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex justify-between">
-                  <span>Monthly Rate</span>
-                  <span className="text-blue-600">30+ days</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={formData.rates.monthly || ""}
-                    onChange={(e) =>
-                      handleRateChange("monthly", e.target.value)
-                    }
-                    className="w-full pl-8 pr-4 py-3 bg-purple-50/50 border-none rounded-xl focus:ring-2 focus:ring-purple-600/20 focus:bg-white transition-all font-bold text-purple-900"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-            </div>
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex justify-between items-center">
+                  <span>7 хоногийн үнэ</span>
 
-            {/* Price Validation Warning */}
-            {formData.rates.daily < formData.rates.weekly && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-600 ">7 дээш хоног</span>
+
+                    {/* Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => setWeeklyEnabled((v) => !v)}
+                      className={`w-10 h-6 flex items-center rounded-full p-1 transition ${
+                        weeklyEnabled ? "bg-blue-600" : "bg-gray-300"
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
+                          weeklyEnabled ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </label>
+
+                {weeklyEnabled && (
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+                      $
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.rates.weekly || ""}
+                      onChange={(e) =>
+                        handleRateChange("weekly", e.target.value)
+                      }
+                      className="w-full pl-8 pr-4 py-3 bg-blue-50/50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-blue-900"
+                      placeholder="0.00"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>{" "}
+            {/* Price Validation Warning */}{" "}
+            {weeklyEnabled && formData.rates.daily < formData.rates.weekly && (
               <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg text-amber-600 text-xs font-bold mb-6">
                 <AlertCircle className="h-4 w-4" />
-                <span>
-                  Warning: Weekly rate is typically lower than daily rate.
-                </span>
+                <span>Өдрийн үнэ долоо хоногийн үнээс их байх ёстой.</span>
               </div>
             )}
-
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                Vehicle Status
+                Машины төлөв
               </label>
               <select
                 name="status"
@@ -455,9 +453,9 @@ export default function CarForm({
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
               >
-                <option value="available">Available</option>
-                <option value="rented">Rented</option>
-                <option value="maintenance">Maintenance</option>
+                <option value="available">Түрээслэх боломжтой</option>
+                <option value="rented">Түрээслэгдсэн</option>
+                <option value="maintenance">Засвартай</option>
               </select>
             </div>
           </div>
@@ -475,7 +473,7 @@ export default function CarForm({
             ) : (
               <>
                 <Save className="h-5 w-5" />
-                <span>{isEditing ? "Save Changes" : "Create Car"}</span>
+                <span>{isEditing ? "Хадгалах" : "Үүсгэх"}</span>
               </>
             )}
           </button>

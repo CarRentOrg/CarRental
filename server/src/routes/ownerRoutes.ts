@@ -1,25 +1,62 @@
-import express from 'express';
+import express from "express";
 import {
-    addCar,
-    changeRoleToOwner,
-    deleteCar,
-    getOwnerCars,
-    toggleCarAvailability,
-    updateUserImage,
-} from '../controllers/ownerController';
-import { protect } from '../middlewares/auth';
-import upload from '../middlewares/multer';
-import { getDashboardData, getRecentActivity } from '../controllers/statsController';
+  addCar,
+  changeRoleToOwner,
+  deleteCar,
+  getDashboardData,
+  getOwnerCars,
+  toggleCarAvailability,
+  updateUserImage,
+} from "../controllers/ownerController";
+import { protect } from "../middlewares/auth";
+import upload from "../middlewares/multer";
+import { updateCar } from "../controllers/carController";
+import {
+  getAllOwnerBookings,
+  getOwnerBookingUsers,
+} from "../controllers/bookingController";
+import { requireOwner } from "../middlewares/owner.middleware";
 
 const router = express.Router();
 
-router.post('/change-role', protect, changeRoleToOwner);
-router.post('/add-car', upload.single('image'), protect, addCar);
-router.get('/cars', protect, getOwnerCars);
-router.post('/toggle-car', protect, toggleCarAvailability);
-router.post('/delete-car', protect, deleteCar);
-router.get('/dashboard', protect, getDashboardData);
-router.get('/activity', getRecentActivity);
-router.post('/update-image', upload.single('image'), protect, updateUserImage);
+router.post("/change-role", protect, changeRoleToOwner as any);
+router.post(
+  "/add-car",
+  protect,
+  upload.fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "images", maxCount: 5 },
+  ]),
+  addCar as any,
+);
+router.put(
+  "/update-car/:id",
+  protect,
+  upload.fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "images", maxCount: 5 },
+  ]),
+  updateCar as any,
+);
+router.get("/cars", protect, requireOwner, getOwnerCars as any);
+router.post("/toggle-car", protect, requireOwner, toggleCarAvailability as any);
+router.get("/dashboard", protect, requireOwner, getDashboardData as any);
+router.get("/cars", protect, requireOwner, getOwnerCars as any);
+router.delete("/cars/:id", protect, requireOwner, deleteCar as any);
+router.get("/bookings", protect, requireOwner, getAllOwnerBookings as any);
+router.get(
+  "/bookings/users",
+  protect,
+  requireOwner,
+  getOwnerBookingUsers as any,
+);
+
+router.post(
+  "/update-image",
+  upload.single("image"),
+  protect,
+  requireOwner,
+  updateUserImage as any,
+);
 
 export default router;

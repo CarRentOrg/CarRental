@@ -1,34 +1,48 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import User, { IUser } from "../models/User";
 
-interface AuthRequest extends Request {
-    user?: any;
+interface ReqWithUser extends Request {
+  user?: IUser;
 }
 
-export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    let token;
+export const protect = async (
+  req: ReqWithUser,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  let token;
 
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        try {
-            token = req.headers.authorization.split(' ')[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-            req.user = decoded;
-            next();
-        } catch (error) {
-            console.error(error);
-            res.status(401).json({ success: false, message: 'Not authorized, token failed' });
-        }
-    }
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      // Get token from header
+      token = req.headers.authorization.split(" ")[1];
 
-    if (!token) {
-        res.status(401).json({ success: false, message: 'Not authorized, no token' });
-    }
-};
+      // Verify token
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
 
-export const admin = (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (req.user && (req.user.role === 'user' || req.user.role === 'owner')) {
-        next();
-    } else {
-        res.status(401).json({ success: false, message: 'Not authorized as an admin' });
+      // Get user from the token
+      const user = await User.findById(decoded.id).select("-password");
+
+      if (!user) {
+        res.status(401).json({ message: "Not authorized, user not found" });
+        return;
+      }
+
+      req.user = user;
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(401).json({ message: "Not authorized, token failed" });
+      return;
     }
+  }
+
+  if (!token) {
+    res.status(401).json({ message: "Not authorized, no token" });
+    return;
+  }
 };

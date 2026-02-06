@@ -1,36 +1,84 @@
-import { Database } from "./supabase";
-
-export type Car = Database["public"]["Tables"]["cars"]["Row"] & {
+/* Car Type */
+export interface Car {
+  id: string;
+  _id: string; // MongoDB ID
+  name: string;
+  brand: string;
+  model?: string;
   year?: number;
   plate_number?: string;
-  images?: (string | null)[];
-  status?: string;
-  rates?: any;
-  image_gallery?: any;
-  price_rate?: any;
-  name?: string;
-};
-export type Booking = Database["public"]["Tables"]["bookings"]["Row"] & {
+  type: string;
+  transmission: "automatic" | "manual";
+  fuel_type: "petrol" | "diesel" | "electric" | "hybrid";
+  seats: number;
+  price_per_day: number;
+  price_rate?: {
+    daily?: number;
+    weekly?: number;
+    monthly?: number;
+  };
+  is_available: boolean;
+  thumbnail?: { url: string; fileId: string };
+  images?: { url: string; fileId: string }[];
+  image_gallery?: string[];
+  description?: string;
+  features?: string[];
+  location?: string;
+  status?: "available" | "rented" | "maintenance";
+  ownerId?: string;
+  created_at?: string;
+}
+
+/* Booking Type */
+export interface Booking {
+  _id: string; // MongoDB ID
+  car_id: string;
+  user_id: string;
+  start_date: string;
+  end_date: string;
+  total_price: number;
+  status: "pending" | "confirmed" | "cancelled";
+  rate_applied?: string;
+  created_at?: string;
+  updated_at?: string;
+
+  // optional populated fields
   car?: Car;
   user?: User;
-  rate_applied?: string;
-};
-export type NewsPost = Database["public"]["Tables"]["news"]["Row"];
+}
 
+/* User Type */
+/* ---------------------------------- */
 export interface User {
-  id: string;
+  _id: string; // MongoDB ID
   name: string;
-  email: string;
-  role: string;
   full_name?: string;
+  email: string;
+  role: "user" | "owner" | "admin";
   avatar_url?: string;
   phone?: string;
   created_at: string;
 }
 
+/* News Type */
+export interface NewsPost {
+  _id: string;
+  title: string;
+  content: string;
+  authorId?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+/* Activity Type */
 export interface Activity {
   id: string;
-  type: "booking_new" | "booking_cancelled" | "car_added" | "user_registered" | any;
+  type:
+    | "booking_new"
+    | "booking_cancelled"
+    | "car_added"
+    | "user_registered"
+    | string;
   title: string;
   message: string;
   time: string;
@@ -40,14 +88,24 @@ export interface Activity {
     avatar: string;
   };
 }
-
-
-export interface TitleProps {
-  title: string;
-  subtitle?: string;
-  align?: "center" | "left";
+/* Rental Rate Type */
+export interface RentalRate {
+  season?: string | null;
+  start_date?: string;
+  end_date?: string;
+  price_per_day: number;
 }
 
+/* Simplified Car for listings */
+export interface CarListing {
+  id: string;
+  name: string;
+  images: string[];
+  price_per_day: number;
+  is_available: boolean;
+}
+
+/* Car Data for frontend */
 export interface CarData {
   id: string;
   name: string;
@@ -64,16 +122,4 @@ export interface CarData {
   description: string;
   is_available: boolean;
   created_at?: string;
-}
-
-export interface Car1 {
-  id: string;
-  name: string;
-  images: string[];
-}
-export interface RENTAL_RATE {
-  season: string | null;
-  start_date?: string;
-  end_date?: string;
-  price_per_day: number;
 }

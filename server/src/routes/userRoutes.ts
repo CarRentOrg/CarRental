@@ -1,17 +1,11 @@
-import express from 'express';
-import {
-    getCars,
-    getUserData,
-    loginUser,
-    registerUser,
-} from '../controllers/userController';
-import { protect } from '../middlewares/auth';
+import express from "express";
+import { getUserData } from "../controllers/userController";
+import { protect } from "../middlewares/auth";
+import { getCars } from "../controllers/carController";
 
 const router = express.Router();
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
-router.get('/data', protect, getUserData);
-router.get('/cars', getCars);
+router.get("/data", protect, getUserData as any);
+router.get("/cars", getCars as any);
 
 export default router;
