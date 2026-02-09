@@ -13,19 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Activity } from "@/types";
-import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-
-interface DashboardStats {
-  totalCars: number;
-  totalBookings: number;
-  totalPending: number;
-  totalRevenue: number;
-  carStatus: {
-    available: number;
-    rented: number;
-  };
-}
 
 export default function AdminDashboard() {
   const [data, setData] = useState({
@@ -44,9 +32,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [statsData, activityData] = await Promise.all([
+        const [statsData] = await Promise.all([
           api.owner.dashboard(),
-          api.owner.activity(),
+          // api.owner.activity(),
         ]);
         setData(statsData);
         // setActivities(activityData || []);

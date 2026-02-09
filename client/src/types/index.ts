@@ -1,32 +1,30 @@
 /* Car Type */
 export interface Car {
-  id: string;
+  id?: string; // Optional for frontend-only or new cars
   _id: string; // MongoDB ID
   name: string;
   brand: string;
-  model?: string;
-  year?: number;
-  plate_number?: string;
+  model: string;
+  year: number;
   type: string;
   transmission: "automatic" | "manual";
   fuel_type: "petrol" | "diesel" | "electric" | "hybrid";
   seats: number;
-  price_per_day: number;
-  price_rate?: {
-    daily?: number;
-    weekly?: number;
-    monthly?: number;
+  price_per_day?: number;
+  price_rates?: {
+    daily: number;
+    weekly: number;
+    monthly: number;
   };
   is_available: boolean;
-  thumbnail?: { url: string; fileId: string };
+  thumbnail: { url: string; fileId: string };
   images?: { url: string; fileId: string }[];
-  image_gallery?: string[];
   description?: string;
   features?: string[];
   location?: string;
-  status?: "available" | "rented" | "maintenance";
   ownerId?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 /* Booking Type */

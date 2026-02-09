@@ -17,7 +17,7 @@ export default function CarCard({ car, onBook }: CarCardProps) {
     <div className="group w-full cursor-pointer relative">
       {/* IMAGE PART */}
       <Link
-        href={`/cars/${car.id}`}
+        href={`/cars/${car._id}`}
         className="
           relative block overflow-hidden
           rounded-[30px]
@@ -55,9 +55,9 @@ export default function CarCard({ car, onBook }: CarCardProps) {
 
         {/* Image */}
         <div className="relative aspect-3/2 w-full max-w-full overflow-hidden bg-zinc-800">
-          {car.thumbnail_url ? (
+          {car.thumbnail ? (
             <Image
-              src={car.thumbnail_url}
+              src={car.thumbnail.url}
               alt={car.model}
               fill
               priority

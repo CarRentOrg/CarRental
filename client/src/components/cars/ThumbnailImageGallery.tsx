@@ -71,7 +71,7 @@ export default function ThumbnailImageGallery({
             className="absolute inset-0"
           >
             <IKImage
-              path={images[activeIndex]}
+              src={images[activeIndex]}
               alt={alt}
               transformation={[{ width: "800", height: "450" }]}
               loading="lazy"
@@ -104,7 +104,7 @@ export default function ThumbnailImageGallery({
               )}
             >
               <IKImage
-                path={img}
+                src={img}
                 alt=""
                 transformation={[{ width: "200", height: "112" }]}
                 className="w-full h-full object-cover"

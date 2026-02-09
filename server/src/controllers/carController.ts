@@ -6,21 +6,41 @@ import { AuthenticatedRequest } from "../types";
 
 export const getCars = async (req: Request, res: Response) => {
   try {
-    const { brand, model, transmission, fuel_type, is_available, page, limit } =
-      req.query;
-    const cars = await Car.find({
-      brand: brand as string,
-      model: model as string,
-      transmission: transmission as string,
-      fuel_type: fuel_type as string,
-      is_available:
-        is_available !== undefined ? is_available === "true" : undefined,
-      page: page ? parseInt(page as string) : undefined,
-      limit: limit ? parseInt(limit as string) : undefined,
+    const {
+      brand,
+      model,
+      transmission,
+      fuel_type,
+      is_available,
+      page = "1",
+      limit = "10",
+    } = req.query;
+
+    const filter: any = {};
+
+    if (brand) filter.brand = brand;
+    if (model) filter.model = model;
+    if (transmission) filter.transmission = transmission;
+    if (fuel_type) filter.fuel_type = fuel_type;
+    if (is_available !== undefined)
+      filter.is_available = is_available === "true";
+
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+
+    const cars = await Car.find(filter)
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum);
+
+    res.status(200).json({
+      success: true,
+      data: cars,
     });
-    res.status(200).json({ success: true, data: cars });
   } catch (error) {
-    res.status(500).json({ success: false, message: error });
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : error,
+    });
   }
 };
 

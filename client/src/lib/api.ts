@@ -102,10 +102,10 @@ export const api = {
         body: formData,
       }),
 
-    updateCar: (id: string, data: any) =>
+    updateCar: (id: string, data: any | FormData) =>
       fetchAPI(`/owner/update-car/${id}`, {
         method: "PUT",
-        body: JSON.stringify(data),
+        body: data instanceof FormData ? data : JSON.stringify(data),
       }),
 
     deleteCar: (id: string) =>

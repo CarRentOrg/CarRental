@@ -50,13 +50,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const refreshCars = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.cars.getAll();
-      setCars(data || []);
-      setTotalCars(data?.length || 0);
+      const cars = await api.cars.getAll();
+
+      setCars(cars);
+      setTotalCars(cars.length);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const getCarById = async (id: string): Promise<Car | undefined> => {
+    // 1. Check local cache first
+    const localCar = cars.find((c) => c._id === id);
+    if (localCar) return localCar;
+
+    // 2. Fetch from API if not in cache
+    try {
+      const fetchedCar = await api.cars.getById(id);
+      return fetchedCar;
+    } catch (error) {
+      console.error("Failed to fetch car by ID:", error);
+      return undefined;
+    }
+  };
 
   const fetchMyBookings = useCallback(async () => {
     if (!user) return;
@@ -87,9 +103,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setDateRange = (startDate: string | null, endDate: string | null) =>
     setDateRangeState({ startDate, endDate });
-
-  const getCarById = async (id: string) =>
-    cars.find((c) => c.id === id) || (await api.cars.getById(id));
 
   return (
     <AppContext.Provider

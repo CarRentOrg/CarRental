@@ -1,481 +1,533 @@
 "use client";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
-  ArrowLeft,
-  Save,
-  Upload,
-  Car as CarIcon,
-  DollarSign,
-  Fuel,
   X,
+  Upload,
+  Save,
+  Loader2,
+  Car as CarIcon,
+  Settings2,
+  DollarSign,
+  MapPin,
   Image as ImageIcon,
-  AlertCircle,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Car } from "@/types";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import Image from "next/image";
+
+// Zod Schema matching the Car interface
+const carSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  brand: z.string().min(1, "Brand is required"),
+  model: z.string().min(1, "Model is required"),
+  year: z
+    .number()
+    .min(1900)
+    .max(new Date().getFullYear() + 1),
+  type: z.string().min(1, "Type is required"),
+  transmission: z.enum(["automatic", "manual"]),
+  fuel_type: z.enum(["petrol", "diesel", "electric", "hybrid"]),
+  seats: z.number().min(1),
+  price_per_day: z.number().min(0),
+  price_rates: z.object({
+    daily: z.number().min(0),
+    weekly: z.number().min(0),
+    monthly: z.number().min(0),
+  }),
+  description: z.string().optional(),
+  features: z.string().optional(),
+  location: z.string().optional(),
+  is_available: z.boolean().default(true),
+});
+
+type CarFormValues = z.infer<typeof carSchema>;
 
 interface CarFormProps {
   initialData?: Car;
-  onSubmit: (data: any) => Promise<void>;
-  isEditing?: boolean;
+  onSubmit: (data: FormData) => Promise<void>;
+  onCancel: () => void;
 }
 
 export default function CarForm({
   initialData,
   onSubmit,
-  isEditing = false,
+  onCancel,
 }: CarFormProps) {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
+    initialData?.thumbnail?.url || null,
+  );
+  const [imagePreviews, setImagePreviews] = useState<string[]>(
+    initialData?.images?.map((img) => img.url) || [],
+  );
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
-  // Initialize state including rates
-  const [formData, setFormData] = useState({
-    brand: initialData?.brand || "",
-    model: initialData?.model || "",
-    year: initialData?.year || new Date().getFullYear(),
-    plate_number: initialData?.plate_number || "",
-    seats: initialData?.seats || 4,
-    transmission: initialData?.transmission || "Automatic",
-    fuel_type: initialData?.fuel_type || "Petrol",
-    description: initialData?.description || "",
-    status: initialData?.is_available === false ? "rented" : "available",
-    thumbnail_url: initialData?.thumbnail_url || "",
-    rates: {
-      daily: initialData?.rates?.daily || initialData?.price_per_day || 0,
-      weekly: initialData?.rates?.weekly || 0,
-      monthly: initialData?.rates?.monthly || 0,
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<CarFormValues>({
+    resolver: zodResolver(carSchema),
+    defaultValues: {
+      name: initialData?.name || "",
+      brand: initialData?.brand || "",
+      model: initialData?.model || "",
+      year: initialData?.year || new Date().getFullYear(),
+      type: initialData?.type || "Sedan",
+      transmission: initialData?.transmission || "automatic",
+      fuel_type: initialData?.fuel_type || "petrol",
+      seats: initialData?.seats || 5,
+      price_per_day: initialData?.price_per_day || 0,
+      price_rates: {
+        daily: initialData?.price_rates?.daily || 0,
+        weekly: initialData?.price_rates?.weekly || 0,
+        monthly: initialData?.price_rates?.monthly || 0,
+      },
+      description: initialData?.description || "",
+      features: initialData?.features?.join(", ") || "",
+      location: initialData?.location || "",
+      is_available: initialData?.is_available ?? true,
     },
   });
 
-  const [images, setImages] = useState<string[]>(
-    (initialData?.images || []).filter((img): img is string => !!img),
-  );
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [weeklyEnabled, setWeeklyEnabled] = useState(false);
+  const dailyPrice = watch("price_per_day");
+  useEffect(() => {
+    if (!initialData && dailyPrice > 0) {
+      setValue("price_rates.daily", dailyPrice);
+      setValue("price_rates.weekly", dailyPrice * 7 * 0.9);
+      setValue("price_rates.monthly", dailyPrice * 30 * 0.8);
+    }
+  }, [dailyPrice, initialData, setValue]);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const onFormSubmit = async (data: CarFormValues) => {
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("brand", data.brand);
+    formData.append("model", data.model);
+    formData.append("year", data.year.toString());
+    formData.append("type", data.type);
+    formData.append("transmission", data.transmission);
+    formData.append("fuel_type", data.fuel_type);
+    formData.append("seats", data.seats.toString());
+    formData.append("price_per_day", data.price_per_day.toString());
+    formData.append("description", data.description || "");
+    formData.append("location", data.location || "");
+    formData.append("is_available", String(data.is_available));
+
+    formData.append("price_rates[daily]", data.price_rates.daily.toString());
+    formData.append("price_rates[weekly]", data.price_rates.weekly.toString());
+    formData.append(
+      "price_rates[monthly]",
+      data.price_rates.monthly.toString(),
+    );
+
+    if (data.features) {
+      const featureList = data.features
+        .split(",")
+        .map((f) => f.trim())
+        .filter(Boolean);
+      featureList.forEach((f) => formData.append("features[]", f));
+    }
+
+    if (thumbnailFile) {
+      formData.append("thumbnail", thumbnailFile);
+    }
+    imageFiles.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    const jsonPayload = {
+      ...data,
+      features:
+        data.features
+          ?.split(",")
+          .map((f) => f.trim())
+          .filter(Boolean) || [],
+    };
+    formData.append("carData", JSON.stringify(jsonPayload));
+
+    await onSubmit(formData);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      // Create a preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({
-          ...prev,
-          thumbnail_url: reader.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
+      setThumbnailFile(file);
+      setThumbnailPreview(URL.createObjectURL(file));
     }
   };
 
-  const handleRateChange = (
-    rateType: "daily" | "weekly" | "monthly",
-    value: string,
-  ) => {
-    const numValue = parseFloat(value) || 0;
-    setFormData((prev) => ({
-      ...prev,
-      rates: {
-        ...prev.rates,
-        [rateType]: numValue,
-      },
-    }));
-  };
-
-  const handleAddImage = () => {
-    // Mock image upload by adding a placeholder
-    const newImage = `https://loremflickr.com/640/480/car?random=${Math.random()}`;
-    setImages((prev) => [...prev, newImage]);
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await onSubmit({
-        ...formData,
-        year: Number(formData.year),
-        price_per_day: formData.rates.daily, // Sync for backward compatibility
-        images,
-        imageFile: selectedFile, // Pass the real file
-      });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setImageFiles((prev) => [...prev, ...files]);
+      const newPreviews = files.map((f) => URL.createObjectURL(f));
+      setImagePreviews((prev) => [...prev, ...newPreviews]);
     }
+  };
+
+  const removeImage = (index: number) => {
+    const initialCount = initialData?.images?.length || 0;
+    if (index >= initialCount) {
+      const newIndex = index - initialCount;
+      setImageFiles((prev) => prev.filter((_, idx) => idx !== newIndex));
+    }
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto pb-12"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto"
     >
-      <div className="flex items-center gap-4 mb-8">
-        <Link
-          href="/admin/cars"
-          className="p-3 bg-white border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
-        >
-          <ArrowLeft className="h-5 w-5 text-gray-600" />
-        </Link>
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-100 p-6 flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-black text-gray-900 tracking-tight">
-            {isEditing ? "Машин засах" : "Шинэ машин нэмэх"}
-          </h1>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+            {initialData ? "Edit Vehicle" : "Add New Vehicle"}
+          </h2>
+          <p className="text-sm text-gray-500 font-medium">
+            Fill in the details below to {initialData ? "update" : "create"} a
+            car Listing.
+          </p>
         </div>
+        <button
+          onClick={onCancel}
+          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+        >
+          <X className="h-5 w-5 text-gray-500" />
+        </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white rounded-4xl border border-gray-100 shadow-sm p-8 space-y-8">
-          {/* Basic Info */}
-          <div>
-            <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
-              <CarIcon className="h-5 w-5 text-blue-600" />
-              Үндсэн мэдээлэл
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Үйлдвэрлэгч
-                </label>
-                <input
-                  type="text"
-                  name="brand"
-                  required
-                  value={formData.brand}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 placeholder:text-xs placeholder:font-medium"
-                  placeholder="e.g. Tesla"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Загвар
-                </label>
-                <input
-                  type="text"
-                  name="model"
-                  required
-                  value={formData.model}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 placeholder:text-xs placeholder:font-medium"
-                  placeholder="e.g. Model S"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Үйлдвэрлэсэн он
-                </label>
-                <input
-                  type="number"
-                  name="year"
-                  required
-                  value={formData.year}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 placeholder:text-xs placeholder:font-medium"
-                  placeholder="e.g. 2022"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Нэмэлт мэдээлэл
-                </label>
-                <textarea
-                  name="description"
-                  required
-                  value={formData.description}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900 placeholder:text-xs placeholder:font-medium"
-                  placeholder="Нэмэлт мэдээллийг бичих боломжтой"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px bg-gray-100" />
-
-          {/* Media */}
-          <div>
-            <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
-              <ImageIcon className="h-5 w-5 text-blue-600" />
-              Зургaнууд
-            </h3>
-
-            {/* Thumbnail */}
-            <div className="mb-6 space-y-2">
+      <form onSubmit={handleSubmit(onFormSubmit)} className="p-8 space-y-8">
+        <section>
+          <h3 className="flex items-center text-lg font-bold text-gray-900 mb-6 group">
+            <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mr-3 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <CarIcon className="h-4 w-4" />
+            </span>
+            Basic Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                Машины зураг
+                Brand
               </label>
-              <div className="flex gap-4 items-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="car-image-upload"
-                />
-                <label
-                  htmlFor="car-image-upload"
-                  className="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl font-bold cursor-pointer hover:bg-blue-100 transition-colors flex items-center gap-2"
-                >
-                  <Upload className="h-4 w-4" />
-                  Зураг сонгох
-                </label>
-                {formData.thumbnail_url && (
-                  <div className="h-20 w-32 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
-                    <img
-                      src={formData.thumbnail_url}
-                      alt="Thumbnail"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                )}
-              </div>
+              <input
+                {...register("brand")}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900 focus:ring-2 focus:ring-blue-500/20"
+                placeholder="e.g. Tesla"
+              />
+              {errors.brand && (
+                <p className="text-xs text-red-500 font-bold">
+                  {errors.brand.message}
+                </p>
+              )}
             </div>
-
-            {/* Detail Images */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Нэмэлт зурагнууд
-                </label>
-                <button
-                  type="button"
-                  onClick={handleAddImage}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-700"
-                >
-                  + Нэмэлт зураг нэмэх
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <AnimatePresence>
-                  {images.map((img, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="aspect-square rounded-xl bg-gray-100 relative group overflow-hidden border border-gray-200"
-                    >
-                      <img
-                        src={img}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(i)}
-                        className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-white shadow-sm"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </motion.div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    className="aspect-square rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col gap-2 items-center justify-center text-gray-400 hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-500 transition-all"
-                  >
-                    <Upload className="h-6 w-6" />
-                    <span className="text-xs font-bold">Зураг нэмэх</span>
-                  </button>
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px bg-gray-100" />
-
-          {/* Specs */}
-          <div>
-            <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
-              <Fuel className="h-5 w-5 text-blue-600" />
-              Техникийн үзүүлэлтүүд
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Хурдны хайрцаг
-                </label>
-                <select
-                  name="transmission"
-                  value={formData.transmission}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
-                >
-                  <option value="Automatic">Автомат</option>
-                  <option value="Manual">Механик</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Түлшний төрөл
-                </label>
-                <select
-                  name="fuel_type"
-                  value={formData.fuel_type}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
-                >
-                  <option value="Petrol">Бензин</option>
-                  <option value="Diesel">Дизель</option>
-                  <option value="Electric">Цахилгаан</option>
-                  <option value="Gas">Хийн түлш</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Суудлын тоо
-                </label>
-                <input
-                  type="number"
-                  name="seats"
-                  min="2"
-                  max="50"
-                  value={formData.seats}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px bg-gray-100" />
-
-          {/* Pricing */}
-          <div>
-            <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-blue-600" />
-              Үнэ & Төлөв
-            </h3>
-            {/* Rates Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              {" "}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex justify-between">
-                  <span>Өдрийн үнэ</span>
-                  <span className="text-blue-600 text-[10px]">
-                    6 хүртэл хоног
-                  </span>
-                </label>
-
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={formData.rates.daily || ""}
-                    onChange={(e) => handleRateChange("daily", e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex justify-between items-center">
-                  <span>7 хоногийн үнэ</span>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-600 ">7 дээш хоног</span>
-
-                    {/* Toggle */}
-                    <button
-                      type="button"
-                      onClick={() => setWeeklyEnabled((v) => !v)}
-                      className={`w-10 h-6 flex items-center rounded-full p-1 transition ${
-                        weeklyEnabled ? "bg-blue-600" : "bg-gray-300"
-                      }`}
-                    >
-                      <div
-                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
-                          weeklyEnabled ? "translate-x-4" : "translate-x-0"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </label>
-
-                {weeklyEnabled && (
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
-                      $
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.rates.weekly || ""}
-                      onChange={(e) =>
-                        handleRateChange("weekly", e.target.value)
-                      }
-                      className="w-full pl-8 pr-4 py-3 bg-blue-50/50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-blue-900"
-                      placeholder="0.00"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>{" "}
-            {/* Price Validation Warning */}{" "}
-            {weeklyEnabled && formData.rates.daily < formData.rates.weekly && (
-              <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg text-amber-600 text-xs font-bold mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <span>Өдрийн үнэ долоо хоногийн үнээс их байх ёстой.</span>
-              </div>
-            )}
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                Машины төлөв
+                Model Name
+              </label>
+              <input
+                {...register("model")}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900 focus:ring-2 focus:ring-blue-500/20"
+                placeholder="e.g. Model 3"
+              />
+              {errors.model && (
+                <p className="text-xs text-red-500 font-bold">
+                  {errors.model.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Internal Name / Title
+              </label>
+              <input
+                {...register("name")}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900 focus:ring-2 focus:ring-blue-500/20"
+                placeholder="e.g. Tesla Model 3 Long Range"
+              />
+              {errors.name && (
+                <p className="text-xs text-red-500 font-bold">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Year
+              </label>
+              <input
+                type="number"
+                {...register("year", { valueAsNumber: true })}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900 focus:ring-2 focus:ring-blue-500/20"
+              />
+              {errors.year && (
+                <p className="text-xs text-red-500 font-bold">
+                  {errors.year.message}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <hr className="border-gray-100" />
+
+        <section>
+          <h3 className="flex items-center text-lg font-bold text-gray-900 mb-6 group">
+            <span className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center mr-3 text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+              <Settings2 className="h-4 w-4" />
+            </span>
+            Specifications
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Type
               </label>
               <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all font-bold text-gray-900"
+                {...register("type")}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
               >
-                <option value="available">Түрээслэх боломжтой</option>
-                <option value="rented">Түрээслэгдсэн</option>
-                <option value="maintenance">Засвартай</option>
+                <option value="Sedan">Sedan</option>
+                <option value="SUV">SUV</option>
+                <option value="Hatchback">Hatchback</option>
+                <option value="Coupe">Coupe</option>
+                <option value="Van">Van</option>
               </select>
             </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Transmission
+              </label>
+              <select
+                {...register("transmission")}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
+              >
+                <option value="automatic">Automatic</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Fuel Type
+              </label>
+              <select
+                {...register("fuel_type")}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
+              >
+                <option value="petrol">Petrol</option>
+                <option value="diesel">Diesel</option>
+                <option value="electric">Electric</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Seats
+              </label>
+              <input
+                type="number"
+                {...register("seats", { valueAsNumber: true })}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Location
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  {...register("location")}
+                  className="w-full pl-10 pr-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
+                  placeholder="e.g. Ulaanbaatar, Sukhbaatar District"
+                />
+              </div>
+            </div>
           </div>
+        </section>
+
+        <hr className="border-gray-100" />
+
+        <section>
+          <h3 className="flex items-center text-lg font-bold text-gray-900 mb-6 group">
+            <span className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center mr-3 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+              <DollarSign className="h-4 w-4" />
+            </span>
+            Pricing & Rates
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Base Daily Price
+              </label>
+              <input
+                type="number"
+                {...register("price_per_day", { valueAsNumber: true })}
+                className="w-full px-5 py-3 bg-emerald-50 border-none rounded-xl font-bold text-emerald-900"
+              />
+              {errors.price_per_day && (
+                <p className="text-xs text-red-500">
+                  {errors.price_per_day.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Daily Rate (1-6 days)
+              </label>
+              <input
+                type="number"
+                {...register("price_rates.daily", { valueAsNumber: true })}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Weekly Rate (7+ days)
+              </label>
+              <input
+                type="number"
+                {...register("price_rates.weekly", { valueAsNumber: true })}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Monthly Rate (30+ days)
+              </label>
+              <input
+                type="number"
+                {...register("price_rates.monthly", { valueAsNumber: true })}
+                className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
+              />
+            </div>
+          </div>
+        </section>
+
+        <hr className="border-gray-100" />
+
+        <section>
+          <h3 className="flex items-center text-lg font-bold text-gray-900 mb-6 group">
+            <span className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center mr-3 text-pink-600 group-hover:bg-pink-600 group-hover:text-white transition-colors">
+              <ImageIcon className="h-4 w-4" />
+            </span>
+            Images
+          </h3>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Thumbnail Image (Required)
+              </label>
+              <div className="flex gap-4 items-start">
+                <div className="relative w-40 aspect-video bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                  {thumbnailPreview ? (
+                    <Image
+                      src={thumbnailPreview}
+                      alt="Thumbnail"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      <ImageIcon className="h-8 w-8" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailChange}
+                    className="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100"
+                  />
+                  <p className="mt-2 text-xs text-gray-400">
+                    Main image displayed in lists.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Gallery Images
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                {imagePreviews.map((src, idx) => (
+                  <div
+                    key={idx}
+                    className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden group"
+                  >
+                    <Image src={src} alt="" fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-1 right-1 p-1 bg-white/90 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                <label className="cursor-pointer aspect-square rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all">
+                  <Upload className="h-6 w-6 mb-2" />
+                  <span className="text-xs font-bold">Add</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImagesChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            Description
+          </label>
+          <textarea
+            {...register("description")}
+            rows={4}
+            className="w-full px-5 py-3 bg-gray-50 border-none rounded-xl font-bold text-gray-900"
+          />
         </div>
 
-        {/* Submit */}
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end gap-4 pt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition-colors"
+          >
+            Cancel
+          </button>
           <button
             type="submit"
-            disabled={isLoading}
-            className="flex items-center space-x-2 px-8 py-4 bg-gray-900 text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
+            className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 disabled:opacity-50"
           >
-            {isLoading ? (
-              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            {isSubmitting ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <>
-                <Save className="h-5 w-5" />
-                <span>{isEditing ? "Хадгалах" : "Үүсгэх"}</span>
-              </>
+              <Save className="h-5 w-5" />
             )}
+            <span>{initialData ? "Save Changes" : "Create Vehicle"}</span>
           </button>
         </div>
       </form>

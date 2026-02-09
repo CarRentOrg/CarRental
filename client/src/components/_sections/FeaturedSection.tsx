@@ -26,7 +26,7 @@ const FeaturedSection = () => {
             <div className="h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          cars.slice(0, 4).map((car) => <CarCard key={car.id} car={car} />)
+          cars.slice(0, 4).map((car) => <CarCard key={car._id} car={car} />)
         )}
       </div>
       <div className="w-full flex justify-center items-center">

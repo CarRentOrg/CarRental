@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
 import CarCard from "@/components/cars/CarCard";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -12,92 +12,122 @@ export default function CarsPage() {
   const { t } = useLanguage();
   const { availableCars: cars, loading } = useApp();
 
-  // Filter States - Arrays for Multi-Select
-
-  // Filter States - Arrays for Multi-Select
+  // =====================
+  // State
+  // =====================
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedFuelTypes, setSelectedFuelTypes] = useState<string[]>([]);
   const [selectedTransmissions, setSelectedTransmissions] = useState<string[]>(
     [],
   );
-  const [sortOption, setSortOption] = useState("relevant"); // relevant, price_asc
+  const [sortOption, setSortOption] = useState<"relevant" | "price_asc">(
+    "relevant",
+  );
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Constants
   const ITEMS_PER_PAGE = 6;
 
-  // Derived Options for Filters
+  // =====================
+  // Filter Options
+  // =====================
   const brands = useMemo(
-    () => Array.from(new Set(cars.map((c) => c.brand))).sort(),
+    () => Array.from(new Set(cars.map((c) => c.brand).filter(Boolean))).sort(),
     [cars],
   );
 
   const fuelTypes = useMemo(
-    () => Array.from(new Set(cars.map((c) => c.fuel_type))).sort(),
+    () =>
+      Array.from(new Set(cars.map((c) => c.fuel_type).filter(Boolean))).sort(),
     [cars],
   );
+
   const transmissions = ["Automatic", "Manual"];
 
-  // Filtering Logic
+  // =====================
+  // Filtering + Sorting
+  // =====================
   const filteredCars = useMemo(() => {
     let result = [...cars];
 
-    // Filter by Brands
     if (selectedBrands.length > 0) {
-      result = result.filter((car) => selectedBrands.includes(car.brand));
+      result = result.filter((c) => selectedBrands.includes(c.brand));
     }
 
-    // Filter by Fuel Type (replacing Type)
-    if (selectedTypes.length > 0) {
-      result = result.filter((car) => selectedTypes.includes(car.fuel_type));
+    if (selectedFuelTypes.length > 0) {
+      result = result.filter((c) => selectedFuelTypes.includes(c.fuel_type));
     }
 
-    // Filter by Transmission
     if (selectedTransmissions.length > 0) {
-      result = result.filter((car) =>
-        selectedTransmissions.includes(car.transmission),
+      result = result.filter((c) =>
+        selectedTransmissions.includes(
+          c.transmission.charAt(0).toUpperCase() + c.transmission.slice(1),
+        ),
       );
     }
 
-    // Sorting
     if (sortOption === "price_asc") {
-      result.sort((a, b) => a.price_per_day - b.price_per_day);
+      result = [...result].sort((a, b) => a.price_per_day - b.price_per_day);
     }
 
     return result;
-  }, [selectedBrands, selectedTypes, selectedTransmissions, sortOption, cars]);
+  }, [
+    cars,
+    selectedBrands,
+    selectedFuelTypes,
+    selectedTransmissions,
+    sortOption,
+  ]);
 
-  // Reset pagination when filters change
-  useMemo(() => {
+  // =====================
+  // Reset page on filter change
+  // =====================
+  useEffect(() => {
     setCurrentPage(1);
-  }, [selectedBrands, selectedTypes, selectedTransmissions, sortOption]);
+  }, [selectedBrands, selectedFuelTypes, selectedTransmissions, sortOption]);
 
-  // Pagination Logic
+  // =====================
+  // Pagination
+  // =====================
   const totalPages = Math.ceil(filteredCars.length / ITEMS_PER_PAGE);
-  const paginatedCars = filteredCars.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
+  const paginatedCars = useMemo(
+    () =>
+      filteredCars.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE,
+      ),
+    [filteredCars, currentPage],
   );
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const clearAllFilters = () => {
     setSelectedBrands([]);
-    setSelectedTypes([]);
+    setSelectedFuelTypes([]);
     setSelectedTransmissions([]);
     setSortOption("relevant");
     setCurrentPage(1);
   };
 
+  // =====================
+  // UI
+  // =====================
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="mx-auto px-3 sm:px-12 py-26 w-full">
+      <div className="mx-auto w-full px-3 py-26 sm:px-12">
         {/* Header */}
-
-        <div className="mb-12 text-center space-y-6">
+        <div className="mb-12 space-y-6 text-center">
           <Title
             title={t("cars.title") || "Cars"}
             subtitle={
@@ -107,8 +137,8 @@ export default function CarsPage() {
           />
         </div>
 
-        {/* Filters & Sorting */}
-        <div className="mb-12 w-full grid grid-cols-2 gap-3 sm:gap-4 md:flex sm:flex-wrap sm:items-center sm:justify-center">
+        {/* Filters */}
+        <div className="mb-12 grid w-full grid-cols-2 gap-3 sm:gap-4 md:flex md:flex-wrap md:items-center md:justify-center">
           <MultiSelectDropdown
             label="Brands"
             options={brands}
@@ -119,8 +149,8 @@ export default function CarsPage() {
           <MultiSelectDropdown
             label="Fuel"
             options={fuelTypes}
-            selected={selectedTypes}
-            onChange={setSelectedTypes}
+            selected={selectedFuelTypes}
+            onChange={setSelectedFuelTypes}
           />
 
           <MultiSelectDropdown
@@ -134,8 +164,10 @@ export default function CarsPage() {
           <div className="relative group">
             <select
               value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-              className="w-full appearance-none cursor-pointer rounded-full border border-white/10 bg-white/5 pl-6 pr-10 py-3 text-sm font-medium text-gray-300 hover:bg-white/10 hover:border-white/20 focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all"
+              onChange={(e) =>
+                setSortOption(e.target.value as "relevant" | "price_asc")
+              }
+              className="w-full cursor-pointer appearance-none rounded-full border border-white/10 bg-white/5 py-3 pl-6 pr-10 text-sm font-medium text-gray-300 transition-all hover:border-white/20 hover:bg-white/10 focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30"
             >
               <option value="relevant" className="bg-gray-900">
                 Most Relevant
@@ -149,13 +181,15 @@ export default function CarsPage() {
         </div>
 
         {/* Cars Grid */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12 min-h-[400px]">
+        <div className="grid min-h-[400px] grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
           {loading ? (
             <div className="col-span-full flex justify-center py-20">
-              <div className="h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
             </div>
           ) : paginatedCars.length > 0 ? (
-            paginatedCars.map((car) => <CarCard key={car.id} car={car} />)
+            paginatedCars.map((car) => (
+              <CarCard key={car.id || car._id} car={car} />
+            ))
           ) : (
             <div className="col-span-full py-20 text-center">
               <p className="text-xl text-gray-500">
@@ -178,7 +212,7 @@ export default function CarsPage() {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 disabled:opacity-50 disabled:hover:bg-transparent"
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-white/10 disabled:opacity-50"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
@@ -188,14 +222,11 @@ export default function CarsPage() {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`
-                    flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all
-                    ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all ${
                       currentPage === page
                         ? "bg-white text-black"
                         : "text-gray-400 hover:bg-white/10 hover:text-white"
-                    }
-                  `}
+                    }`}
                   >
                     {page}
                   </button>
@@ -205,7 +236,7 @@ export default function CarsPage() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 disabled:opacity-50 disabled:hover:bg-transparent"
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-white/10 disabled:opacity-50"
               >
                 <ArrowRight className="h-4 w-4" />
               </button>
@@ -216,5 +247,3 @@ export default function CarsPage() {
     </div>
   );
 }
-
-// window.scrollTo({ top: 0, behavior: "smooth" });

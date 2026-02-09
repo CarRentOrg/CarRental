@@ -21,9 +21,13 @@ export default function AdminAnalyticsPage() {
 
   async function loadStats() {
     try {
-      const data = await api.stats.getDashboard();
-      setStats(data);
-    } catch (error) {
+      const data = await api.owner.dashboard();
+      setStats({
+        revenue: data.totalRevenue,
+        bookings: data.totalBookings,
+        activeFleet: data.totalCars, // Mapped to totalCars or available+rented
+        newCustomers: 0,
+      });
       console.error(error);
     } finally {
       setLoading(false);
