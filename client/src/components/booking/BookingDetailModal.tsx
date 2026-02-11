@@ -31,10 +31,8 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
 
   const car = booking.car;
   const days =
-    differenceInDays(
-      new Date(booking.end_date),
-      new Date(booking.start_date),
-    ) || 1;
+    differenceInDays(new Date(booking.endDate), new Date(booking.startDate)) ||
+    1;
 
   const handleCancelClick = () => {
     setShowConfirmCancel(true);
@@ -44,7 +42,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
     setShowConfirmCancel(false);
     setIsCancelling(true);
     try {
-      await api.bookings.reject(booking.id);
+      await api.bookings.reject(booking._id);
       await fetchMyBookings();
       onClose();
     } catch (error) {
@@ -62,8 +60,11 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
   };
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center">
+    <AnimatePresence mode="wait">
+      <div
+        key="booking-detail-modal"
+        className="fixed inset-0 z-100 flex items-end sm:items-center justify-center"
+      >
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -75,6 +76,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
 
         {/* Modal Content */}
         <motion.div
+          key="booking-detail-content"
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
@@ -91,9 +93,9 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
 
           {/* Header Image */}
           <div className="relative h-48 sm:h-56 bg-zinc-800">
-            {car?.thumbnail_url && (
+            {car?.thumbnail?.url && (
               <Image
-                src={car.thumbnail_url}
+                src={car.thumbnail.url}
                 alt={car.model}
                 fill
                 className="object-cover"
@@ -120,7 +122,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
                   Pickup
                 </span>
                 <p className="font-bold text-white">
-                  {format(new Date(booking.start_date), "MMM d, yyyy")}
+                  {format(new Date(booking.startDate), "MMM d, yyyy")}
                 </p>
               </div>
               <div className="p-4 bg-white/5 rounded-2xl space-y-1">
@@ -128,7 +130,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
                   Return
                 </span>
                 <p className="font-bold text-white">
-                  {format(new Date(booking.end_date), "MMM d, yyyy")}
+                  {format(new Date(booking.endDate), "MMM d, yyyy")}
                 </p>
               </div>
             </div>
@@ -146,14 +148,14 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
                 <div className="flex justify-between items-center text-zinc-400">
                   <span>Rate Applied</span>
                   <span className="font-medium text-white capitalize">
-                    {booking.rate_applied}
+                    {booking.rateApplied}
                   </span>
                 </div>
                 <div className="h-px bg-white/5" />
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-white">Total</span>
                   <span className="text-2xl font-black text-blue-500">
-                    ₮{booking.total_price.toLocaleString()}
+                    ${booking.totalPrice.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -189,6 +191,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
       </div>
 
       <ConfirmModal
+        key="confirm-cancel-modal"
         isOpen={showConfirmCancel}
         onClose={() => setShowConfirmCancel(false)}
         onConfirm={handleCancelConfirm}

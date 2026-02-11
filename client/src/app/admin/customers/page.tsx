@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, Mail, Phone, Calendar } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AdminTable, Column } from "@/components/admin/AdminTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { motion } from "framer-motion";
@@ -22,25 +22,29 @@ export default function AdminCustomersPage() {
   useEffect(() => {
     loadCustomers();
   }, [page]);
-
   useEffect(() => {
     const lowerSearch = search.toLowerCase();
     setFilteredCustomers(
       customers.filter(
         (c) =>
-          (c.full_name && c.full_name.toLowerCase().includes(lowerSearch)) ||
+          (c.name && c.name.toLowerCase().includes(lowerSearch)) ||
           (c.email && c.email.toLowerCase().includes(lowerSearch)),
       ),
     );
   }, [search, customers]);
 
+  const displayedCustomers = useMemo(() => {
+    const start = (page - 1) * LIMIT;
+    return filteredCustomers.slice(start, start + LIMIT);
+  }, [filteredCustomers, page]);
+
   async function loadCustomers() {
     try {
       setLoading(true);
-      const response = await api.customers.getAll({ page, limit: LIMIT });
+      const response = await api.owner.customers.getAll();
       setCustomers(response.data || []);
-      setTotal(response.total || 0);
       setFilteredCustomers(response.data || []);
+      setTotal(response.total || 0);
     } catch (error) {
       console.error("Failed to load customers:", error);
     } finally {
@@ -51,79 +55,69 @@ export default function AdminCustomersPage() {
   const columns: Column<
     User & { total_bookings?: number; total_spent?: number }
   >[] = [
-      {
-        header: "Хэрэглэгч",
-        cell: (row) => (
-          <div className="flex items-center gap-4">
-            <img
-              src={
-                row.avatar_url ||
-                `https://ui-avatars.com/api/?name=${row.full_name}&background=random`
-              }
-              alt=""
-              className="h-10 w-10 rounded-full bg-gray-100 object-cover border border-gray-100"
-            />
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-gray-900">
-                {row.full_name}
-              </span>
-              <span className="text-[10px] text-gray-500 uppercase tracking-widest">
-                {row.role}
-              </span>
-            </div>
+    {
+      header: "Хэрэглэгч",
+      cell: (row) => (
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-gray-900">{row.name}</span>
+            <span className="text-[10px] text-gray-500 uppercase tracking-widest">
+              {row.role}
+            </span>
           </div>
-        ),
-      },
-      {
-        header: "Contact",
-        cell: (row) => (
-          <div className="flex flex-col gap-1 text-xs text-gray-500">
+        </div>
+      ),
+    },
+    {
+      header: "Contact",
+      cell: (row) => (
+        <div className="flex flex-col gap-1 text-xs text-gray-500">
+          <div className="flex items-center gap-2">
+            <Mail className="h-3 w-3" />
+            <span>{row.email}</span>
+          </div>
+          {row.phone && (
             <div className="flex items-center gap-2">
-              <Mail className="h-3 w-3" />
-              <span>{row.email}</span>
+              <Phone className="h-3 w-3" />
+              <span>{row.phone}</span>
             </div>
-            {row.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="h-3 w-3" />
-                <span>{row.phone}</span>
-              </div>
-            )}
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Бүртгүүлсэн",
+      cell: (row) => (
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <Calendar className="h-3 w-3" />
+          <span>{new Date(row.created_at).toLocaleDateString()}</span>
+        </div>
+      ),
+    },
+    {
+      header: "Статистик",
+      cell: (row) => (
+        <div className="flex gap-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
+              Захиалга
+            </span>
+            <span className="text-sm font-black text-gray-900">
+              {row.total_bookings || 0}
+            </span>
           </div>
-        ),
-      },
-      {
-        header: "Бүртгүүлсэн",
-        cell: (row) => (
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Calendar className="h-3 w-3" />
-            <span>{new Date(row.created_at).toLocaleDateString()}</span>
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
+              Зарцуулсан
+            </span>
+            <span className="text-sm font-black text-emerald-600">
+              ${(row.total_spent || 0).toLocaleString()}
+            </span>
           </div>
-        ),
-      },
-      {
-        header: "Статистик",
-        cell: (row) => (
-          <div className="flex gap-4">
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-                Захиалга
-              </span>
-              <span className="text-sm font-black text-gray-900">
-                {row.total_bookings || 0}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-                Зарцуулсан
-              </span>
-              <span className="text-sm font-black text-emerald-600">
-                ${(row.total_spent || 0).toLocaleString()}
-              </span>
-            </div>
-          </div>
-        ),
-      },
-    ];
+        </div>
+      ),
+    },
+  ];
 
   return (
     <motion.div
@@ -157,12 +151,12 @@ export default function AdminCustomersPage() {
         <div className="p-4">
           <AdminTable
             columns={columns}
-            data={filteredCustomers}
+            data={displayedCustomers}
             loading={loading}
             emptyMessage="No customers found."
             // Pagination
             page={page}
-            total={total}
+            total={filteredCustomers.length}
             limit={LIMIT}
             onPageChange={setPage}
           />

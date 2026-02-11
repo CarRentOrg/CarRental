@@ -1,183 +1,285 @@
 "use client";
-import { api } from '@/lib/api';
 
-
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Mail, MapPin, Phone, Send, ArrowRight, Plus } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, Variants } from "framer-motion";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Send,
+  Clock,
+  Instagram,
+  MessageCircle,
+} from "lucide-react";
+import Image from "next/image";
 
 export default function ContactPage() {
-    const { t } = useLanguage();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-    return (
-        <div className="min-h-screen bg-black text-white pt-32 pb-20">
-            <div className="container mx-auto px-6">
-                <div className="text-center mb-20">
-                    <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tighter">{t('contact.title')}</h1>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">{t('contact.subtitle')}</p>
-                </div>
+  // Handle Input Change
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-6xl mx-auto">
-                    {/* Contact Form */}
-                    <div className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12">
-                        <form className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('contact.form.name')}</label>
-                                <input
-                                    type="text"
-                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                                    placeholder="John Doe"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('contact.form.email')}</label>
-                                <input
-                                    type="email"
-                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                                    placeholder="john@example.com"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('contact.form.message')}</label>
-                                <textarea
-                                    rows={5}
-                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"
-                                    placeholder="Your message..."
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center space-x-2 group"
-                            >
-                                <span>{t('contact.form.send')}</span>
-                                <Send className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                        </form>
-                    </div>
+  // Simulate Form Submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsSubmitting(false);
+    setIsSuccess(true);
+    // Reset after success
+    setTimeout(() => {
+      setIsSuccess(false);
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    }, 3000);
+  };
 
-                    {/* Info & Map */}
-                    <div className="space-y-8">
-                        {/* New Car Request Form */}
-                        <div className="bg-blue-600/10 border border-blue-500/20 rounded-3xl p-8">
-                            <h2 className="text-2xl font-bold mb-6 flex items-center space-x-2">
-                                <Plus className="h-6 w-6 text-blue-500" />
-                                <span>Request a Specific Car</span>
-                            </h2>
-                            <form
-                                className="space-y-4"
-                                onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    const formData = new FormData(e.currentTarget);
-                                    const data = {
-                                        user_name: formData.get('name') as string,
-                                        user_email: formData.get('email') as string,
-                                        car_model: formData.get('model') as string,
-                                        message: formData.get('message') as string,
-                                    };
+  const fadeIn: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  };
 
-                                    try {
-                                        const success = await api.requests.create(data);
-                                        if (success) {
-                                            alert('Request submitted successfully!');
-                                            (e.target as HTMLFormElement).reset();
-                                        } else {
-                                            alert('Failed to submit request.');
-                                        }
-                                    } catch (err) {
-                                        console.error('Request error:', err);
-                                        alert('Error submitting request. Please try again.');
-                                    }
-                                }}
-                            >
-                                <div className="grid grid-cols-2 gap-4">
-                                    <input
-                                        name="name"
-                                        required
-                                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors"
-                                        placeholder="Your Name"
-                                    />
-                                    <input
-                                        name="email"
-                                        type="email"
-                                        required
-                                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors"
-                                        placeholder="Email Address"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <input
-                                        name="model"
-                                        required
-                                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors"
-                                        placeholder="Desired Car Model (e.g. 2024 Tesla Model S)"
-                                        list="car-suggestions"
-                                    />
-                                    <datalist id="car-suggestions">
-                                        <option value="Lexus LX600" />
-                                        <option value="Toyota Camry" />
-                                        <option value="Mercedes S-Class" />
-                                        <option value="Tesla Model 3" />
-                                    </datalist>
-                                </div>
-                                <textarea
-                                    name="message"
-                                    rows={3}
-                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 transition-colors resize-none"
-                                    placeholder="Any special requirements?"
-                                />
-                                <button className="w-full bg-white text-black font-black py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all uppercase text-xs tracking-widest">
-                                    Submit Request
-                                </button>
-                            </form>
-                        </div>
-
-
-                        <div className="grid grid-cols-1 gap-6">
-                            <div className="flex items-start space-x-4 p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-colors">
-                                <div className="p-3 bg-blue-500/10 rounded-xl">
-                                    <MapPin className="h-6 w-6 text-blue-500" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg mb-1">{t('contact.info.office')}</h3>
-                                    <p className="text-gray-400">{t('footer.address')}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start space-x-4 p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-colors">
-                                <div className="p-3 bg-blue-500/10 rounded-xl">
-                                    <Phone className="h-6 w-6 text-blue-500" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg mb-1">{t('contact.info.phone')}</h3>
-                                    <p className="text-gray-400">+976 99999999</p>
-                                    <p className="text-gray-500 text-sm mt-1">Mon-Fri 9am-6pm</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start space-x-4 p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-colors">
-                                <div className="p-3 bg-blue-500/10 rounded-xl">
-                                    <Mail className="h-6 w-6 text-blue-500" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg mb-1">{t('contact.info.email')}</h3>
-                                    <p className="text-gray-400">support@luxerra.com</p>
-                                    <p className="text-gray-500 text-sm mt-1">We reply within 2 hours</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Map Placeholder */}
-                        <div className="bg-white/5 border border-white/10 rounded-3xl h-64 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-122.4194,37.7749,12,0,0/600x400?access_token=YOUR_TOKEN')] bg-cover bg-center opacity-50 grayscale group-hover:grayscale-0 transition-all duration-700" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="bg-black/80 backdrop-blur-sm px-6 py-3 rounded-full border border-white/10 flex items-center space-x-2">
-                                    <MapPin className="h-4 w-4 text-blue-500" />
-                                    <span className="text-sm font-bold">{t('contact.info.mapTitle')}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
+      {/* 1. HERO SECTION */}
+      <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80"
+            alt="Contact Hero"
+            fill
+            className="object-cover opacity-30"
+            priority
+          />
+          <div className="absolute inset-0 bg-linear-to-b from-black/80 via-black/50 to-black" />
         </div>
-    );
+
+        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto space-y-4">
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-7xl font-black tracking-tighter"
+          >
+            Get in <span className="text-blue-600">Touch</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="text-lg text-gray-400 font-light max-w-2xl mx-auto"
+          >
+            Have a question or need assistance? We are here to help you 24/7.
+            Reach out to us and we'll get back to you shortly.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* 2. MAIN CONTENT GRID */}
+      <section className="py-20 px-4 sm:px-12 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
+          {/* LEFT COLUMN: Contact Form */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeIn}
+          >
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold mb-2">Send us a Message</h2>
+              <p className="text-gray-400">
+                Fill the form below and our team will contact you.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+1 (555) 000-0000"
+                    className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="john@example.com"
+                  className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">
+                  Your Message
+                </label>
+                <textarea
+                  name="message"
+                  required
+                  rows={5}
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="How can we help you?"
+                  className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all resize-none"
+                />
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isSubmitting || isSuccess}
+                className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
+                  isSuccess
+                    ? "bg-green-600 text-white shadow-green-900/20"
+                    : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20"
+                } shadow-xl disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {isSubmitting ? (
+                  <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : isSuccess ? (
+                  "Message Sent!"
+                ) : (
+                  <>
+                    Send Message <Send className="h-5 w-5" />
+                  </>
+                )}
+              </motion.button>
+            </form>
+          </motion.div>
+
+          {/* RIGHT COLUMN: Info & Map */}
+          <div className="space-y-8">
+            {/* Info Cards */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            >
+              <div className="bg-zinc-900/40 p-6 rounded-3xl border border-white/5 space-y-3 hover:bg-zinc-900/60 transition-colors">
+                <div className="h-10 w-10 bg-blue-600/10 rounded-xl flex items-center justify-center text-blue-500">
+                  <Phone className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Call Us</h3>
+                  <p className="text-gray-400 text-sm">+1 (323) 555-7842</p>
+                </div>
+              </div>
+              <div className="bg-zinc-900/40 p-6 rounded-3xl border border-white/5 space-y-3 hover:bg-zinc-900/60 transition-colors">
+                <div className="h-10 w-10 bg-blue-600/10 rounded-xl flex items-center justify-center text-blue-500">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Email</h3>
+                  <p className="text-gray-400 text-sm">hello@luxerra.com</p>
+                </div>
+              </div>
+              <div className="bg-zinc-900/40 p-6 rounded-3xl border border-white/5 space-y-3 hover:bg-zinc-900/60 transition-colors">
+                <div className="h-10 w-10 bg-blue-600/10 rounded-xl flex items-center justify-center text-blue-500">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Opening Hours</h3>
+                  <p className="text-gray-400 text-sm">Mon-Sun: 8am - 10pm</p>
+                </div>
+              </div>
+              <div className="bg-zinc-900/40 p-6 rounded-3xl border border-white/5 space-y-3 hover:bg-zinc-900/60 transition-colors">
+                <div className="h-10 w-10 bg-blue-600/10 rounded-xl flex items-center justify-center text-blue-500">
+                  <MapPin className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Location</h3>
+                  <p className="text-gray-400 text-sm">
+                    Central Tower, Ulaanbaatar
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Google Map */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="w-full h-80 sm:h-96 rounded-[2.5rem] overflow-hidden border border-white/10 relative shadow-2xl"
+            >
+              <iframe
+                src="https://maps.google.com/maps?width=100%25&height=600&hl=en&q=Central%20Tower%2C%20Ulaanbaatar%2C%20Mongolia+(Luxerra%20Office)&t=&z=14&ie=UTF8&iwloc=B&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0, filter: "grayscale(100%) invert(90%)" }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Central Tower Location"
+              />
+            </motion.div>
+
+            {/* Social Links */}
+            <div className="flex gap-4 justify-start pt-4">
+              <a
+                href="#"
+                className="p-3 bg-white/5 rounded-full hover:bg-white/10 hover:text-blue-400 transition-all"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href="#"
+                className="p-3 bg-white/5 rounded-full hover:bg-white/10 hover:text-blue-400 transition-all"
+              >
+                <MessageCircle className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

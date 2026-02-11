@@ -87,7 +87,7 @@ export default function CarCard({ car, onBook }: CarCardProps) {
                 Actually nice UI: Button on the right instead of Learn More if available?
             */}
             <Link
-              href={`/cars/${car.id}`}
+              href={`/cars/${car._id}`}
               className="group/link flex items-center space-x-1 text-sm font-medium text-gray-400 transition-colors hover:text-white"
             >
               <span>{t("common.learnMore")}</span>
@@ -98,7 +98,8 @@ export default function CarCard({ car, onBook }: CarCardProps) {
             <p className="text-base text-gray-400">
               {t("common.from")}{" "}
               <span className="font-semibold text-white">
-                ${car.price_per_day}/{t("cars.perDay").replace("per ", "")}
+                ${car.price_rates?.daily ?? car.price_per_day}/
+                {t("cars.perDay").replace("per ", "")}
               </span>
             </p>
             {onBook && (

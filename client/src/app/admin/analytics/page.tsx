@@ -28,7 +28,6 @@ export default function AdminAnalyticsPage() {
         activeFleet: data.totalCars, // Mapped to totalCars or available+rented
         newCustomers: 0,
       });
-      console.error(error);
     } finally {
       setLoading(false);
     }

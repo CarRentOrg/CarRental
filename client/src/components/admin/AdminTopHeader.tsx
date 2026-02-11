@@ -217,12 +217,12 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
               <User className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div className="text-left hidden lg:block">
-              <p className="text-xs font-black text-gray-900 leading-none">
-                Супер Админ
-              </p>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+              <h4 className="text-xs font-semibold text-gray-900 leading-none">
+                Админ
+              </h4>
+              <h4 className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mt-1">
                 Удирдлага
-              </p>
+              </h4>
             </div>
           </button>
 

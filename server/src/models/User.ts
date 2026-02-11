@@ -2,9 +2,10 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
   [x: string]: any;
-  email: string;
+  email?: string;
   password?: string;
-  name: string;
+  phone?: string;
+  name?: string;
   role: "user" | "owner";
   image?: string;
 }
@@ -13,16 +14,23 @@ const userSchema = new Schema<IUser>(
   {
     email: {
       type: String,
-      required: true,
+      required: false,
+      sparse: true, // Allows multiple null/empty values while still being unique for non-null values
       unique: true,
     },
     password: {
       type: String,
-      required: false, // Optional for OAuth, but required for local auth (handled in controller)
+      required: false,
+    },
+    phone: {
+      type: String,
+      required: false,
+      sparse: true,
+      unique: true,
     },
     name: {
       type: String,
-      required: true,
+      required: false, // Name might not be known during first OTP booking
     },
     role: {
       type: String,

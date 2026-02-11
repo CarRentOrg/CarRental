@@ -1,6 +1,9 @@
+import { ReactNode } from "react";
+
 /* Car Type */
 export interface Car {
-  id?: string; // Optional for frontend-only or new cars
+  price_per_week: any;
+  rate_applied: ReactNode;
   _id: string; // MongoDB ID
   name: string;
   brand: string;
@@ -29,31 +32,29 @@ export interface Car {
 
 /* Booking Type */
 export interface Booking {
-  _id: string; // MongoDB ID
+  _id: string;
+  car: Car;
   car_id: string;
+  user: User;
   user_id: string;
-  start_date: string;
-  end_date: string;
-  total_price: number;
-  status: "pending" | "confirmed" | "cancelled";
-  rate_applied?: string;
-  created_at?: string;
-  updated_at?: string;
-
-  // optional populated fields
-  car?: Car;
-  user?: User;
+  startDate: string;
+  endDate: string;
+  totalPrice: number;
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+  paymentStatus?: "pending" | "paid" | "failed";
+  rateApplied?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  note?: string;
 }
 
 /* User Type */
 /* ---------------------------------- */
 export interface User {
-  _id: string; // MongoDB ID
+  _id: string;
   name: string;
-  full_name?: string;
   email: string;
-  role: "user" | "owner" | "admin";
-  avatar_url?: string;
+  role: "user" | "owner";
   phone?: string;
   created_at: string;
 }
@@ -96,7 +97,7 @@ export interface RentalRate {
 
 /* Simplified Car for listings */
 export interface CarListing {
-  id: string;
+  _id: string;
   name: string;
   images: string[];
   price_per_day: number;
@@ -105,7 +106,7 @@ export interface CarListing {
 
 /* Car Data for frontend */
 export interface CarData {
-  id: string;
+  _id: string;
   name: string;
   brand: string;
   type: string;

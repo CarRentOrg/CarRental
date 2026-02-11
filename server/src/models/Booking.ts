@@ -3,11 +3,18 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IBooking extends Document {
   user: mongoose.Types.ObjectId;
   car: mongoose.Types.ObjectId;
+  car_id: string;
+  userSnapshot: {
+    name: string;
+    email: string;
+  };
   startDate: Date;
   endDate: Date;
   totalPrice: number;
-  status: "pending" | "confirmed" | "cancelled" | "completed";
+  note?: string;
+  status: "pending" | "confirmed" | "cancelled";
   paymentStatus: "pending" | "paid" | "failed";
+  rateApplied?: "daily" | "weekly" | "monthly";
 }
 
 const bookingSchema = new Schema<IBooking>(
@@ -22,6 +29,11 @@ const bookingSchema = new Schema<IBooking>(
       ref: "Car",
       required: true,
     },
+    userSnapshot: {
+      name: String,
+      email: String,
+    },
+
     startDate: {
       type: Date,
       required: true,
@@ -29,6 +41,10 @@ const bookingSchema = new Schema<IBooking>(
     endDate: {
       type: Date,
       required: true,
+    },
+    note: {
+      type: String,
+      required: false,
     },
     totalPrice: {
       type: Number,
@@ -43,6 +59,13 @@ const bookingSchema = new Schema<IBooking>(
       type: String,
       enum: ["pending", "paid", "failed"],
       default: "pending",
+    },
+    car_id: {
+      type: String,
+    },
+    rateApplied: {
+      type: String,
+      enum: ["daily", "weekly", "monthly"],
     },
   },
   {

@@ -169,7 +169,7 @@ export default function CarDetailPage() {
             <Button
               text="Book Now"
               className="w-full mt-6 rounded-xl"
-              href={`/booking?carId=${carId}`}
+              href={`/booking/${carId}`}
             />
 
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-neutral-400">

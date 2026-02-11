@@ -28,7 +28,7 @@ interface AdminTableProps<T> {
   onPageChange?: (page: number) => void;
 }
 
-export function AdminTable<T extends { id: string }>({
+export function AdminTable<T extends { id?: string; _id?: string }>({
   columns,
   data,
   loading,
@@ -67,7 +67,7 @@ export function AdminTable<T extends { id: string }>({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            key={row.id || i}
+            key={row.id || row._id || i}
             className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-4 w-full"
           >
             <div className="flex justify-between items-start border-b border-gray-50 pb-3">
@@ -143,7 +143,7 @@ export function AdminTable<T extends { id: string }>({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.03 }}
-                  key={row.id || i}
+                  key={row.id || row._id || i}
                   className="hover:bg-gray-50/50 transition-colors group"
                 >
                   {columns.map((col, j) => (

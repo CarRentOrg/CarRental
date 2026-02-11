@@ -8,8 +8,12 @@ import {
   Check,
   X,
   AlertCircle,
+  Eye,
+  Info,
+  ChevronRight,
+  X as CloseIcon,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminTable, Column } from "@/components/admin/AdminTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,13 +22,22 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
 import { Booking } from "@/types";
+import Image from "next/image";
+import MobileBookingCard from "@/components/admin/MobileBookingCard";
+import BookingTimeline from "@/components/admin/BookingTimeline";
+import { BookingStatus } from "@/constants";
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<boolean>(false);
+
+  // View Modal / Side Panel State
+  const [viewBooking, setViewBooking] = useState<Booking | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
 
   // Modal State
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -38,19 +51,36 @@ export default function AdminBookingsPage() {
   const [total, setTotal] = useState(0);
   const LIMIT = 10;
 
+  const isInitialMount = useRef(true);
+  const lastFetchedPage = useRef<number | null>(null);
+
   useEffect(() => {
-    loadBookings();
+    // Basic logic: if it's the first mount OR the page has changed from what we last fetched
+    if (isInitialMount.current || page !== lastFetchedPage.current) {
+      loadBookings();
+      isInitialMount.current = false;
+      lastFetchedPage.current = page;
+    }
   }, [page]); // Reload when page changes
 
   async function loadBookings() {
     try {
       setLoading(true);
-      const data = await api.bookings.getAll();
-      setBookings(data || []);
-      setTotal(data?.length || 0);
-      setFilteredBookings(data || []);
+      const res = await api.owner.bookings.getAll();
+
+      // fetchAPI returns json.data ?? json
+      // So if server returns { success, total, data }, res IS the data array.
+      const list = Array.isArray(res) ? res : ((res as any)?.data ?? []);
+
+      setBookings(list);
+      setFilteredBookings(list);
+      setTotal(
+        Array.isArray(res) ? list.length : ((res as any)?.total ?? list.length),
+      );
     } catch (error) {
       console.error("Failed to load bookings:", error);
+      setBookings([]);
+      setFilteredBookings([]);
     } finally {
       setLoading(false);
     }
@@ -60,14 +90,10 @@ export default function AdminBookingsPage() {
     const lowerSearch = search.toLowerCase();
     setFilteredBookings(
       bookings.filter((b) => {
-        const idMatch = b.id?.toLowerCase().includes(lowerSearch);
+        const idMatch = b._id?.toLowerCase().includes(lowerSearch);
         const statusMatch = b.status?.toLowerCase().includes(lowerSearch);
-        const nameMatch = b.user?.full_name
-          ?.toLowerCase()
-          .includes(lowerSearch);
-        const carMatch = (b.car?.model)
-          ?.toLowerCase()
-          .includes(lowerSearch);
+        const nameMatch = b.user?.name?.toLowerCase().includes(lowerSearch);
+        const carMatch = b.car?.model?.toLowerCase().includes(lowerSearch);
         return idMatch || statusMatch || nameMatch || carMatch;
       }),
     );
@@ -90,6 +116,15 @@ export default function AdminBookingsPage() {
     setRejectReason("");
   };
 
+  const openViewPanel = (booking: Booking) => {
+    setViewBooking(booking);
+    setIsViewOpen(true);
+  };
+
+  const closeViewPanel = () => {
+    setIsViewOpen(false);
+  };
+
   const handleConfirmAction = async () => {
     if (!selectedBooking || !modalAction) return;
 
@@ -97,42 +132,44 @@ export default function AdminBookingsPage() {
       setActionLoading(true);
 
       if (modalAction === "approve") {
-        await api.bookings.approve(selectedBooking.id);
+        await api.bookings.approve(selectedBooking._id);
 
         // Update local state
         const updatedBookings = bookings.map((b) =>
-          b.id === selectedBooking.id
+          b._id === selectedBooking._id
             ? { ...b, status: "confirmed" as const }
             : b,
         );
         setBookings(updatedBookings);
         setFilteredBookings((prev) =>
           prev.map((b) =>
-            b.id === selectedBooking.id
+            b._id === selectedBooking._id
               ? { ...b, status: "confirmed" as const }
               : b,
           ),
         );
       } else {
-        await api.bookings.reject(selectedBooking.id);
+        await api.bookings.reject(selectedBooking._id);
 
         // Update local state
         const updatedBookings = bookings.map((b) =>
-          b.id === selectedBooking.id
+          b._id === selectedBooking._id
             ? { ...b, status: "cancelled" as const }
             : b,
         );
         setBookings(updatedBookings);
         setFilteredBookings((prev) =>
           prev.map((b) =>
-            b.id === selectedBooking.id
+            b._id === selectedBooking._id
               ? { ...b, status: "cancelled" as const }
               : b,
           ),
         );
       }
 
-      toast.success(`Booking successfully ${modalAction === "approve" ? "approved" : "rejected"}`);
+      toast.success(
+        `Booking successfully ${modalAction === "approve" ? "approved" : "rejected"}`,
+      );
       closeModal();
     } catch (error: any) {
       toast.error(error.message || `Failed to ${modalAction} booking`);
@@ -141,53 +178,55 @@ export default function AdminBookingsPage() {
     }
   };
 
+  const statusLabel: Record<BookingStatus, string> = {
+    [BookingStatus.Pending]: "Хүлээгдэж буй",
+    [BookingStatus.Confirmed]: "Баталгаажсан",
+    [BookingStatus.Cancelled]: "Цуцлагдсан",
+    [BookingStatus.Completed]: "Дууссан",
+  };
+
   const columns: Column<Booking>[] = [
     {
       header: "Захиалгын мэдээлэл",
-      accessorKey: "id",
+      accessorKey: "_id",
       cell: (row) => (
         <div className="flex flex-col gap-1">
           <span className="font-bold text-gray-900 text-xs tracking-wide">
-            #{row.id.substring(0, 8)}
+            #{row._id.substring(0, 8)}
           </span>
           <span className="text-[10px] text-gray-400 font-medium">
-            Created: {new Date(row.created_at).toLocaleDateString()}
+            Created:{" "}
+            {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "—"}
           </span>
         </div>
       ),
     },
-    {
-      header: "Хэрэглэгчид",
-      cell: (row) => (
-        <div className="flex items-center gap-3">
-          <img
-            src={
-              row.user?.avatar_url ||
-              `https://ui-avatars.com/api/?name=${row.user?.full_name}&background=random`
-            }
-            alt=""
-            className="h-9 w-9 rounded-full bg-gray-100 object-cover border border-gray-100"
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-gray-900 leading-none mb-1">
-              {row.user?.full_name || "Unknown User"}
-            </span>
-            <span className="text-[10px] text-gray-500 font-medium">
-              {row.user?.email}
-            </span>
-          </div>
-        </div>
-      ),
-    },
+    // {
+    //   header: "Хэрэглэгчид",
+    //   cell: (row) => (
+    //     <div className="flex items-center gap-3">
+    //       <div className="flex flex-col">
+    //         <span className="text-sm font-bold text-gray-900 leading-none mb-1">
+    //           {row.user?.name || "Unknown User"}
+    //         </span>
+    //         <span className="text-[10px] text-gray-500 font-medium">
+    //           {row.user?.email}
+    //         </span>
+    //       </div>
+    //     </div>
+    //   ),
+    // },
     {
       header: "Машин",
       cell: (row) => (
         <div className="flex items-center gap-3">
           <div className="h-10 w-14 rounded-lg bg-gray-100 overflow-hidden relative">
-            <img
-              src={row.car?.thumbnail_url || row.car?.image_url}
-              alt=""
+            <Image
+              src={row.car?.thumbnail?.url ?? "/placeholder.jpg"}
+              alt={row.car?.model ?? "Unknown Car"}
               className="h-full w-full object-cover"
+              width={100}
+              height={100}
             />
           </div>
           <div className="flex flex-col">
@@ -199,10 +238,10 @@ export default function AdminBookingsPage() {
       ),
     },
     {
-      header: "Хугацаа / Үнэ",
+      header: "Хугацаа",
       cell: (row) => {
-        const start = new Date(row.start_date);
-        const end = new Date(row.end_date);
+        const start = new Date(row.startDate);
+        const end = new Date(row.endDate);
         const days = Math.ceil(
           (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
         );
@@ -213,43 +252,9 @@ export default function AdminBookingsPage() {
               <Clock className="h-3.5 w-3.5 text-blue-600" />
               <span>{days} Хоног</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${row.rate_applied === "daily"
-                  ? "bg-gray-100 text-gray-600"
-                  : row.rate_applied === "weekly"
-                    ? "bg-blue-50 text-blue-600"
-                    : "bg-purple-50 text-purple-600"
-                  }`}
-              >
-                {row.rate_applied} Rate
-              </span>
-            </div>
           </div>
         );
       },
-    },
-    {
-      header: "Нийт үнэ",
-      cell: (row) => (
-        <div className="flex flex-col items-end">
-          <span className="font-black text-gray-900 text-base">
-            ${row.total_price.toLocaleString()}
-          </span>
-          <span className="text-[10px] text-gray-400 font-bold">
-            $
-            {(
-              row.total_price /
-              Math.ceil(
-                (new Date(row.end_date).getTime() -
-                  new Date(row.start_date).getTime()) /
-                (1000 * 60 * 60 * 24),
-              )
-            ).toFixed(0)}{" "}
-            / day
-          </span>
-        </div>
-      ),
     },
     {
       header: "Status",
@@ -265,9 +270,9 @@ export default function AdminBookingsPage() {
         return (
           <div className="flex items-center gap-2">
             <span
-              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${colors[status] || colors.pending}`}
+              className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wider border ${colors[status] || colors.pending}`}
             >
-              {row.status}
+              {statusLabel[row.status]}
             </span>
           </div>
         );
@@ -278,6 +283,13 @@ export default function AdminBookingsPage() {
       className: "text-right",
       cell: (row) => (
         <div className="flex justify-end gap-2">
+          <button
+            onClick={() => openViewPanel(row)}
+            className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition-all"
+            title="View Details"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
           {row.status === "pending" && (
             <>
               <button
@@ -337,19 +349,216 @@ export default function AdminBookingsPage() {
         </div>
 
         <div className="p-2 sm:p-4 flex-1 w-full">
-          <AdminTable
-            columns={columns}
-            data={filteredBookings}
-            loading={loading}
-            emptyMessage="No bookings found."
-            // Pagination
-            page={page}
-            total={total}
-            limit={LIMIT}
-            onPageChange={setPage}
-          />
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <AdminTable
+              columns={columns}
+              data={filteredBookings}
+              loading={loading}
+              emptyMessage="No bookings found."
+              // Pagination
+              page={page}
+              total={total}
+              limit={LIMIT}
+              onPageChange={setPage}
+            />
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4 px-2 pb-4">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 animate-pulse">
+                <div className="h-10 w-10 bg-gray-100 rounded-full mb-4" />
+                <div className="h-4 w-32 bg-gray-100 rounded" />
+              </div>
+            ) : filteredBookings.length > 0 ? (
+              filteredBookings.map((booking) => (
+                <MobileBookingCard
+                  key={booking._id}
+                  booking={booking}
+                  onView={openViewPanel}
+                  onApprove={openApproveModal}
+                  onReject={openRejectModal}
+                />
+              ))
+            ) : (
+              <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+                <p className="text-sm font-medium text-gray-400">
+                  Захиалга олдсонгүй.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Booking Detail Side Panel / Modal */}
+      <AnimatePresence>
+        {isViewOpen && viewBooking && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeViewPanel}
+              className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex justify-end"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 h-full w-full max-w-lg bg-white z-60 shadow-2xl flex flex-col"
+            >
+              {/* Panel Header */}
+              <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-black text-gray-900 leading-none mb-1">
+                    Захиалгын дэлгэрэнгүй
+                  </h2>
+                  <p className="text-xs text-gray-500 font-medium tracking-tight uppercase">
+                    ID: {viewBooking._id}
+                  </p>
+                </div>
+                <button
+                  onClick={closeViewPanel}
+                  className="p-2 hover:bg-gray-50 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
+                >
+                  <CloseIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Panel Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                {/* Timeline Section */}
+                <section className="space-y-4">
+                  <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    Захиалгын явц
+                  </h3>
+                  <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
+                    <BookingTimeline status={viewBooking.status as any} />
+                  </div>
+                </section>
+
+                {/* Car & User Details */}
+                <section className="grid sm:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                      Машины мэдээлэл
+                    </h4>
+                    <div className="flex gap-3">
+                      <div className="h-12 w-16 bg-gray-100 rounded-xl overflow-hidden shrink-0">
+                        <Image
+                          src={
+                            viewBooking.car?.thumbnail?.url ||
+                            "/placeholder.jpg"
+                          }
+                          alt=""
+                          className="h-full w-full object-cover"
+                          width={100}
+                          height={100}
+                        />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-bold text-gray-900 truncate">
+                          {viewBooking.car?.brand} {viewBooking.car?.model}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          ${viewBooking.car?.price_per_day} / хоног
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                      Хэрэглэгчийн мэдээлэл
+                    </h4>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs  text-gray-900">
+                        Name:{" "}
+                        <span className="text-xs font-semibold text-gray-900">
+                          {viewBooking.user?.name || "Unknown"}
+                        </span>
+                      </span>
+                      <span className="text-xs  text-gray-900">
+                        Email:{" "}
+                        <span className="text-xs font-semibold text-gray-900">
+                          {viewBooking.user?.email}
+                        </span>
+                      </span>
+                      <span className="text-xs  text-gray-900">
+                        Phone:{" "}
+                        <span className="text-xs font-semibold text-gray-900">
+                          {viewBooking.user?.phone || "Утас байхгүй"}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Price Breakdown */}
+                <section className="p-6 bg-blue-600 rounded-3xl text-white space-y-4 shadow-xl shadow-blue-100">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold opacity-80">
+                      Нийт төлбөр
+                    </span>
+                    <span className="text-2xl font-black">
+                      ${viewBooking.totalPrice?.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold opacity-60">
+                        Авах өдөр
+                      </span>
+                      <span className="text-sm font-bold">
+                        {new Date(viewBooking.startDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col text-right">
+                      <span className="text-[10px] uppercase font-bold opacity-60">
+                        Өгөх өдөр
+                      </span>
+                      <span className="text-sm font-bold">
+                        {new Date(viewBooking.endDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              {/* Panel Actions */}
+              {viewBooking.status === "pending" && (
+                <div className="p-6 border-t border-gray-50 grid grid-cols-2 gap-3 bg-gray-50/30">
+                  <button
+                    onClick={() => {
+                      setIsViewOpen(false);
+                      openApproveModal(viewBooking);
+                    }}
+                    className="flex items-center justify-center gap-2 py-4 bg-emerald-500 text-white rounded-2xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100"
+                  >
+                    <Check className="h-4 w-4" />
+                    Зөвшөөрөх
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsViewOpen(false);
+                      openRejectModal(viewBooking);
+                    }}
+                    className="flex items-center justify-center gap-2 py-4 bg-white border border-red-200 text-red-600 rounded-2xl text-sm font-bold hover:bg-red-50 transition-all"
+                  >
+                    <X className="h-4 w-4" />
+                    Татгалзах
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <ConfirmationModal
         isOpen={selectedBooking !== null && modalAction !== null}

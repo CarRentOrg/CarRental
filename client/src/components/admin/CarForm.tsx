@@ -49,13 +49,15 @@ type CarFormValues = z.infer<typeof carSchema>;
 interface CarFormProps {
   initialData?: Car;
   onSubmit: (data: FormData) => Promise<void>;
-  onCancel: () => void;
+  onCancel?: () => void;
+  isEditing?: boolean;
 }
 
 export default function CarForm({
   initialData,
   onSubmit,
   onCancel,
+  isEditing,
 }: CarFormProps) {
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
     initialData?.thumbnail?.url || null,
@@ -148,8 +150,8 @@ export default function CarForm({
       features:
         data.features
           ?.split(",")
-          .map((f) => f.trim())
-          .filter(Boolean) || [],
+          ?.map((f) => f.trim())
+          ?.filter(Boolean) || [],
     };
     formData.append("carData", JSON.stringify(jsonPayload));
 
@@ -187,7 +189,7 @@ export default function CarForm({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto"
+      className="bg-white rounded-4xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto"
     >
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-100 p-6 flex justify-between items-center">
         <div>
@@ -199,12 +201,14 @@ export default function CarForm({
             car Listing.
           </p>
         </div>
-        <button
-          onClick={onCancel}
-          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-        >
-          <X className="h-5 w-5 text-gray-500" />
-        </button>
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+          >
+            <X className="h-5 w-5 text-gray-500" />
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(onFormSubmit)} className="p-8 space-y-8">
@@ -510,13 +514,15 @@ export default function CarForm({
         </div>
 
         <div className="flex justify-end gap-4 pt-6">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition-colors"
-          >
-            Cancel
-          </button>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSubmitting}

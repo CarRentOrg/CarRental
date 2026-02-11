@@ -12,17 +12,20 @@ import {
 import { protect } from "../middlewares/auth";
 
 const router = Router();
-
-router.get("/", getBookings);
-router.get("/:id", getBookingById);
-router.post("/", protect, createBooking); // Secured create
-router.put("/:id", protect, updateBooking);
-router.delete("/:id", protect, deleteBooking);
-
-// New specific routes
-router.post("/check-availability", checkAvailabilityofCar);
-router.post("/create", protect, createBooking);
 router.get("/owner", protect, getAllOwnerBookings as any);
+router.post("/check-availability", checkAvailabilityofCar);
 router.post("/change-status", protect, changeBookingStatus);
+router.get("/my-bookings", protect, getBookings as any);
+
+router
+  .route("/")
+  .get(getBookings)
+  .post(protect, createBooking as any);
+
+router
+  .route("/:id")
+  .get(getBookingById)
+  .put(protect, updateBooking)
+  .delete(protect, deleteBooking);
 
 export default router;

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { User } from "@/types";
+import { useLoading } from "@/contexts/LoadingContext";
 
 // ✅ Auth context interface
 interface AuthContextType {
@@ -17,6 +18,8 @@ interface AuthContextType {
   loginWithToken: (token: string) => Promise<User | null>;
   logout: () => void;
   navigate: (path: string) => void;
+  requestOTP: (identifier: string) => Promise<boolean>;
+  verifyOTP: (identifier: string, code: string) => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -36,8 +39,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   //     return config;
   //   });
 
+  const { setIsLoading: setGlobalLoading } = useLoading();
+
   // ✅ loginWithToken
   const loginWithToken = async (token: string): Promise<User | null> => {
+    setGlobalLoading(true);
     try {
       localStorage.setItem("token", token);
       setToken(token);
@@ -46,20 +52,59 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(res.user);
       setIsOwner(["owner"].includes(res.user.role));
 
+      setTimeout(() => setGlobalLoading(false), 2000); // Ensure min load time
       return res.user;
     } catch {
       logout();
+      setGlobalLoading(false);
       return null;
     }
   };
 
   // ✅ logout
   const logout = () => {
+    setGlobalLoading(true);
     setUser(null);
     setToken(null);
     setIsOwner(false);
     localStorage.removeItem("token");
-    router.push("/");
+
+    setTimeout(() => {
+      router.push("/");
+      setGlobalLoading(false);
+    }, 2000);
+  };
+
+  // ✅ requestOTP
+  const requestOTP = async (identifier: string): Promise<boolean> => {
+    try {
+      const res = await api.auth.requestOTP(identifier);
+      return res.success;
+    } catch (err) {
+      console.error("OTP REQUEST ERROR", err);
+      return false;
+    }
+  };
+
+  // ✅ verifyOTP
+  const verifyOTP = async (
+    identifier: string,
+    code: string,
+  ): Promise<User | null> => {
+    try {
+      const res = await api.auth.verifyOTP(identifier, code);
+      if (res.success && res.token) {
+        localStorage.setItem("token", res.token);
+        setToken(res.token);
+        setUser(res.user);
+        setIsOwner(["owner"].includes(res.user.role));
+        return res.user;
+      }
+      return null;
+    } catch (err) {
+      console.error("OTP VERIFY ERROR", err);
+      return null;
+    }
   };
 
   // ✅ initialize on mount
@@ -89,6 +134,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loginWithToken,
         logout,
         navigate: (path: string) => router.push(path),
+        requestOTP,
+        verifyOTP,
       }}
     >
       {children}

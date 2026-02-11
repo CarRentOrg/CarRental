@@ -67,12 +67,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const user = await User.findOne({ email });
 
     if (user && (await bcrypt.compare(password, user.password || ""))) {
+      const token = generateToken(user.id, user.role);
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        sameSite: "strict",
+      });
+
       res.json({
         _id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
-        token: generateToken(user.id, user.role),
+        token,
       });
     } else {
       res.status(401).json({ message: "Invalid email or password" });

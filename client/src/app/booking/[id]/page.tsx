@@ -1,24 +1,11 @@
 "use client";
 
 import { useState, useEffect, Suspense, useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronLeft,
-  Star,
-  Users,
-  Fuel,
-  Gauge,
-  Check,
-  AlertCircle,
-} from "lucide-react";
-import {
-  format,
-  eachDayOfInterval,
-  isWithinInterval,
-  startOfDay,
-} from "date-fns";
+import { motion } from "framer-motion";
+import { Star, Users, Fuel, Gauge, Check, AlertCircle } from "lucide-react";
+import { eachDayOfInterval, isWithinInterval } from "date-fns";
 import { useApp } from "@/contexts/AppContext";
 import DateRangePicker from "@/components/ui/DateRangePicker";
 import Returnbutton from "@/components/shared/returnbutton";
@@ -26,12 +13,10 @@ import { api } from "@/lib/api";
 import { Car, Booking } from "@/types";
 import toast from "react-hot-toast";
 
-// Component to handle Search Params (needed for Suspense boundary)
 function BookingContent() {
-  // Context & Hooks
-  const searchParams = useSearchParams();
+  const params = useParams();
   const router = useRouter();
-  const carId = searchParams.get("carId");
+  const carId = params.id as string;
   const { getCarById } = useApp();
 
   const [car, setCar] = useState<Car | null>(null);
@@ -47,6 +32,7 @@ function BookingContent() {
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
 
   // Fetch Data
   useEffect(() => {
@@ -59,21 +45,33 @@ function BookingContent() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Fetch Car from Context
+        // 1. Машины мэдээлэл авах
         const carData = await getCarById(carId);
-
-        if (carData) {
-          setCar(carData);
-
-          // 2. Fetch Bookings
-          const carBookings = await api.bookings.getAll();
-          const filteredBookings = carBookings.filter(
-            (b: Booking) =>
-              b.car_id === carId && ["confirmed", "pending"].includes(b.status),
-          );
-          setExistingBookings(filteredBookings);
-        } else {
+        if (!carData) {
           setError("Car not found");
+          return;
+        }
+        setCar(carData);
+
+        // 2. Бүх bookings-ийг авах
+        const allBookings = await api.bookings.getAll();
+
+        // 3. Тухайн car-д хамаарах confirmed/pending bookings-г шүүх
+        const filteredBookings = allBookings.filter(
+          (b: Booking) =>
+            b.car_id === carId && ["confirmed", "pending"].includes(b.status),
+        );
+        setExistingBookings(filteredBookings);
+
+        // 4. /bookings/:id GET хийх оролдлого, 404 бол зүгээр алгасах
+        try {
+          const bookingId = params.bookingId as string; // route-д байгаа бол
+          if (bookingId) {
+            await api.bookings.getById(bookingId);
+            // Хэрэв олдвол ямар нэг UI-д харуулах боломжтой
+          }
+        } catch (err) {
+          console.warn("Booking not found, continuing without booking data");
         }
       } catch (err) {
         setError("Failed to load details");
@@ -90,8 +88,8 @@ function BookingContent() {
     const dates: Date[] = [];
     existingBookings.forEach((booking) => {
       try {
-        const start = new Date(booking.start_date);
-        const end = new Date(booking.end_date);
+        const start = new Date(booking.startDate);
+        const end = new Date(booking.endDate);
         const interval = eachDayOfInterval({ start, end });
         dates.push(...interval);
       } catch (e) {
@@ -105,23 +103,27 @@ function BookingContent() {
   const priceDetails = useMemo(() => {
     if (!car || !startDate || !endDate) return null;
 
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const days = diffDays === 0 ? 1 : diffDays;
+    const diffTime = endDate.getTime() - startDate.getTime();
+    const days = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
-    const rates = car.rates as any;
-    let rate = rates?.daily || car.price_per_day;
+    const rates = car.price_rates!;
+    const dailyRate = rates?.daily || car.price_per_day || 0;
+
+    let rate: number = dailyRate;
     let rateName = "Daily Rate";
     let discount = 0;
 
-    if (days >= 30) {
-      rate = rates?.monthly || rate * 0.7;
-      rateName = "Monthly Rate";
-      discount = 30;
-    } else if (days >= 7) {
-      rate = rates?.weekly || rate * 0.85;
-      rateName = "Weekly Rate";
-      discount = 15;
+    // Weekly & Monthly fallback
+    if (rates) {
+      if (days >= 30) {
+        rate = rates.monthly ?? dailyRate * 0.7;
+        rateName = "Monthly Rate";
+        discount = 30;
+      } else if (days >= 7) {
+        rate = rates.weekly ?? dailyRate * 0.85;
+        rateName = "Weekly Rate";
+        discount = 15;
+      }
     }
 
     return {
@@ -129,7 +131,7 @@ function BookingContent() {
       rate,
       rateName,
       discount,
-      subtotal: days * car.price_per_day,
+      subtotal: days * dailyRate,
       total: days * rate,
     };
   }, [car, startDate, endDate]);
@@ -139,33 +141,30 @@ function BookingContent() {
 
     setIsSubmitting(true);
     try {
-      await api.bookings.create({
-        car_id: car.id,
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
-        total_price: priceDetails?.total || 0,
-        // note: note // MockAPI doesn't store note but real app would
-      });
+      const bookingPayload = {
+        carId: car._id,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        totalPrice: priceDetails?.total || 0,
+        note,
+      };
+
+      const response = await api.bookings.create(bookingPayload);
+
       setSubmitSuccess(true);
+      setCreatedBookingId(response._id);
       toast.success("Booking request sent successfully!");
-      // Redirect after minor delay
+
+      // Redirect after a short delay to show success state
       setTimeout(() => {
-        router.push("/admin/bookings"); // Or user dashboard
+        router.push(`/my-bookings/${response._id}`);
       }, 2000);
     } catch (err: any) {
       toast.error(err.message || "Failed to book");
-    } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Check if selected range is valid (no overlaps)
-  // DateRangePicker handles valid selection logic partially, but let's ensure
-  // we don't allow submitting if there's a conflict (though DatePicker prevents selecting blocked dates usually,
-  // user might select A...B where A and B are free but M in middle is blocked?
-  // My update to DatePicker.tsx didn't implement complex "path blocked" logic fully in `handleDateClick`
-  // (I annotated "In real app, optimize this").
-  // So validation here is good.
   const isSelectionValid = useMemo(() => {
     if (!startDate || !endDate) return true;
     // Check if any disabled date is within range
@@ -175,7 +174,7 @@ function BookingContent() {
   }, [startDate, endDate, disabledDates]);
 
   // Safe Image Logic
-  const carImage = car?.thumbnail_url || car?.image_url;
+  const image: string | null = car?.thumbnail?.url ?? null;
 
   if (loading) {
     return (
@@ -202,7 +201,7 @@ function BookingContent() {
             notify you once approved.
           </p>
           <div className="animate-pulse text-sm text-blue-400">
-            Redirecting...
+            Redirecting to your booking...
           </div>
         </motion.div>
       </div>
@@ -238,7 +237,7 @@ function BookingContent() {
     );
   }
 
-  const rates = car.rates as any;
+  const rates = car.price_rates;
 
   return (
     <div className="min-h-screen bg-black text-white py-26 px-3 sm:px-12 mx-auto">
@@ -269,9 +268,9 @@ function BookingContent() {
                 className="bg-zinc-900/50 rounded-3xl overflow-hidden border border-white/5"
               >
                 <div className="relative aspect-4/3 w-full bg-zinc-800">
-                  {carImage ? (
+                  {image ? (
                     <Image
-                      src={carImage}
+                      src={image}
                       alt={car.model}
                       fill
                       className="object-cover"
@@ -293,12 +292,12 @@ function BookingContent() {
                       <span
                         className={`px-2 py-1 rounded-lg text-xs font-bold ${car.is_available ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
                       >
-                        {car.is_available
-                          ? "Available"
-                          : "Unavailable"}
+                        {car.is_available ? "Available" : "Unavailable"}
                       </span>
                     </div>
-                    <h2 className="text-2xl font-bold">{car.brand} {car.model}</h2>
+                    <h2 className="text-2xl font-bold">
+                      {car.brand} {car.model}
+                    </h2>
                   </div>
                 </div>
 
@@ -340,17 +339,13 @@ function BookingContent() {
                   <div className="flex justify-between items-center text-gray-400">
                     <span>Weekly (7+ days)</span>
                     <span className="font-bold text-white">
-                      $
-                      {rates?.weekly ||
-                        Math.floor(car.price_per_day * 0.85)}
+                      ${rates?.weekly || (rates?.daily ? rates.daily * 7 : 0)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-gray-400">
                     <span>Monthly (30+ days)</span>
                     <span className="font-bold text-white">
-                      $
-                      {rates?.monthly ||
-                        Math.floor(car.price_per_day * 0.7)}
+                      ${rates?.monthly || (rates?.daily ? rates.daily * 30 : 0)}
                     </span>
                   </div>
                 </div>

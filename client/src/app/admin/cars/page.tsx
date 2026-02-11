@@ -116,7 +116,7 @@ export default function AdminCarsPage() {
               ))
             : filteredCars.map((car) => (
                 <motion.div
-                  key={car.id}
+                  key={car._id}
                   layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -152,7 +152,7 @@ export default function AdminCarsPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-blue-600 font-black text-xl">
-                          ₮{car.price_per_day}
+                          ₮{car.price_rates?.daily ?? car.price_per_day}
                         </p>
                         <p className="text-gray-400 text-[10px] font-bold uppercase">
                           / хоног
@@ -183,7 +183,7 @@ export default function AdminCarsPage() {
 
                     <div className="flex gap-2 pt-4 border-t border-gray-100">
                       <Link
-                        href={`/admin/cars/${car.id}/edit`}
+                        href={`/admin/cars/${car._id}/edit`}
                         className="flex-1 py-3 text-center rounded-xl text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
                       >
                         Edit Car

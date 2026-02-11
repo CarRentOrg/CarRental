@@ -7,6 +7,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useApp } from "@/contexts/AppContext";
 import MultiSelectDropdown from "@/components/ui/MultiSelectDropdown";
 import Title from "@/components/shared/title";
+import Link from "next/link";
+import { SkeletonCard } from "@/components/ui/SkeletonCard";
 
 export default function CarsPage() {
   const { t } = useLanguage();
@@ -66,7 +68,9 @@ export default function CarsPage() {
     }
 
     if (sortOption === "price_asc") {
-      result = [...result].sort((a, b) => a.price_per_day - b.price_per_day);
+      result = [...result].sort(
+        (a, b) => (a.price_per_day || 0) - (b.price_per_day || 0),
+      );
     }
 
     return result;
@@ -183,13 +187,14 @@ export default function CarsPage() {
         {/* Cars Grid */}
         <div className="grid min-h-[400px] grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
           {loading ? (
-            <div className="col-span-full flex justify-center py-20">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-            </div>
-          ) : paginatedCars.length > 0 ? (
-            paginatedCars.map((car) => (
-              <CarCard key={car.id || car._id} car={car} />
+            Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard
+                key={i}
+                className="h-[400px] w-full rounded-[2.5rem]"
+              />
             ))
+          ) : paginatedCars.length > 0 ? (
+            paginatedCars.map((car) => <CarCard key={car._id} car={car} />)
           ) : (
             <div className="col-span-full py-20 text-center">
               <p className="text-xl text-gray-500">

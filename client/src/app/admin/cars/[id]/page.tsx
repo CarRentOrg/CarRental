@@ -56,12 +56,23 @@ export default function EditCarPage() {
           setValue("name", car.model);
           setValue("brand", car.brand);
           setValue("type", car.type);
-          setValue("pricePerDay", car.price_per_day.toString());
-          setValue("transmission", car.transmission as any);
-          setValue("fuelType", car.fuel_type as any);
+          setValue(
+            "pricePerDay",
+            (car.price_rates?.daily ?? car.price_per_day ?? 0).toString(),
+          );
+          setValue(
+            "transmission",
+            (car.transmission.charAt(0).toUpperCase() +
+              car.transmission.slice(1)) as any,
+          );
+          setValue(
+            "fuelType",
+            (car.fuel_type.charAt(0).toUpperCase() +
+              car.fuel_type.slice(1)) as any,
+          );
           setValue("seats", car.seats.toString());
-          setValue("description", car.description);
-          setValue("imageUrl", car.image_url);
+          setValue("description", car.description || "");
+          setValue("imageUrl", car.thumbnail?.url || "");
         }
       } catch (error) {
         console.error("Failed to load car", error);
@@ -80,13 +91,15 @@ export default function EditCarPage() {
         brand: data.brand,
         type: data.type,
         price_per_day: Number(data.pricePerDay),
-        transmission: data.transmission,
-        fuel_type: data.fuelType, // Note: backend expects fuel_type usually, but create used 'fuel'. Let's check consistency.
-        // Checking usage in create: 'fuel: data.fuelType'. But API type says 'fuel_type'.
-        // I'll stick to 'fuel_type' which is in the DB schema.
+        price_rates: {
+          daily: Number(data.pricePerDay),
+          weekly: Number(data.pricePerDay) * 7 * 0.9, // Default 10% discount
+          monthly: Number(data.pricePerDay) * 30 * 0.8, // Default 20% discount
+        },
+        transmission: data.transmission.toLowerCase(),
+        fuel_type: data.fuelType.toLowerCase(),
         seats: Number(data.seats),
         description: data.description,
-        image_url: data.imageUrl || "",
       };
 
       // Note: api.create usage showed 'fuel', but schema has 'fuel_type'.
@@ -94,7 +107,7 @@ export default function EditCarPage() {
       // Type definition says 'fuel_type'.
       // I will use 'fuel_type' here to be safe as it matches the DB column likely.
 
-      await api.cars.update(id, formattedData as any);
+      await api.owner.updateCar(id, formattedData);
       router.push("/admin/cars");
       router.refresh();
     } catch (error) {
@@ -296,7 +309,7 @@ export default function EditCarPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-grow flex items-center justify-center space-x-3 bg-blue-600 text-white rounded-[2rem] py-6 font-black uppercase tracking-widest shadow-2xl shadow-blue-200 transition-all hover:bg-blue-700 hover:-translate-y-1 disabled:opacity-50"
+            className="grow flex items-center justify-center space-x-3 bg-blue-600 text-white rounded-4xl py-6 font-black uppercase tracking-widest shadow-2xl shadow-blue-200 transition-all hover:bg-blue-700 hover:-translate-y-1 disabled:opacity-50"
           >
             <Save className="h-6 w-6" />
             <span>{isSubmitting ? "Saving..." : "Save Changes"}</span>

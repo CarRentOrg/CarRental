@@ -1,4 +1,3 @@
-import { RENTAL_RATE } from "@/types";
 import { Users, FileText, Car as CarIcon, Wallet } from "lucide-react";
 
 // Note: CARS data is now fetched from the backend API
@@ -73,5 +72,9 @@ export const FAQS: FAQItem[] = [
   },
 ];
 
-
-
+export enum BookingStatus {
+  Pending = "pending",
+  Confirmed = "confirmed",
+  Cancelled = "cancelled",
+  Completed = "completed",
+}

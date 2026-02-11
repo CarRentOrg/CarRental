@@ -289,3 +289,57 @@ export const getDashboardData = async (
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+export const getAllUsersWithStats = async (_req: Request, res: Response) => {
+  try {
+    const stats = await Booking.aggregate([
+      {
+        $group: {
+          _id: "$user",
+          total_bookings: { $sum: 1 },
+          total_spent: { $sum: "$totalPrice" },
+          userSnapshot: { $first: "$userSnapshot" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$userDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: { $ifNull: ["$userDetails.name", "$userSnapshot.name"] },
+          email: { $ifNull: ["$userDetails.email", "$userSnapshot.email"] },
+          role: { $ifNull: ["$userDetails.role", "user"] },
+          phone: { $ifNull: ["$userDetails.phone", ""] },
+          created_at: { $ifNull: ["$userDetails.createdAt", new Date()] },
+          total_bookings: 1,
+          total_spent: 1,
+        },
+      },
+      { $sort: { total_bookings: -1 } },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      total: stats.length,
+      data: stats,
+    });
+  } catch (error: any) {
+    console.error("GET USERS WITH STATS ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};

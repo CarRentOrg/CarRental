@@ -8,6 +8,8 @@ import Login from "@/components/auth/Login";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppProvider as DataProvider } from "@/contexts/AppContext";
+import { LoadingProvider } from "@/contexts/LoadingContext";
+import FullPageLoader from "@/components/ui/FullPageLoader";
 import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import ImageKitProvider from "@/contexts/ImageKitProvider";
@@ -31,18 +33,21 @@ export default function RootLayout({
         className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col bg-black`}
       >
         <Toaster position="top-right" />
-        <AuthProvider>
-          <DataProvider>
-            <LanguageProvider>
-              <ImageKitProvider>
-                <Login />
-                {!isAdminPage && <Header />}
-                <main className="grow">{children}</main>
-                {!isAdminPage && <Footer />}
-              </ImageKitProvider>
-            </LanguageProvider>
-          </DataProvider>
-        </AuthProvider>
+        <LoadingProvider>
+          <AuthProvider>
+            <DataProvider>
+              <LanguageProvider>
+                <ImageKitProvider>
+                  <FullPageLoader />
+                  <Login />
+                  {!isAdminPage && <Header />}
+                  <main className="grow">{children}</main>
+                  {!isAdminPage && pathname === "/" && <Footer />}
+                </ImageKitProvider>
+              </LanguageProvider>
+            </DataProvider>
+          </AuthProvider>
+        </LoadingProvider>
       </body>
     </html>
   );

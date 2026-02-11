@@ -11,6 +11,11 @@ export interface AuthResponse {
   user: User;
   message?: string;
 }
+interface GetAllUsersResponse {
+  success: boolean;
+  total: number;
+  data: (User & { total_bookings?: number; total_spent?: number })[];
+}
 
 export interface DashboardStats {
   totalCars: number;
@@ -33,6 +38,7 @@ export interface Activity {
 async function fetchAPI<T>(
   endpoint: string,
   options: RequestInit = {},
+  config: { returnNullOn404?: boolean } = {},
 ): Promise<T> {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -56,6 +62,9 @@ async function fetchAPI<T>(
   });
 
   if (!res.ok) {
+    if (res.status === 404 && config.returnNullOn404) {
+      return null as T;
+    }
     let message = `HTTP ${res.status}`;
     try {
       const err = await res.json();
@@ -83,6 +92,25 @@ export const api = {
       }),
 
     getMe: () => fetchAPI<GetMeResponse>("/auth/data"),
+
+    requestOTP: (identifier: string) =>
+      fetchAPI<{ success: boolean; code?: string }>("/auth/otp/request", {
+        method: "POST",
+        body: JSON.stringify({ identifier }),
+      }),
+
+    verifyOTP: (identifier: string, code: string) =>
+      fetchAPI<{ success: boolean; token: string; user: User }>(
+        "/auth/otp/verify",
+        {
+          method: "POST",
+          body: JSON.stringify({ identifier, code }),
+        },
+      ),
+  },
+
+  users: {
+    getById: (id: string) => fetchAPI<User>(`/users/${id}`),
   },
 
   cars: {
@@ -91,8 +119,60 @@ export const api = {
   },
 
   bookings: {
-    getAll: () => fetchAPI<Booking[]>("/user/bookings"),
-    getById: (id: string) => fetchAPI<Booking>(`/user/bookings/${id}`),
+    getAll: (params?: { carId?: string; status?: string }) =>
+      fetchAPI<Booking[]>(
+        `/bookings?${new URLSearchParams({
+          car_id: params?.carId ?? "",
+          status: params?.status ?? "",
+        }).toString()}`,
+      ),
+
+    getMyBookings: () => fetchAPI<Booking[]>("/bookings"),
+
+    getById: (id: string) =>
+      fetchAPI<Booking | null>(
+        `/bookings/${id}`,
+        {},
+        { returnNullOn404: true },
+      ),
+
+    create: (data: {
+      carId: string;
+      startDate: string;
+      endDate: string;
+      totalPrice: number;
+      note?: string;
+    }) =>
+      fetchAPI<Booking>("/bookings", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+
+    update: (
+      id: string,
+      data: Partial<{
+        startDate: string;
+        endDate: string;
+        totalPrice: number;
+        status: "pending" | "confirmed" | "cancelled";
+      }>,
+    ) =>
+      fetchAPI<Booking>(`/bookings/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+
+    reject: (id: string) =>
+      fetchAPI<Booking>(`/bookings/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "cancelled" }),
+      }),
+
+    approve: (id: string) =>
+      fetchAPI<Booking>(`/bookings/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "confirmed" }),
+      }),
   },
 
   owner: {
@@ -118,5 +198,14 @@ export const api = {
 
     dashboard: () => fetchAPI<DashboardStats>("/owner/dashboard"),
     activity: () => fetchAPI<Activity[]>("/owner/activity"),
+    bookings: {
+      getAll: () =>
+        fetchAPI<{ success: boolean; total: number; data: Booking[] }>(
+          "/owner/bookings",
+        ),
+    },
+    customers: {
+      getAll: () => fetchAPI<GetAllUsersResponse>("/owner/customers"),
+    },
   },
 };

@@ -2,23 +2,65 @@
 
 import React, { useEffect, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, Calendar, Star, Clock, Car } from "lucide-react";
+import Image from "next/image";
 import BookingCard from "@/components/booking/BookingCard";
 import BookingDetailModal from "@/components/booking/BookingDetailModal";
 import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
-import { Booking } from "@/types";
-import { Shield, ChevronRight } from "lucide-react";
-import Image from "next/image";
+import { SkeletonCard } from "@/components/ui/SkeletonCard";
+
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Star,
+  Clock,
+  Car,
+  Shield,
+  ChevronRight,
+  LogOut,
+} from "lucide-react";
 
 export default function ProfilePage() {
-  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
   const { user, bookings, loadingBookings } = useApp();
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const { token, logout, setShowLogin } = useAuth();
+
+  const [mounted, setMounted] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  if (!user) return null;
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
+  // Guest view
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
+        {/* Guest content */}
+        <div className="text-center mt-24">
+          <div className="h-32 w-32 rounded-full bg-zinc-900 flex items-center justify-center mx-auto mb-6">
+            <User className="h-16 w-16 text-zinc-500" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">Welcome, Guest</h1>
+          <p className="text-zinc-400 mb-6">
+            Please login to view your profile and bookings.
+          </p>
+          <button
+            onClick={() => setShowLogin(true)}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-colors"
+          >
+            Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Logged-in user view
   const stats = [
     { label: "Total Bookings", value: bookings.length, icon: Calendar },
     {
@@ -37,57 +79,40 @@ export default function ProfilePage() {
       icon: Car,
     },
   ];
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-black text-white pt-24 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-12">
-        {/* Mobile-First Header */}
-        <div className="flex flex-col items-center md:items-start md:flex-row md:gap-8 mb-12">
-          {/* Avatar */}
-          <div className="relative group mb-6 md:mb-0">
-            <div className="h-32 w-32 rounded-full overflow-hidden border-4 border-white/10 p-1 group-hover:border-blue-500 transition-colors">
-              <Image
-                src={
-                  user.avatar_url ||
-                  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80"
-                }
-                alt={user.full_name || "User"}
-                width={128}
-                height={128}
-                className="h-full w-full object-cover rounded-full"
-              />
-            </div>
-            <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center border-4 border-black">
-              <Star className="h-4 w-4 text-white fill-white" />
-            </div>
-          </div>
+    <div className="min-h-screen bg-black text-white pt-24 pb-12 relative">
+      {/* Header-like Logout */}
+      <div className="fixed top-0 left-0 right-0 flex justify-end p-4 z-50">
+        <button
+          onClick={logout}
+          className="px-6 py-2 rounded-full bg-red-600 text-white font-bold hover:bg-red-700 transition"
+        >
+          Logout
+        </button>
+      </div>
 
-          {/* Info */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-12">
+        {/* User info */}
+        <div className="flex flex-col items-center md:items-start md:flex-row md:gap-8 mb-12">
           <div className="text-center md:text-left space-y-2">
             <div className="text-3xl md:text-5xl font-black tracking-tight">
-              {user.full_name}
+              {user.name}
             </div>
             <div className="flex flex-col md:flex-row gap-4 text-zinc-400 font-medium">
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <Mail className="h-4 w-4" />
-                <span>{user.email}</span>
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4" /> {user.email}
               </div>
               {user.phone && (
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <Phone className="h-4 w-4" />
-                  <span>{user.phone}</span>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" /> {user.phone}
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Stats - Horizontal Scroll on Mobile, Grid on Desktop */}
+        {/* Stats */}
         <div className="mb-12 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-snap-x selection:bg-none">
           <div className="flex md:grid md:grid-cols-4 gap-4 min-w-max md:min-w-full">
             {stats.map((stat, i) => (
@@ -112,48 +137,12 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Account Security Section */}
-        <div className="mb-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold">Account Security</h2>
-            <div className="h-px flex-1 bg-white/5 ml-6" />
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6"
-          >
-            <div className="flex items-center gap-6">
-              <div className="h-16 w-16 bg-blue-500/10 rounded-4xl flex items-center justify-center shrink-0">
-                <Shield className="h-8 w-8 text-blue-500" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-lg font-bold text-white">
-                  Password & Security
-                </h3>
-                <p className="text-zinc-500 text-sm">
-                  Update your password to keep your account safe.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsPasswordModalOpen(true)}
-              className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/5 text-white hover:bg-white/10 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 group"
-            >
-              Change Password
-              <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </motion.div>
-        </div>
-
-        {/* Bookings List */}
+        {/* Bookings */}
         <div className="space-y-6">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold">My Bookings</h2>
             <div className="h-px flex-1 bg-white/5 ml-6" />
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {loadingBookings ? (
               Array.from({ length: 3 }).map((_, i) => (
@@ -163,11 +152,11 @@ export default function ProfilePage() {
                 />
               ))
             ) : bookings.length > 0 ? (
-              bookings.map((booking) => (
+              bookings.map((b) => (
                 <BookingCard
-                  key={booking.id}
-                  booking={booking}
-                  onClick={(b) => setSelectedBooking(b)}
+                  key={b._id}
+                  booking={b}
+                  onClick={setSelectedBooking}
                 />
               ))
             ) : (
@@ -184,12 +173,11 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Detail Modal */}
+      {/* Modals */}
       <BookingDetailModal
         booking={selectedBooking}
         onClose={() => setSelectedBooking(null)}
       />
-
       <ChangePasswordModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}

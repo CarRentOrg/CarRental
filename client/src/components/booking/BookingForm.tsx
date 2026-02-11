@@ -1,7 +1,6 @@
 "use client";
 import { api } from "@/lib/api";
 
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -49,11 +48,12 @@ export default function BookingForm() {
       }
 
       const bookingData = {
-        car_id: carId,
-        start_date: data.pickupDate,
-        end_date: data.dropoffDate,
+        carId: carId,
+        startDate: data.pickupDate,
+        endDate: data.dropoffDate,
         status: "pending" as const,
-        total_price: 0,
+        totalPrice: 0,
+        note: `Contact: ${data.firstName} ${data.lastName}, ${data.phone}, ${data.email}. Locations: ${data.pickupLocation} -> ${data.dropoffLocation}`,
       };
 
       const result = await api.bookings.create(bookingData);
