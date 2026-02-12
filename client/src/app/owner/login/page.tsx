@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { api } from "@/lib/api";
 import { Car, Lock } from "lucide-react";
 
 export default function OwnerLoginPage() {
-  const { setShowLogin, navigate, loginWithToken } = useAuth();
+  const router = useRouter();
+  const { setShowLogin, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,18 +21,12 @@ export default function OwnerLoginPage() {
     e.preventDefault();
     try {
       setLoading(true);
-      const response = await api.auth.login({ email, password });
+      const user = await login({ email, password });
 
-      if (!response.token) {
-        toast.error("Login failed");
-        return;
-      }
-
-      const user = await loginWithToken(response.token);
       if (user?.role === "owner") {
         toast.success("Welcome, Owner!");
-        navigate("/admin");
-      } else {
+        router.push("/admin");
+      } else if (user) {
         toast.error("Unauthorized access");
       }
     } catch (err: any) {
@@ -101,7 +96,7 @@ export default function OwnerLoginPage() {
 
         <div className="pt-4 text-center">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => router.push("/")}
             className="text-zinc-500 text-sm font-bold hover:text-white transition-colors"
           >
             Back to home

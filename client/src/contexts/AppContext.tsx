@@ -10,7 +10,7 @@ import {
 } from "react";
 import { Car, Booking } from "@/types";
 import { api } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 import { User } from "@/types";
 
@@ -36,7 +36,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useUserAuth();
 
   const [cars, setCars] = useState<Car[]>([]);
   const [availableCars, setAvailableCars] = useState<Car[]>([]);

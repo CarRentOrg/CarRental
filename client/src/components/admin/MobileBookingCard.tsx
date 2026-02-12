@@ -20,6 +20,7 @@ interface MobileBookingCardProps {
   onView: (booking: Booking) => void;
   onApprove: (booking: Booking) => void;
   onReject: (booking: Booking) => void;
+  onComplete: (booking: Booking) => void;
 }
 
 export default function MobileBookingCard({
@@ -27,6 +28,7 @@ export default function MobileBookingCard({
   onView,
   onApprove,
   onReject,
+  onComplete,
 }: MobileBookingCardProps) {
   const statusColors = {
     pending: "bg-amber-50 text-amber-700 border-amber-100",
@@ -175,6 +177,15 @@ export default function MobileBookingCard({
               Татгалзах
             </button>
           </>
+        )}
+        {booking.status === "confirmed" && (
+          <button
+            onClick={() => onComplete(booking)}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-500 text-white rounded-xl text-[11px] font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-100"
+          >
+            <CheckCircle className="h-3.5 w-3.5" />
+            Дуусгах
+          </button>
         )}
       </div>
     </motion.div>

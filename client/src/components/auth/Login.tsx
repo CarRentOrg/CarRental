@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 
 const Login = () => {
-  const { showLogin, setShowLogin, navigate, loginWithToken } = useAuth();
+  const { showLogin, setShowLogin, login } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [state, setState] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
@@ -15,34 +18,37 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const callbackUrl = searchParams.get("callbackUrl");
+
   const onSubmitHandler = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
 
-      const response =
-        state === "login"
-          ? await api.auth.login({ email, password })
-          : await api.auth.register({ name, email, password });
-
-      if (!response.token) {
-        toast.error(response.message || "Auth failed");
-        return;
-      }
-
-      const user = await loginWithToken(response.token);
-      console.log("user", user);
-
-      if (user?.role === "owner") {
-        navigate("/admin");
+      if (state === "login") {
+        const user = await login({ email, password });
+        if (user) {
+          toast.success("Welcome back!");
+          setShowLogin(false);
+          if (user.role === "owner") {
+            router.push(callbackUrl || "/admin/dashboard");
+          } else {
+            router.push(callbackUrl || "/");
+          }
+        } else {
+          toast.error("Invalid credentials");
+        }
       } else {
-        navigate("/");
+        const response = await api.auth.register({ name, email, password });
+        if (response.token) {
+          toast.success("Registration successful! Please login.");
+          setState("login");
+        } else {
+          toast.error(response.message || "Registration failed");
+        }
       }
-
-      toast.success("Success");
-      setShowLogin(false);
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Auth failed");
     } finally {
       setLoading(false);
     }

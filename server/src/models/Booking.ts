@@ -12,9 +12,11 @@ export interface IBooking extends Document {
   endDate: Date;
   totalPrice: number;
   note?: string;
-  status: "pending" | "confirmed" | "cancelled";
-  paymentStatus: "pending" | "paid" | "failed";
+  status: "pending" | "confirmed" | "cancelled" | "completed" | "locked";
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
   rateApplied?: "daily" | "weekly" | "monthly";
+  transactionId?: string;
+  expiresAt?: Date;
 }
 
 const bookingSchema = new Schema<IBooking>(
@@ -52,13 +54,26 @@ const bookingSchema = new Schema<IBooking>(
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled", "completed"],
+      // 'locked' = reserved for short time while paying
+      enum: ["pending", "confirmed", "cancelled", "completed", "locked"],
       default: "pending",
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed"],
+      enum: ["pending", "paid", "failed", "refunded"],
       default: "pending",
+    },
+    transactionId: {
+      type: String,
+      required: false,
+    },
+    expiresAt: {
+      type: Date,
+      // TTL Index: Specific method to auto-delete documents that have expired
+      // But we only want to expire 'locked' ones.
+      // MongoDB TTL removes docs where field > now.
+      // We will set this field ONLY for 'locked' bookings.
+      index: { expireAfterSeconds: 0 },
     },
     car_id: {
       type: String,
@@ -72,5 +87,8 @@ const bookingSchema = new Schema<IBooking>(
     timestamps: true,
   },
 );
+
+// Index for finding overlaps quickly including locked ones
+bookingSchema.index({ car: 1, status: 1, startDate: 1, endDate: 1 });
 
 export default mongoose.model<IBooking>("Booking", bookingSchema);

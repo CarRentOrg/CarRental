@@ -17,10 +17,14 @@ export const protect = async (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
-    try {
-      // Get token from header
-      token = req.headers.authorization.split(" ")[1];
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies) {
+    // Check both standard and owner tokens
+    token = req.cookies.ownerToken || req.cookies.token;
+  }
 
+  if (token) {
+    try {
       // Verify token
       const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
 

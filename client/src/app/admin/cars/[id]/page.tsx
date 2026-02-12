@@ -317,7 +317,7 @@ export default function EditCarPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-10 py-6 rounded-[2rem] bg-white border border-gray-100 font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all"
+            className="px-10 py-6 rounded-4xl bg-white border border-gray-100 font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all"
           >
             Cancel
           </button>

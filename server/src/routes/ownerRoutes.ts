@@ -9,13 +9,12 @@ import {
   updateUserImage,
   getAllUsersWithStats,
 } from "../controllers/ownerController";
+import { getDashboardStats } from "../controllers/adminController";
+
 import { protect } from "../middlewares/auth";
 import upload from "../middlewares/multer";
 import { updateCar } from "../controllers/carController";
-import {
-  getAllOwnerBookings,
-  getOwnerCustomers,
-} from "../controllers/bookingController";
+import { getAllOwnerBookings } from "../controllers/bookingController";
 import { requireOwner } from "../middlewares/owner.middleware";
 
 const router = express.Router();
@@ -46,6 +45,7 @@ router.get("/cars", protect, requireOwner, getOwnerCars as any);
 router.delete("/cars/:id", protect, requireOwner, deleteCar as any);
 router.get("/bookings", protect, requireOwner, getAllOwnerBookings as any);
 router.get("/customers", protect, requireOwner, getAllUsersWithStats as any);
+router.get("/stats", protect, requireOwner, getDashboardStats as any);
 
 router.post(
   "/update-image",

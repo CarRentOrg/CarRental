@@ -12,7 +12,8 @@ import {
 import { format } from "date-fns";
 import { Car as CarType } from "@/types";
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -35,39 +36,19 @@ export default function BookingModal({
   endDate,
   totalPrice,
 }: BookingModalProps) {
-  const { user, requestOTP, verifyOTP } = useAuth();
+  const { user } = useUserAuth();
+  const router = useRouter();
   const [step, setStep] = useState<Step>("summary");
-  const [identifier, setIdentifier] = useState("");
-  const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleNext = async () => {
     if (step === "summary") {
       if (user) {
-        // Already logged in, go straight to booking logic
         await createFinalBooking();
       } else {
-        setStep("identifier");
-      }
-    } else if (step === "identifier") {
-      if (!identifier) return toast.error("Please enter phone or email");
-      setIsLoading(true);
-      const success = await requestOTP(identifier);
-      setIsLoading(false);
-      if (success) {
-        setStep("otp");
-      } else {
-        toast.error("Failed to send OTP. Please try again.");
-      }
-    } else if (step === "otp") {
-      if (!otp) return toast.error("Please enter the OTP code");
-      setIsLoading(true);
-      const loggedUser = await verifyOTP(identifier, otp);
-      if (loggedUser) {
-        await createFinalBooking();
-      } else {
-        setIsLoading(false);
-        toast.error("Invalid OTP code");
+        router.push(
+          `/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`,
+        );
       }
     }
   };
@@ -75,7 +56,7 @@ export default function BookingModal({
   const createFinalBooking = async () => {
     setIsLoading(true);
     try {
-      const res = await api.bookings.create({
+      const res = await api.bookings.init({
         carId: car._id,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
@@ -187,82 +168,6 @@ export default function BookingModal({
                           Next <ArrowRight className="h-5 w-5" />
                         </>
                       )}
-                    </button>
-                  </motion.div>
-                )}
-
-                {step === "identifier" && (
-                  <motion.div
-                    key="identifier"
-                    variants={stepVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="space-y-6"
-                  >
-                    <div className="space-y-2">
-                      <h4 className="text-2xl font-black">Утасны дугаар</h4>
-                      <p className="text-sm text-zinc-400">
-                        Захиалга баталгаажуулахын тулд утсаар нэг удаа нэвтэрнэ
-                        үү.
-                      </p>
-                    </div>
-                    <div className="relative group">
-                      <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500 group-focus-within:text-blue-500 transition-colors" />
-                      <input
-                        type="text"
-                        placeholder="Утасны дугаар эсвэл И-мэйл"
-                        value={identifier}
-                        onChange={(e) => setIdentifier(e.target.value)}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-12 py-4 outline-none focus:border-blue-500 transition-all"
-                      />
-                    </div>
-                    <button
-                      onClick={handleNext}
-                      disabled={isLoading}
-                      className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
-                    >
-                      {isLoading ? <LoadingSpinner /> : "OTP Код авах"}
-                    </button>
-                  </motion.div>
-                )}
-
-                {step === "otp" && (
-                  <motion.div
-                    key="otp"
-                    variants={stepVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="space-y-6"
-                  >
-                    <div className="space-y-2">
-                      <h4 className="text-2xl font-black">Баталгаажуулах</h4>
-                      <p className="text-sm text-zinc-400">
-                        {identifier} дугаарт илгээсэн 6 оронтой кодыг оруулна
-                        уу.
-                      </p>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="• • • • • •"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-5 text-center text-3xl font-black tracking-[1em] outline-none focus:border-blue-500 transition-all"
-                    />
-                    <button
-                      onClick={handleNext}
-                      disabled={isLoading}
-                      className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
-                    >
-                      {isLoading ? <LoadingSpinner /> : "Баталгаажуулах"}
-                    </button>
-                    <button
-                      onClick={() => setStep("identifier")}
-                      className="w-full text-sm text-zinc-500 font-bold hover:text-white transition-colors"
-                    >
-                      Буцах
                     </button>
                   </motion.div>
                 )}

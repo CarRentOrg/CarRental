@@ -4,9 +4,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import Login from "@/components/auth/Login";
+
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { UserAuthProvider } from "@/contexts/UserAuthContext";
+import { OwnerAuthProvider } from "@/contexts/OwnerAuthContext";
 import { AppProvider as DataProvider } from "@/contexts/AppContext";
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import FullPageLoader from "@/components/ui/FullPageLoader";
@@ -34,19 +35,21 @@ export default function RootLayout({
       >
         <Toaster position="top-right" />
         <LoadingProvider>
-          <AuthProvider>
-            <DataProvider>
-              <LanguageProvider>
-                <ImageKitProvider>
-                  <FullPageLoader />
-                  <Login />
-                  {!isAdminPage && <Header />}
-                  <main className="grow">{children}</main>
-                  {!isAdminPage && pathname === "/" && <Footer />}
-                </ImageKitProvider>
-              </LanguageProvider>
-            </DataProvider>
-          </AuthProvider>
+          <UserAuthProvider>
+            <OwnerAuthProvider>
+              <DataProvider>
+                <LanguageProvider>
+                  <ImageKitProvider>
+                    <FullPageLoader />
+
+                    {!isAdminPage && <Header />}
+                    <main className="grow">{children}</main>
+                    {!isAdminPage && pathname === "/" && <Footer />}
+                  </ImageKitProvider>
+                </LanguageProvider>
+              </DataProvider>
+            </OwnerAuthProvider>
+          </UserAuthProvider>
         </LoadingProvider>
       </body>
     </html>

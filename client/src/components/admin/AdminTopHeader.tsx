@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { usePathname } from "next/navigation";
 import { api } from "@/lib/api";
+import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 
 interface Notification {
   id: string;
@@ -34,6 +35,7 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
   const [showProfile, setShowProfile] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const pathname = usePathname();
+  const { owner, logout } = useOwnerAuth();
 
   // Close dropdowns on click outside
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -113,7 +115,10 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
         </button>
 
         <div className="hidden xs:block text-[11px] sm:text-sm font-medium text-gray-500">
-          Тавтай морил, <span className="text-gray-900 font-bold">Админ</span>
+          Тавтай морил,{" "}
+          <span className="text-gray-900 font-bold">
+            {owner?.name || "Админ"}
+          </span>
         </div>
       </div>
 
@@ -218,8 +223,9 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
             </div>
             <div className="text-left hidden lg:block">
               <h4 className="text-xs font-semibold text-gray-900 leading-none">
-                Админ
+                {owner?.name || "Админ"}
               </h4>
+
               <h4 className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mt-1">
                 Удирдлага
               </h4>
@@ -235,11 +241,14 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
                 className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl shadow-gray-200/50 py-2 z-50 whitespace-nowrap"
               >
                 <div className="px-4 py-3 border-b border-gray-50">
-                  <p className="text-sm font-bold text-gray-900">John Doe</p>
+                  <p className="text-sm font-bold text-gray-900">
+                    {owner?.name || "Админ"}
+                  </p>
                   <p className="text-[10px] font-medium text-gray-400 truncate">
-                    admin@carrental.com
+                    {owner?.email || "admin@carrental.com"}
                   </p>
                 </div>
+
                 <div className="p-1">
                   <Link
                     href="/admin/profile"
@@ -257,7 +266,10 @@ export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
                   </Link>
                 </div>
                 <div className="p-1 border-t border-gray-50 mt-1">
-                  <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all text-left">
+                  <button
+                    onClick={logout}
+                    className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all text-left"
+                  >
                     <LogOut className="h-4 w-4" />
                     <span>Системээс гарах</span>
                   </button>

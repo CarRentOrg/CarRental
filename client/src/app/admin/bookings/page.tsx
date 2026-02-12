@@ -41,9 +41,9 @@ export default function AdminBookingsPage() {
 
   // Modal State
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [modalAction, setModalAction] = useState<"approve" | "reject" | null>(
-    null,
-  );
+  const [modalAction, setModalAction] = useState<
+    "approve" | "reject" | "complete" | null
+  >(null);
   const [rejectReason, setRejectReason] = useState("");
 
   // Pagination State
@@ -55,21 +55,17 @@ export default function AdminBookingsPage() {
   const lastFetchedPage = useRef<number | null>(null);
 
   useEffect(() => {
-    // Basic logic: if it's the first mount OR the page has changed from what we last fetched
     if (isInitialMount.current || page !== lastFetchedPage.current) {
       loadBookings();
       isInitialMount.current = false;
       lastFetchedPage.current = page;
     }
-  }, [page]); // Reload when page changes
+  }, [page]);
 
   async function loadBookings() {
     try {
       setLoading(true);
       const res = await api.owner.bookings.getAll();
-
-      // fetchAPI returns json.data ?? json
-      // So if server returns { success, total, data }, res IS the data array.
       const list = Array.isArray(res) ? res : ((res as any)?.data ?? []);
 
       setBookings(list);
@@ -110,6 +106,11 @@ export default function AdminBookingsPage() {
     setRejectReason("");
   };
 
+  const openCompleteModal = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setModalAction("complete");
+  };
+
   const closeModal = () => {
     setSelectedBooking(null);
     setModalAction(null);
@@ -133,42 +134,20 @@ export default function AdminBookingsPage() {
 
       if (modalAction === "approve") {
         await api.bookings.approve(selectedBooking._id);
-
-        // Update local state
-        const updatedBookings = bookings.map((b) =>
-          b._id === selectedBooking._id
-            ? { ...b, status: "confirmed" as const }
-            : b,
-        );
-        setBookings(updatedBookings);
-        setFilteredBookings((prev) =>
-          prev.map((b) =>
-            b._id === selectedBooking._id
-              ? { ...b, status: "confirmed" as const }
-              : b,
-          ),
-        );
+        const updatedStatus = "confirmed" as const;
+        updateLocalBookingStatus(selectedBooking._id, updatedStatus);
+      } else if (modalAction === "complete") {
+        await api.bookings.complete(selectedBooking._id);
+        const updatedStatus = "completed" as const;
+        updateLocalBookingStatus(selectedBooking._id, updatedStatus);
       } else {
         await api.bookings.reject(selectedBooking._id);
-
-        // Update local state
-        const updatedBookings = bookings.map((b) =>
-          b._id === selectedBooking._id
-            ? { ...b, status: "cancelled" as const }
-            : b,
-        );
-        setBookings(updatedBookings);
-        setFilteredBookings((prev) =>
-          prev.map((b) =>
-            b._id === selectedBooking._id
-              ? { ...b, status: "cancelled" as const }
-              : b,
-          ),
-        );
+        const updatedStatus = "cancelled" as const;
+        updateLocalBookingStatus(selectedBooking._id, updatedStatus);
       }
 
       toast.success(
-        `Booking successfully ${modalAction === "approve" ? "approved" : "rejected"}`,
+        `Booking successfully ${modalAction === "approve" ? "approved" : modalAction === "complete" ? "completed" : "rejected"}`,
       );
       closeModal();
     } catch (error: any) {
@@ -178,11 +157,21 @@ export default function AdminBookingsPage() {
     }
   };
 
-  const statusLabel: Record<BookingStatus, string> = {
+  const updateLocalBookingStatus = (id: string, status: any) => {
+    setBookings((prev) =>
+      prev.map((b) => (b._id === id ? { ...b, status } : b)),
+    );
+    setFilteredBookings((prev) =>
+      prev.map((b) => (b._id === id ? { ...b, status } : b)),
+    );
+  };
+
+  const statusLabel: Record<string, string> = {
     [BookingStatus.Pending]: "Хүлээгдэж буй",
     [BookingStatus.Confirmed]: "Баталгаажсан",
     [BookingStatus.Cancelled]: "Цуцлагдсан",
     [BookingStatus.Completed]: "Дууссан",
+    locked: "Түр хаагдсан",
   };
 
   const columns: Column<Booking>[] = [
@@ -201,21 +190,6 @@ export default function AdminBookingsPage() {
         </div>
       ),
     },
-    // {
-    //   header: "Хэрэглэгчид",
-    //   cell: (row) => (
-    //     <div className="flex items-center gap-3">
-    //       <div className="flex flex-col">
-    //         <span className="text-sm font-bold text-gray-900 leading-none mb-1">
-    //           {row.user?.name || "Unknown User"}
-    //         </span>
-    //         <span className="text-[10px] text-gray-500 font-medium">
-    //           {row.user?.email}
-    //         </span>
-    //       </div>
-    //     </div>
-    //   ),
-    // },
     {
       header: "Машин",
       cell: (row) => (
@@ -259,20 +233,21 @@ export default function AdminBookingsPage() {
     {
       header: "Status",
       cell: (row) => {
-        const colors = {
+        const colors: Record<string, string> = {
           confirmed: "bg-emerald-100 text-emerald-700 border-emerald-200",
           pending: "bg-amber-100 text-amber-700 border-amber-200",
           cancelled: "bg-red-50 text-red-600 border-red-100",
           completed: "bg-blue-50 text-blue-700 border-blue-100",
+          locked: "bg-zinc-100 text-zinc-700 border-zinc-200",
         };
-        const status = row.status as keyof typeof colors;
+        const status = row.status || "pending";
 
         return (
           <div className="flex items-center gap-2">
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wider border ${colors[status] || colors.pending}`}
             >
-              {statusLabel[row.status]}
+              {statusLabel[status] || status}
             </span>
           </div>
         );
@@ -307,6 +282,15 @@ export default function AdminBookingsPage() {
                 <X className="h-4 w-4" />
               </button>
             </>
+          )}
+          {row.status === "confirmed" && (
+            <button
+              onClick={() => openCompleteModal(row)}
+              className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition-all"
+              title="Mark as Completed"
+            >
+              <Check className="h-4 w-4" />
+            </button>
           )}
         </div>
       ),
@@ -349,14 +333,12 @@ export default function AdminBookingsPage() {
         </div>
 
         <div className="p-2 sm:p-4 flex-1 w-full">
-          {/* Desktop Table View */}
           <div className="hidden md:block">
             <AdminTable
               columns={columns}
               data={filteredBookings}
               loading={loading}
               emptyMessage="No bookings found."
-              // Pagination
               page={page}
               total={total}
               limit={LIMIT}
@@ -364,7 +346,6 @@ export default function AdminBookingsPage() {
             />
           </div>
 
-          {/* Mobile Card View */}
           <div className="md:hidden space-y-4 px-2 pb-4">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 animate-pulse">
@@ -379,6 +360,7 @@ export default function AdminBookingsPage() {
                   onView={openViewPanel}
                   onApprove={openApproveModal}
                   onReject={openRejectModal}
+                  onComplete={openCompleteModal}
                 />
               ))
             ) : (
@@ -392,7 +374,6 @@ export default function AdminBookingsPage() {
         </div>
       </div>
 
-      {/* Booking Detail Side Panel / Modal */}
       <AnimatePresence>
         {isViewOpen && viewBooking && (
           <>
@@ -410,7 +391,6 @@ export default function AdminBookingsPage() {
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed right-0 top-0 h-full w-full max-w-lg bg-white z-60 shadow-2xl flex flex-col"
             >
-              {/* Panel Header */}
               <div className="p-6 border-b border-gray-50 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-black text-gray-900 leading-none mb-1">
@@ -428,9 +408,7 @@ export default function AdminBookingsPage() {
                 </button>
               </div>
 
-              {/* Panel Content */}
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                {/* Timeline Section */}
                 <section className="space-y-4">
                   <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                     <Clock className="h-4 w-4 text-blue-600" />
@@ -441,7 +419,6 @@ export default function AdminBookingsPage() {
                   </div>
                 </section>
 
-                {/* Car & User Details */}
                 <section className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -498,7 +475,6 @@ export default function AdminBookingsPage() {
                   </div>
                 </section>
 
-                {/* Price Breakdown */}
                 <section className="p-6 bg-blue-600 rounded-3xl text-white space-y-4 shadow-xl shadow-blue-100">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-bold opacity-80">
@@ -530,7 +506,6 @@ export default function AdminBookingsPage() {
                 </section>
               </div>
 
-              {/* Panel Actions */}
               {viewBooking.status === "pending" && (
                 <div className="p-6 border-t border-gray-50 grid grid-cols-2 gap-3 bg-gray-50/30">
                   <button
@@ -565,14 +540,28 @@ export default function AdminBookingsPage() {
         onClose={closeModal}
         onConfirm={handleConfirmAction}
         isLoading={actionLoading}
-        title={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
+        title={
+          modalAction === "approve"
+            ? "Баталгаажуулах"
+            : modalAction === "complete"
+              ? "Дуусгах"
+              : "Татгалзах"
+        }
         message={
           modalAction === "approve"
             ? `Та ${selectedBooking?.car?.model || "сонгосон"} машины захиалгыг баталгаажуулахдаа итгэлтэй байна уу?`
-            : `Та ${selectedBooking?.car?.model || "сонгосон"} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
+            : modalAction === "complete"
+              ? `Захиалгыг дууссан гэж тэмдэглэх үү?`
+              : `Та ${selectedBooking?.car?.model || "сонгосон"} машины захиалгыг татгалзахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.`
         }
-        confirmText={modalAction === "approve" ? "Баталгаажуулах" : "Татгалзах"}
-        type={modalAction === "approve" ? "success" : "danger"}
+        confirmText={
+          modalAction === "approve"
+            ? "Баталгаажуулах"
+            : modalAction === "complete"
+              ? "Дуусгах"
+              : "Татгалзах"
+        }
+        type={modalAction === "reject" ? "danger" : "success"}
       >
         {modalAction === "reject" && (
           <div className="mt-4">

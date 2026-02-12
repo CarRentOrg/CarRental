@@ -14,9 +14,11 @@ import {
   Globe,
   User,
   LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 import { usePathname, useRouter } from "next/navigation";
 
 interface NavLinkProps {
@@ -71,8 +73,17 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { language, setLanguage, t } = useLanguage();
-  const { token, setShowLogin, logout, isOwner } = useAuth();
+  const { user, logout: userLogout } = useUserAuth();
+  const { owner, logout: ownerLogout } = useOwnerAuth();
   const [logoClickCount, setLogoClickCount] = useState(0);
+  const router = useRouter();
+
+  const isOwner = !!owner;
+
+  const logout = () => {
+    if (owner) ownerLogout();
+    else userLogout();
+  };
 
   // Hidden Owner Login Trigger (Click logo 5 times)
   const handleLogoClick = (e: React.MouseEvent) => {
@@ -80,7 +91,7 @@ export default function Header() {
     const newCount = logoClickCount + 1;
     setLogoClickCount(newCount);
     if (newCount >= 5) {
-      setShowLogin(true);
+      router.push("/login?callbackUrl=/admin");
       setLogoClickCount(0);
     }
   };
@@ -123,9 +134,7 @@ export default function Header() {
         <nav className="hidden lg:flex items-center space-x-8 text-xs font-semibold tracking-wide uppercase text-white/70">
           <NavLink href="/cars">{t("nav.cars")}</NavLink>
           <NavLink href="/#rental-terms">{t("nav.rentalTerms")}</NavLink>
-          {token && !isOwner && (
-            <NavLink href="/profile">Миний захиалгууд</NavLink>
-          )}
+          <NavLink href="/profile">{t("nav.myBookings")}</NavLink>
           <NavLink href="/about">{t("nav.about")}</NavLink>
         </nav>
 
@@ -164,25 +173,16 @@ export default function Header() {
             </button>
           </div>
 
-          {token && (
-            <div className="flex items-center space-x-2">
-              {isOwner && (
-                <Link
-                  href="/admin"
-                  className="hidden lg:flex items-center space-x-2 rounded-full bg-blue-600 px-6 py-2.5 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/20"
-                >
-                  <User className="h-4 w-4" />
-                  <span>Dashboard</span>
-                </Link>
-              )}
-              <button
-                onClick={logout}
-                className="hidden lg:flex items-center space-x-2 rounded-full bg-white/5 border border-white/10 px-6 py-2.5 text-xs font-semibold text-white transition-all hover:bg-red-600 hover:border-red-600 hover:scale-105 active:scale-95 shadow-xl"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
-              </button>
-            </div>
+          {owner ? (
+            <Link
+              href="/admin"
+              className="hidden lg:flex items-center space-x-2 rounded-full bg-blue-600 px-6 py-2.5 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/20"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard</span>
+            </Link>
+          ) : (
+            ""
           )}
 
           <button
@@ -230,6 +230,11 @@ export default function Header() {
                 <NavLink href="/profile" setOpen={setOpen}>
                   {t("nav.mybooking")}
                 </NavLink>
+                {isOwner && (
+                  <NavLink href="/admin" setOpen={setOpen}>
+                    Dashboard
+                  </NavLink>
+                )}
                 <NavLink href="/cars#rental-terms" setOpen={setOpen}>
                   {t("nav.rentalTerms")}
                 </NavLink>
@@ -252,29 +257,19 @@ export default function Header() {
               {/* Book & Social */}
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-6">
-                  {token && (
-                    <div className="flex flex-col gap-3 w-full">
-                      {isOwner && (
-                        <Link
-                          href="/admin"
-                          onClick={() => setOpen(false)}
-                          className="w-full bg-blue-600 text-white rounded-full px-8 py-3.5 text-sm font-bold shadow-2xl shadow-blue-500/10 text-center"
-                        >
-                          Dashboard
-                        </Link>
-                      )}
-                      <button
-                        onClick={() => {
-                          setOpen(false);
-                          logout();
-                        }}
-                        className="w-full bg-red-600 text-white rounded-full px-8 py-3.5 text-sm font-bold shadow-2xl shadow-red-500/10 hover:bg-red-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  <div className="flex flex-col gap-3 w-full">
+                    {owner ? (
+                      <Link
+                        href="/admin"
+                        onClick={() => setOpen(false)}
+                        className="w-full bg-blue-600 text-white rounded-full px-8 py-3.5 text-sm font-bold shadow-2xl shadow-blue-500/10 text-center"
                       >
-                        <LogOut className="h-4 w-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
+                        Dashboard
+                      </Link>
+                    ) : (
+                      ""
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center space-x-4 text-white/90">
                   <a

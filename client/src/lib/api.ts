@@ -40,21 +40,15 @@ async function fetchAPI<T>(
   options: RequestInit = {},
   config: { returnNullOn404?: boolean } = {},
 ): Promise<T> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
   const headers: Record<string, string> = {};
 
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
 
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
   const res = await fetch(`${API_Base_URL}${endpoint}`, {
     ...options,
+    credentials: "include", // Send cookies
     headers: {
       ...headers,
       ...(options.headers || {}),
@@ -91,6 +85,8 @@ export const api = {
         body: JSON.stringify(data),
       }),
 
+    logout: () => fetchAPI("/auth/logout", { method: "POST" }),
+
     getMe: () => fetchAPI<GetMeResponse>("/auth/data"),
 
     requestOTP: (identifier: string) =>
@@ -107,6 +103,30 @@ export const api = {
           body: JSON.stringify({ identifier, code }),
         },
       ),
+  },
+
+  payment: {
+    createIntent: (amount: number, bookingData: any) =>
+      fetchAPI<{
+        success: boolean;
+        paymentId: string;
+        qrData: string;
+        amount: number;
+        expiresAt: string;
+      }>("/payment/create-intent", {
+        method: "POST",
+        body: JSON.stringify({ amount, bookingData }),
+      }),
+
+    verify: (paymentId: string) =>
+      fetchAPI<{
+        success: boolean;
+        status: "paid" | "pending" | "failed";
+        transactionId: string;
+      }>("/payment/verify", {
+        method: "POST",
+        body: JSON.stringify({ paymentId }),
+      }),
   },
 
   users: {
@@ -127,7 +147,9 @@ export const api = {
         }).toString()}`,
       ),
 
-    getMyBookings: () => fetchAPI<Booking[]>("/bookings"),
+    getForCar: (carId: string) => fetchAPI<Booking[]>(`/bookings/car/${carId}`),
+
+    getMyBookings: () => fetchAPI<Booking[]>("/bookings/my-bookings"),
 
     getById: (id: string) =>
       fetchAPI<Booking | null>(
@@ -136,16 +158,53 @@ export const api = {
         { returnNullOn404: true },
       ),
 
-    create: (data: {
+    checkAvailability: (data: {
+      carId: string;
+      startDate: string;
+      endDate: string;
+    }) =>
+      fetchAPI<{ success: boolean; available: boolean }>(
+        "/bookings/check-availability",
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        },
+      ),
+
+    init: (data: {
       carId: string;
       startDate: string;
       endDate: string;
       totalPrice: number;
       note?: string;
     }) =>
-      fetchAPI<Booking>("/bookings", {
+      fetchAPI<Booking>("/bookings/init", {
         method: "POST",
         body: JSON.stringify(data),
+      }),
+
+    confirm: (data: { bookingId: string; paymentId: string }) =>
+      fetchAPI<Booking>("/bookings/confirm", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+
+    approve: (bookingId: string) =>
+      fetchAPI<Booking>("/bookings/approve", {
+        method: "POST",
+        body: JSON.stringify({ bookingId }),
+      }),
+
+    reject: (bookingId: string) =>
+      fetchAPI<Booking>("/bookings/reject", {
+        method: "POST",
+        body: JSON.stringify({ bookingId }),
+      }),
+
+    complete: (bookingId: string) =>
+      fetchAPI<Booking>("/bookings/complete", {
+        method: "POST",
+        body: JSON.stringify({ bookingId }),
       }),
 
     update: (
@@ -154,24 +213,12 @@ export const api = {
         startDate: string;
         endDate: string;
         totalPrice: number;
-        status: "pending" | "confirmed" | "cancelled";
+        status: "pending" | "confirmed" | "cancelled" | "completed";
       }>,
     ) =>
       fetchAPI<Booking>(`/bookings/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
-      }),
-
-    reject: (id: string) =>
-      fetchAPI<Booking>(`/bookings/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ status: "cancelled" }),
-      }),
-
-    approve: (id: string) =>
-      fetchAPI<Booking>(`/bookings/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ status: "confirmed" }),
       }),
   },
 

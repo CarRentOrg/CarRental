@@ -2,45 +2,67 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("token")?.value;
+  const { pathname, search, searchParams } = request.nextUrl;
 
-  // Paths
-  const isOwnerPath = request.nextUrl.pathname.startsWith("/admin");
-  const isUserPath =
-    request.nextUrl.pathname.startsWith("/profile") ||
-    request.nextUrl.pathname.startsWith("/bookings");
+  const isAdminPath = pathname.startsWith("/admin");
+  const isProtectedUserPath = pathname.startsWith("/bookings");
+  const isLoginPage = pathname === "/login";
 
-  if ((isOwnerPath || isUserPath) && !token) {
-    // If trying to access protected route without token, redirect to home
-    // (Regular users login during booking, owners via secret link)
-    return NextResponse.redirect(new URL("/", request.url));
+  // Redirect legacy paths
+  if (pathname === "/admin/login" || pathname === "/owner/login") {
+    return NextResponse.redirect(new URL("/login" + search, request.url));
   }
 
-  // If token exists, we could decode it normally to check roles
-  // For simplicity here, we rely on the backend to reject invalid role access
-  // but we can add a basic check if we want to be proactive.
-  if (token) {
+  const ownerToken = request.cookies.get("ownerToken")?.value;
+  const userToken = request.cookies.get("token")?.value;
+
+  // 1. If at /login and already authenticated, redirect away
+  if (isLoginPage) {
+    if (ownerToken)
+      return NextResponse.redirect(new URL("/admin", request.url));
+    if (userToken) return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.next();
+  }
+
+  // 2. Admin Guard
+  if (isAdminPath) {
+    if (!ownerToken) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname + search);
+      return NextResponse.redirect(loginUrl);
+    }
+
     try {
-      const payloadBase64 = token.split(".")[1];
-      const decoded = JSON.parse(atob(payloadBase64));
-
-      if (isOwnerPath && decoded.role !== "owner") {
-        return NextResponse.redirect(new URL("/", request.url));
-      }
-
-      if (isUserPath && decoded.role !== "user" && decoded.role !== "owner") {
+      const payload = JSON.parse(atob(ownerToken.split(".")[1]));
+      if (payload.role !== "owner") {
         return NextResponse.redirect(new URL("/", request.url));
       }
     } catch (e) {
-      // Invalid token
-      return NextResponse.redirect(new URL("/", request.url));
+      const resp = NextResponse.redirect(new URL("/login", request.url));
+      resp.cookies.delete("ownerToken");
+      return resp;
+    }
+  }
+
+  // 3. User Protected Path Guard
+  if (isProtectedUserPath) {
+    if (!userToken && !ownerToken) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname + search);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
   return NextResponse.next();
 }
 
-// Config to match only relevant paths
 export const config = {
-  matcher: ["/admin/:path*", "/profile/:path*", "/bookings/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/profile/:path*",
+    "/bookings/:path*",
+    "/login",
+    "/admin/login",
+    "/owner/login",
+  ],
 };

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import clsx from "clsx";
+import { api } from "@/lib/api";
 
 const MENU_ITEMS = [
   { icon: LayoutDashboard, label: "Хяналтын самбар", href: "/admin" },
@@ -42,6 +43,22 @@ function SidebarContent({
   onCloseMobile?: () => void;
 }) {
   const pathname = usePathname();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const stats = await api.owner.dashboard();
+        setPendingCount(stats.totalPending);
+      } catch (err) {
+        console.error("Failed to load sidebar stats", err);
+      }
+    }
+    loadStats();
+    // Refresh every minute to stay updated
+    const interval = setInterval(loadStats, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
@@ -132,9 +149,14 @@ function SidebarContent({
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="ml-3 z-10 whitespace-nowrap"
+                    className="ml-3 z-10 whitespace-nowrap flex-1 flex items-center justify-between"
                   >
                     {item.label}
+                    {item.href === "/admin/bookings" && pendingCount > 0 && (
+                      <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                        {pendingCount}
+                      </span>
+                    )}
                   </motion.span>
                 )}
               </AnimatePresence>

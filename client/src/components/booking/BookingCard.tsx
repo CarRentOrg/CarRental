@@ -22,6 +22,13 @@ const BookingCard = ({ booking, onClick }: BookingCardProps) => {
     default: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
   };
 
+  const statusLabels: Record<string, string> = {
+    pending: "Хүлээгдэж буй",
+    confirmed: "Баталгаажсан",
+    cancelled: "Цуцлагдсан",
+    completed: "Дууссан",
+  };
+
   return (
     <div
       onClick={() => onClick(booking)}
@@ -31,7 +38,7 @@ const BookingCard = ({ booking, onClick }: BookingCardProps) => {
         {/* Car Thumbnail */}
         <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-2xl overflow-hidden bg-zinc-800 shrink-0">
           <Image
-            src={car.thumbnail.url || ""}
+            src={car.thumbnail?.url || "/placeholder.jpg"}
             alt={`${car.brand} ${car.model}`}
             width={96}
             height={96}
@@ -48,7 +55,7 @@ const BookingCard = ({ booking, onClick }: BookingCardProps) => {
             <span
               className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${statusColors[booking.status] || statusColors.default}`}
             >
-              {booking.status}
+              {statusLabels[booking.status] || booking.status}
             </span>
           </div>
 

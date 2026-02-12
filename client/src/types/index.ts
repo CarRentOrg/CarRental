@@ -40,7 +40,7 @@ export interface Booking {
   startDate: string;
   endDate: string;
   totalPrice: number;
-  status: "pending" | "confirmed" | "cancelled" | "completed";
+  status: "pending" | "confirmed" | "cancelled" | "completed" | "locked";
   paymentStatus?: "pending" | "paid" | "failed";
   rateApplied?: string;
   createdAt?: string;
@@ -54,7 +54,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  role: "user" | "owner";
+  role: "user" | "owner" | "admin";
   phone?: string;
   created_at: string;
 }

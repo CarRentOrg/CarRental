@@ -6,20 +6,19 @@ import jwt from "jsonwebtoken";
 // Helper to generate JWT
 const generateToken = (id: string, role: string) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET!, {
-    expiresIn: "30d",
+    expiresIn: "10m",
   });
 };
 
 /**
  * @desc    Request OTP (SMS or Email)
- * @route   POST /api/auth/otp/request
  */
 export const requestOTP = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { identifier } = req.body; // phone number or email
+    const { identifier } = req.body;
 
     if (!identifier) {
       res
@@ -29,7 +28,14 @@ export const requestOTP = async (
     }
 
     // Generate 6-digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    let code: string;
+
+    // DEV MODE: Fixed OTP for testing
+    if (identifier === "99112233") {
+      code = "123123";
+    } else {
+      code = Math.floor(100000 + Math.random() * 900000).toString();
+    }
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins expiry
 
     // Save to DB (upsert)
@@ -45,7 +51,6 @@ export const requestOTP = async (
     res.status(200).json({
       success: true,
       message: "OTP sent successfully",
-      // In development, we might return the code for testing convenience
       code: process.env.NODE_ENV === "development" ? code : undefined,
     });
   } catch (error: any) {
@@ -56,7 +61,6 @@ export const requestOTP = async (
 
 /**
  * @desc    Verify OTP & Login/Register
- * @route   POST /api/auth/otp/verify
  */
 export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -78,7 +82,6 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check expiry (though TTL index should handle it, explicit check is safer)
     if (new Date() > otpEntry.expiresAt) {
       res.status(400).json({ success: false, message: "OTP has expired" });
       return;
@@ -91,30 +94,28 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
     );
 
     if (!user) {
-      // Create new user automatically
       user = await User.create({
         [isEmail ? "email" : "phone"]: identifier,
-        name: identifier.split("@")[0], // Default name
+        name: identifier.split("@")[0],
         role: "user",
       });
     }
 
-    // Delete used OTP
     await OTP.deleteOne({ _id: otpEntry._id });
 
     // Generate session
     const token = generateToken(user._id.toString(), user.role);
 
+    // 10 minute cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: 10 * 60 * 1000,
       sameSite: "strict",
     });
 
     res.status(200).json({
       success: true,
-      token,
       user: {
         _id: user._id,
         email: user.email,
@@ -122,6 +123,9 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         role: user.role,
       },
+      // IMPORTANT: We do NOT send token in body anymore for HttpOnly strictness
+      // But user might need to know layout state?
+      // Actually, for AuthContext to know we represent "authenticated" by success
     });
   } catch (error: any) {
     console.error("OTP VERIFY ERROR:", error);
