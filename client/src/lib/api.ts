@@ -103,6 +103,11 @@ export const api = {
           body: JSON.stringify({ identifier, code }),
         },
       ),
+    changePassword: (data: any) =>
+      fetchAPI<{ success: boolean; message: string }>("/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
   },
 
   payment: {
@@ -146,6 +151,19 @@ export const api = {
           status: params?.status ?? "",
         }).toString()}`,
       ),
+
+    create: (data: {
+      carId: string;
+      startDate: string;
+      endDate: string;
+      totalPrice: number;
+      status?: string;
+      note?: string;
+    }) =>
+      fetchAPI<Booking>("/bookings", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
 
     getForCar: (carId: string) => fetchAPI<Booking[]>(`/bookings/car/${carId}`),
 

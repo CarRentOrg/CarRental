@@ -14,6 +14,7 @@ import {
   approveBooking,
   rejectBooking,
   completeBooking,
+  createBooking,
 } from "../controllers/bookingController";
 import { protect } from "../middlewares/auth";
 
@@ -35,7 +36,10 @@ router.get("/car/:carId", getCarBookings);
 router.post("/init", protect, initBooking as any);
 router.post("/confirm", protect, confirmBooking as any);
 
-router.route("/").get(getBookings);
+router
+  .route("/")
+  .get(getBookings)
+  .post(protect, createBooking as any);
 
 router
   .route("/:id")

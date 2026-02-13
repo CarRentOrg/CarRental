@@ -153,3 +153,41 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const changePassword = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = (req as any).user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    if (!user.password) {
+      res.status(400).json({
+        message: "You don't have a password set. Use OTP to login.",
+      });
+      return;
+    }
+
+    const isMatch = await (user as any).matchPassword(currentPassword);
+    if (!isMatch) {
+      res.status(400).json({ message: "Invalid current password" });
+      return;
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.error("CHANGE PASSWORD ERROR", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

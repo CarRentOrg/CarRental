@@ -178,6 +178,37 @@ export const confirmBooking = async (
 
 // ... keep other methods (getBookings, getMyBookings, updateBooking, deleteBooking, etc.)
 // Make sure to export them!
+export const createBooking = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const userId = req.user?._id;
+    const { carId, startDate, endDate, totalPrice, status, note } = req.body;
+
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    const booking = await Booking.create({
+      car: carId,
+      user: userId,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      totalPrice: totalPrice || 0,
+      status: status || "pending",
+      paymentStatus: "pending",
+      note,
+    });
+
+    res.status(201).json({ success: true, data: booking });
+  } catch (error) {
+    console.error("CREATE BOOKING ERROR:", error);
+    res.status(500).json({ success: false, message: error });
+  }
+};
+
 export const getBookings = async (req: Request, res: Response) => {
   // ... implementation
   const bookings = await Booking.find(req.query);

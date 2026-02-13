@@ -41,7 +41,7 @@ const carSchema = z.object({
   description: z.string().optional(),
   features: z.string().optional(),
   location: z.string().optional(),
-  is_available: z.boolean().default(true),
+  is_available: z.boolean(),
 });
 
 type CarFormValues = z.infer<typeof carSchema>;

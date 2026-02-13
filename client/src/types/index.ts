@@ -1,5 +1,11 @@
 import { ReactNode } from "react";
 
+export interface TitleProps {
+  title: string;
+  subtitle?: string;
+  align?: "left" | "center" | "right";
+}
+
 /* Car Type */
 export interface Car {
   price_per_week: any;
