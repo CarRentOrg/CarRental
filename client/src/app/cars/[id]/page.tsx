@@ -91,7 +91,10 @@ export default function CarDetailPage() {
           </div>
 
           {images.length > 0 && (
-            <ThumbnailImageGallery images={images} alt={car.model} />
+            <ThumbnailImageGallery
+              images={images.map((img) => img || "/placeholder.svg")}
+              alt={car.model}
+            />
           )}
 
           {/* Specs */}
