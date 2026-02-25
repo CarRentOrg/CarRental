@@ -3,13 +3,13 @@ import {
   addCar,
   changeRoleToOwner,
   deleteCar,
-  getDashboardData,
+  getOwnerDashboardStats,
   getOwnerCars,
   toggleCarAvailability,
   updateUserImage,
   getAllUsersWithStats,
+  getPendingBookings,
 } from "../controllers/ownerController";
-import { getDashboardStats } from "../controllers/adminController";
 
 import { protect } from "../middlewares/auth";
 import upload from "../middlewares/multer";
@@ -40,12 +40,17 @@ router.put(
 );
 router.get("/cars", protect, requireOwner, getOwnerCars as any);
 router.post("/toggle-car", protect, requireOwner, toggleCarAvailability as any);
-router.get("/dashboard", protect, requireOwner, getDashboardData as any);
+router.get("/dashboard", protect, requireOwner, getOwnerDashboardStats as any);
 router.get("/cars", protect, requireOwner, getOwnerCars as any);
 router.delete("/cars/:id", protect, requireOwner, deleteCar as any);
 router.get("/bookings", protect, requireOwner, getAllOwnerBookings as any);
+router.get(
+  "/bookings/pending",
+  protect,
+  requireOwner,
+  getPendingBookings as any,
+);
 router.get("/customers", protect, requireOwner, getAllUsersWithStats as any);
-router.get("/stats", protect, requireOwner, getDashboardStats as any);
 
 router.post(
   "/update-image",

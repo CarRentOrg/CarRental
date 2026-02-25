@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
@@ -25,7 +25,7 @@ import Link from "next/link";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { bookings, loadingBookings } = useApp();
+  const { bookings, loadingBookings, fetchMyBookings } = useApp();
   const { user, logout: userLogout } = useUserAuth();
   const { owner, logout: ownerLogout } = useOwnerAuth();
 
@@ -44,12 +44,32 @@ export default function ProfilePage() {
     }
   }, [user, owner, router, mounted, authLoading]);
 
+  // Refetch bookings on mount and when tab regains focus
+  useEffect(() => {
+    if (!user) return;
+
+    fetchMyBookings(true);
+
+    const handleFocus = () => fetchMyBookings(true);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") fetchMyBookings(true);
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [user, fetchMyBookings]);
+
   // 1. Initial mounting loader
   if (!mounted || authLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
           <p className="text-zinc-500 font-bold animate-pulse">
             Уншиж байна...
           </p>
@@ -66,7 +86,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
           <p className="text-zinc-500 font-bold animate-pulse">
             Захиалгын түүх уншиж байна...
           </p>
@@ -147,7 +167,7 @@ export default function ProfilePage() {
         {/* Header content... */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-6">
-            <div className="h-20 w-20 bg-linear-to-br from-blue-600 to-blue-800 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-900/20">
+            <div className="h-20 w-20 bg-linear-to-br from-zinc-800 to-zinc-900 rounded-3xl flex items-center justify-center shadow-2xl shadow-black/20">
               <span className="text-3xl font-black">
                 {displayName[0]?.toUpperCase()}
               </span>
@@ -191,8 +211,8 @@ export default function ProfilePage() {
               className="bg-zinc-900/50 border border-white/5 p-6 rounded-4xl hover:bg-zinc-900 transition-colors"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-blue-500/10 rounded-2xl">
-                  <stat.icon className="h-6 w-6 text-blue-500" />
+                <div className="p-3 bg-white/5 rounded-2xl">
+                  <stat.icon className="h-6 w-6 text-white" />
                 </div>
                 <span className="text-3xl font-black">{stat.value}</span>
               </div>

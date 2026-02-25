@@ -39,6 +39,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const user = await User.findOne({ email });
 
+    // 0. ADMIN/OWNER CHECK (Access Control)
+    if (req.body.isAdminLogin) {
+      if (!user || user.role !== "owner") {
+        res.status(403).json({
+          message: "This email is not registered as an owner.",
+        });
+        return;
+      }
+    }
+
     // 1. OWNER FLOW
     if (user?.role === "owner") {
       if (!password) {
@@ -150,6 +160,89 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       },
     });
   } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const changePassword = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = (req as any).user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    if (!user.password) {
+      res.status(400).json({
+        message: "You don't have a password set. Use OTP to login.",
+      });
+      return;
+    }
+
+    const isMatch = await (user as any).matchPassword(currentPassword);
+    if (!isMatch) {
+      res.status(400).json({ message: "Invalid current password" });
+      return;
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.error("CHANGE PASSWORD ERROR", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const updateProfile = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const userId = (req as any).user.id;
+    const { name, email, phone } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        res.status(400).json({ message: "Email already in use" });
+        return;
+      }
+      user.email = email;
+    }
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      user: {
+        _id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        role: user.role,
+      },
+      message: "Profile updated successfully",
+    });
+  } catch (error) {
+    console.error("UPDATE PROFILE ERROR", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

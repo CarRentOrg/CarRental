@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { useApp } from "@/contexts/AppContext";
 import toast from "react-hot-toast";
 
 interface BookingModalProps {
@@ -37,6 +38,7 @@ export default function BookingModal({
   totalPrice,
 }: BookingModalProps) {
   const { user } = useUserAuth();
+  const { fetchMyBookings } = useApp();
   const router = useRouter();
   const [step, setStep] = useState<Step>("summary");
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +66,7 @@ export default function BookingModal({
       });
 
       if (res) {
+        await fetchMyBookings(true);
         setStep("success");
       }
     } catch (err: any) {
@@ -194,7 +197,7 @@ export default function BookingModal({
                     <button
                       onClick={() => {
                         onClose();
-                        window.location.href = "/profile";
+                        router.push("/profile");
                       }}
                       className="w-full py-4 bg-white text-black rounded-2xl font-black text-lg hover:bg-neutral-100 transition-all"
                     >
