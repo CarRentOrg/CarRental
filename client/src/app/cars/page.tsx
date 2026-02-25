@@ -202,7 +202,7 @@ export default function CarsPage() {
               </p>
               <button
                 onClick={clearAllFilters}
-                className="mt-4 text-sm font-medium text-blue-500 hover:text-blue-400 hover:underline"
+                className="mt-4 text-sm font-medium text-white hover:text-zinc-300 hover:underline"
               >
                 Clear all filters
               </button>

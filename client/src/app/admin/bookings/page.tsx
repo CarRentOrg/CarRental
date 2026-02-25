@@ -3,14 +3,10 @@
 import {
   Search,
   CalendarDays,
-  DollarSign,
   Clock,
   Check,
   X,
-  AlertCircle,
   Eye,
-  Info,
-  ChevronRight,
   X as CloseIcon,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -18,7 +14,6 @@ import { AdminTable, Column } from "@/components/admin/AdminTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
-import Link from "next/link";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
 import { Booking } from "@/types";
@@ -65,14 +60,12 @@ export default function AdminBookingsPage() {
   async function loadBookings() {
     try {
       setLoading(true);
-      const res = await api.owner.bookings.getAll();
-      const list = Array.isArray(res) ? res : ((res as any)?.data ?? []);
+      const bookings = await api.owner.bookings.getAll();
+      const list = Array.isArray(bookings) ? bookings : [];
 
       setBookings(list);
       setFilteredBookings(list);
-      setTotal(
-        Array.isArray(res) ? list.length : ((res as any)?.total ?? list.length),
-      );
+      setTotal(list.length);
     } catch (error) {
       console.error("Failed to load bookings:", error);
       setBookings([]);
@@ -194,7 +187,7 @@ export default function AdminBookingsPage() {
       header: "Машин",
       cell: (row) => (
         <div className="flex items-center gap-3">
-          <div className="h-10 w-14 rounded-lg bg-gray-100 overflow-hidden relative">
+          <div className="h-10 w-14 rounded-lg bg-gray-100 overflow-hidden relative border border-gray-200">
             <Image
               src={row.car?.thumbnail?.url ?? "/placeholder.jpg"}
               alt={row.car?.model ?? "Unknown Car"}
@@ -223,7 +216,7 @@ export default function AdminBookingsPage() {
         return (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-xs font-bold text-gray-900">
-              <Clock className="h-3.5 w-3.5 text-blue-600" />
+              <Clock className="h-3.5 w-3.5 text-blue-500" />
               <span>{days} Хоног</span>
             </div>
           </div>
@@ -234,11 +227,11 @@ export default function AdminBookingsPage() {
       header: "Status",
       cell: (row) => {
         const colors: Record<string, string> = {
-          confirmed: "bg-emerald-100 text-emerald-700 border-emerald-200",
-          pending: "bg-amber-100 text-amber-700 border-amber-200",
+          confirmed: "bg-emerald-50 text-emerald-700 border-emerald-100",
+          pending: "bg-amber-50 text-amber-700 border-amber-100",
           cancelled: "bg-red-50 text-red-600 border-red-100",
           completed: "bg-blue-50 text-blue-700 border-blue-100",
-          locked: "bg-zinc-100 text-zinc-700 border-zinc-200",
+          locked: "bg-zinc-50 text-zinc-700 border-zinc-100",
         };
         const status = row.status || "pending";
 
@@ -260,7 +253,7 @@ export default function AdminBookingsPage() {
         <div className="flex justify-end gap-2">
           <button
             onClick={() => openViewPanel(row)}
-            className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition-all"
+            className="p-2 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all border border-gray-100"
             title="View Details"
           >
             <Eye className="h-4 w-4" />
@@ -269,14 +262,14 @@ export default function AdminBookingsPage() {
             <>
               <button
                 onClick={() => openApproveModal(row)}
-                className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 rounded-lg transition-all"
+                className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 rounded-lg transition-all border border-emerald-100"
                 title="Approve Booking"
               >
                 <Check className="h-4 w-4" />
               </button>
               <button
                 onClick={() => openRejectModal(row)}
-                className="p-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-lg transition-all"
+                className="p-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-lg transition-all border border-red-100"
                 title="Reject Booking"
               >
                 <X className="h-4 w-4" />
@@ -286,7 +279,7 @@ export default function AdminBookingsPage() {
           {row.status === "confirmed" && (
             <button
               onClick={() => openCompleteModal(row)}
-              className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition-all"
+              className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition-all border border-blue-100"
               title="Mark as Completed"
             >
               <Check className="h-4 w-4" />
@@ -312,27 +305,27 @@ export default function AdminBookingsPage() {
         ]}
       />
 
-      <div className="bg-white rounded-4xl sm:rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px] flex flex-col w-full">
-        <div className="p-4 sm:p-8 border-b border-gray-50 flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[500px] flex flex-col w-full">
+        <div className="p-4 sm:p-8 border-b border-gray-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-white">
           <div className="relative w-full md:max-w-md group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
             <input
               type="text"
               placeholder="Search bookings..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all text-xs sm:text-sm font-medium placeholder:text-gray-400"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all text-xs sm:text-sm font-medium placeholder:text-gray-400 focus:outline-none"
             />
           </div>
 
           <div className="flex gap-2 w-full md:w-auto">
-            <button className="flex-1 md:flex-none px-4 py-2 bg-gray-900 text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-gray-800 transition-all shadow-lg shadow-gray-200">
+            <button className="flex-1 md:flex-none px-4 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
               Export
             </button>
           </div>
         </div>
 
-        <div className="p-2 sm:p-4 flex-1 w-full">
+        <div className="p-2 sm:p-4 flex-1 w-full bg-white">
           <div className="hidden md:block">
             <AdminTable
               columns={columns}
@@ -364,7 +357,7 @@ export default function AdminBookingsPage() {
                 />
               ))
             ) : (
-              <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+              <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                 <p className="text-sm font-medium text-gray-400">
                   Захиалга олдсонгүй.
                 </p>
@@ -382,16 +375,16 @@ export default function AdminBookingsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeViewPanel}
-              className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex justify-end"
+              className="fixed inset-0 bg-gray-900/20 backdrop-blur-xs z-50 flex justify-end"
             />
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 h-full w-full max-w-lg bg-white z-60 shadow-2xl flex flex-col"
+              className="fixed right-0 top-0 h-full w-full max-w-lg bg-white z-60 shadow-2xl flex flex-col border-l border-gray-100"
             >
-              <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-black text-gray-900 leading-none mb-1">
                     Захиалгын дэлгэрэнгүй
@@ -402,7 +395,7 @@ export default function AdminBookingsPage() {
                 </div>
                 <button
                   onClick={closeViewPanel}
-                  className="p-2 hover:bg-gray-50 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
                 >
                   <CloseIcon className="h-5 w-5" />
                 </button>
@@ -411,10 +404,10 @@ export default function AdminBookingsPage() {
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 <section className="space-y-4">
                   <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-blue-600" />
+                    <Clock className="h-4 w-4 text-blue-500" />
                     Захиалгын явц
                   </h3>
-                  <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
+                  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <BookingTimeline status={viewBooking.status as any} />
                   </div>
                 </section>
@@ -425,13 +418,13 @@ export default function AdminBookingsPage() {
                       Машины мэдээлэл
                     </h4>
                     <div className="flex gap-3">
-                      <div className="h-12 w-16 bg-gray-100 rounded-xl overflow-hidden shrink-0">
+                      <div className="h-12 w-16 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-200">
                         <Image
                           src={
                             viewBooking.car?.thumbnail?.url ||
-                            "/placeholder.jpg"
+                            "/placeholder.svg"
                           }
-                          alt=""
+                          alt={viewBooking.car?.brand || ""}
                           className="h-full w-full object-cover"
                           width={100}
                           height={100}
@@ -475,7 +468,7 @@ export default function AdminBookingsPage() {
                   </div>
                 </section>
 
-                <section className="p-6 bg-blue-600 rounded-3xl text-white space-y-4 shadow-xl shadow-blue-100">
+                <section className="p-6 bg-blue-600 rounded-2xl text-white space-y-4 shadow-xl shadow-blue-200">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-bold opacity-80">
                       Нийт төлбөр
@@ -507,7 +500,7 @@ export default function AdminBookingsPage() {
               </div>
 
               {viewBooking.status === "pending" && (
-                <div className="p-6 border-t border-gray-50 grid grid-cols-2 gap-3 bg-gray-50/30">
+                <div className="p-6 border-t border-gray-100 grid grid-cols-2 gap-3 bg-white">
                   <button
                     onClick={() => {
                       setIsViewOpen(false);

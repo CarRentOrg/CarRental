@@ -5,6 +5,7 @@ import { uploadToImageKit } from "../utils/imageUpload";
 import Booking from "../models/Booking";
 import { AuthenticatedRequest } from "../types";
 import mongoose from "mongoose";
+import { error } from "console";
 
 export const changeRoleToOwner = async (
   req: AuthenticatedRequest,
@@ -70,14 +71,12 @@ export const addCar = async (req: AuthenticatedRequest, res: Response) => {
       "/cars/thumbnail",
     );
 
-    // ✅ upload gallery images
-    let images: string[] = [];
+    // ✅ upload gallery images (preserve {url, fileId} for cleanup)
+    let images: { url: string; fileId: string }[] = [];
     if (files.images && files.images.length > 0) {
-      const uploadedImages = await Promise.all(
+      images = await Promise.all(
         files.images.map((file) => uploadToImageKit(file, "/cars/gallery")),
       );
-
-      images = uploadedImages.map((img) => img.url); // ✅ only urls
     }
 
     const newCar = await Car.create({
@@ -222,7 +221,7 @@ export const updateUserImage = async (
   }
 };
 
-export const getDashboardData = async (
+export const getOwnerDashboardStats = async (
   req: AuthenticatedRequest,
   res: Response,
 ) => {
@@ -233,51 +232,70 @@ export const getDashboardData = async (
       return res.status(403).json({ success: false, message: "Not an owner" });
     }
 
-    // --- Cars ---
-    const totalCars = await Car.countDocuments({ ownerId: _id });
+    const ownerObjectId = new mongoose.Types.ObjectId(_id);
 
+    // 1️⃣ CAR STATS
+    const totalCars = await Car.countDocuments({ ownerId: ownerObjectId });
     const availableCars = await Car.countDocuments({
-      ownerId: _id,
-      isAvailable: true,
+      ownerId: ownerObjectId,
+      is_available: true,
     });
-
     const rentedCars = await Car.countDocuments({
-      ownerId: _id,
-      isAvailable: false,
+      ownerId: ownerObjectId,
+      is_available: false,
     });
 
-    // --- Bookings ---
-    const totalBookings = await Booking.countDocuments({ ownerId: _id });
+    console.log(
+      `[Dashboard] Owner: ${ownerObjectId}, Cars: ${totalCars}, Avail: ${availableCars}, Rented: ${rentedCars}`,
+    );
 
-    const totalPending = await Booking.countDocuments({
-      ownerId: _id,
-      status: "pending",
-    });
+    // 2️⃣ BOOKING + REVENUE (Fallback to Car IDs for robustness)
+    // Fetch all car IDs owned by this user
+    const cars = await Car.find({ ownerId: ownerObjectId }).select("_id");
+    const carIds = cars.map((c) => c._id);
 
-    const revenueAgg = await Booking.aggregate([
+    // Aggregate bookings for these cars
+    const bookingAgg = await Booking.aggregate([
       {
         $match: {
-          ownerId: _id,
-          status: { $in: ["confirmed", "completed"] },
+          car: { $in: carIds }, // Match bookings by Car ID
         },
       },
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: "$totalPrice" },
+          totalBookings: { $sum: 1 },
+          pendingBookings: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "pending"] }, 1, 0],
+            },
+          },
+          totalRevenue: {
+            $sum: {
+              $cond: [
+                { $in: ["$status", ["confirmed", "completed"]] },
+                "$totalPrice",
+                0,
+              ],
+            },
+          },
         },
       },
     ]);
 
-    const totalRevenue = revenueAgg[0]?.totalRevenue || 0;
+    const stats = bookingAgg[0] || {
+      totalBookings: 0,
+      pendingBookings: 0,
+      totalRevenue: 0,
+    };
 
     res.status(200).json({
       success: true,
       data: {
         totalCars,
-        totalBookings,
-        totalPending,
-        totalRevenue,
+        totalBookings: stats.totalBookings,
+        pendingBookings: stats.pendingBookings,
+        totalRevenue: stats.totalRevenue,
         carStatus: {
           available: availableCars,
           rented: rentedCars,
@@ -336,10 +354,28 @@ export const getAllUsersWithStats = async (_req: Request, res: Response) => {
       data: stats,
     });
   } catch (error: any) {
-    console.error("GET USERS WITH STATS ERROR 👉", error);
+    console.error("GET USERS ERROR 👉", error);
     res.status(500).json({
       success: false,
       message: error.message || "Internal server error",
     });
+  }
+};
+
+export const getPendingBookings = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const userId = req.user._id;
+    const count = await Booking.countDocuments({
+      ownerId: userId,
+      status: "pending",
+    });
+
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    console.error("GET PENDING BOOKINGS ERROR 👉", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

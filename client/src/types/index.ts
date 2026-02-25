@@ -1,5 +1,11 @@
 import { ReactNode } from "react";
 
+export interface TitleProps {
+  title: string;
+  subtitle?: string;
+  align?: "left" | "center" | "right";
+}
+
 /* Car Type */
 export interface Car {
   price_per_week: any;
@@ -15,6 +21,7 @@ export interface Car {
   seats: number;
   price_per_day?: number;
   price_rates?: {
+    hourly?: number;
     daily: number;
     weekly: number;
     monthly: number;
@@ -43,9 +50,20 @@ export interface Booking {
   status: "pending" | "confirmed" | "cancelled" | "completed" | "locked";
   paymentStatus?: "pending" | "paid" | "failed";
   rateApplied?: string;
-  createdAt?: string;
+  createdAt: string;
   updatedAt?: string;
   note?: string;
+}
+
+export interface DashboardStats {
+  totalCars: number;
+  totalBookings: number;
+  totalRevenue: number;
+  pendingBookings: number;
+  carStatus: {
+    available: number;
+    rented: number;
+  };
 }
 
 /* User Type */

@@ -1,43 +1,49 @@
 "use client";
 
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import {
-  Users,
-  Car,
-  CalendarCheck,
   DollarSign,
+  Car,
+  CalendarDays,
+  Users,
   TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
+  ArrowRight,
   Clock,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Activity } from "@/types";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { Booking, DashboardStats } from "@/types"; // Ensure these types exist or are inferred
+import Link from "next/link";
 
 export default function AdminDashboard() {
-  const [data, setData] = useState({
-    totalCars: 0,
-    totalBookings: 0,
-    totalPending: 0,
-    totalRevenue: 0,
-    carStatus: {
-      available: 0,
-      rented: 0,
-    },
-  });
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const router = useRouter();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [statsData] = await Promise.all([
+        const [dashboardData, bookingsData] = await Promise.all([
           api.owner.dashboard(),
-          // api.owner.activity(),
+          api.owner.bookings.getAll(),
         ]);
-        setData(statsData);
-        // setActivities(activityData || []);
+
+        setStats(dashboardData);
+
+        // Ensure bookings is an array and sort by date (newest first) if not already
+        const bookingsList = Array.isArray(bookingsData) ? bookingsData : [];
+        // Assuming API returns sorted, but just in case
+        const sortedBookings = [...bookingsList].sort(
+          (a: any, b: any) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        setRecentBookings(sortedBookings.slice(0, 5));
       } catch (error) {
         console.error("Failed to load dashboard data", error);
       } finally {
@@ -47,205 +53,254 @@ export default function AdminDashboard() {
     loadData();
   }, []);
 
-  const STAT_CARDS = [
+  const statCards = [
     {
-      label: "Нийт орлого",
-      value: `${data.totalRevenue.toLocaleString()}`,
-      change: "+12.5%",
-      isUp: true,
+      title: "Нийт орлого",
+      value: stats ? `$${stats.totalRevenue.toLocaleString()}` : "...",
       icon: DollarSign,
-      color: "text-emerald-600",
+      color: "emerald",
       bg: "bg-emerald-50",
+      text: "text-emerald-600",
     },
     {
-      label: "Нийт машин",
-      value: data.totalCars.toString(),
-      change: "-2.1%",
-      isUp: false,
+      title: "Нийт машин",
+      value: stats ? stats.totalCars : "...",
       icon: Car,
-      color: "text-orange-600",
+      color: "orange",
       bg: "bg-orange-50",
+      text: "text-orange-600",
     },
     {
-      label: "Нийт захиалга",
-      value: data.totalBookings.toString(),
-      change: "+8.2%",
-      isUp: true,
-      icon: CalendarCheck,
-      color: "text-blue-600",
+      title: "Нийт захиалга",
+      value: stats ? stats.totalBookings : "...",
+      icon: CalendarDays,
+      color: "blue",
       bg: "bg-blue-50",
+      text: "text-blue-600",
     },
     {
-      label: "Хүлээгдсэж буй захиалга",
-      value: data.totalPending.toString(),
-      change: "+18.4%",
-      isUp: true,
-      icon: Users,
-      color: "text-purple-600",
+      title: "Хүлээгдэж буй",
+      value: stats ? stats.pendingBookings : "...",
+      icon: Clock,
+      color: "purple",
       bg: "bg-purple-50",
+      text: "text-purple-600",
     },
   ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "confirmed":
+        return "text-emerald-600 bg-emerald-50 border-emerald-100";
+      case "pending":
+        return "text-amber-600 bg-amber-50 border-amber-100";
+      case "cancelled":
+        return "text-red-600 bg-red-50 border-red-100";
+      case "completed":
+        return "text-blue-600 bg-blue-50 border-blue-100";
+      default:
+        return "text-gray-600 bg-gray-50 border-gray-100";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "confirmed":
+        return <CheckCircle2 className="h-4 w-4" />;
+      case "pending":
+        return <Clock className="h-4 w-4" />;
+      case "cancelled":
+        return <XCircle className="h-4 w-4" />;
+      case "completed":
+        return <CheckCircle2 className="h-4 w-4" />;
+      default:
+        return <AlertCircle className="h-4 w-4" />;
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-10 pb-12"
+      className="space-y-8 pb-12"
     >
-      <div>
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-          Хяналтын самбар
-        </h1>
-        <p className="text-gray-500 font-medium">
-          Тавтай морил, Админ! Өнөөдрийн мэдээллийг эндээс харна уу.
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Хяналтын самбар"
+        description="Тавтай морил, Админ! Өнөөдрийн мэдээллийг эндээс харна уу"
+      />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {STAT_CARDS.map((stat, i) => (
+      {/* 1. Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {statCards.map((stat, index) => (
           <motion.div
-            key={i}
-            whileHover={{ y: -5 }}
-            className="bg-white p-6 rounded-4xl border border-gray-100 shadow-sm space-y-4 hover:shadow-lg transition-all duration-300"
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4 hover:shadow-lg transition-shadow duration-300"
           >
             <div className="flex justify-between items-start">
-              <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
-                <stat.icon className="h-6 w-6" />
-              </div>
-              <div
-                className={`flex items-center space-x-1 text-sm font-bold ${stat.isUp ? "text-emerald-500" : "text-red-500"}`}
-              >
-                <span>{stat.change}</span>
-                {stat.isUp ? (
-                  <ArrowUpRight className="h-4 w-4" />
-                ) : (
-                  <ArrowDownRight className="h-4 w-4" />
-                )}
+              <div className={`p-3 rounded-xl ${stat.bg} shadow-sm`}>
+                <stat.icon className={`h-6 w-6 ${stat.text}`} />
               </div>
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-                {stat.label}
+              <p className="text-gray-500 font-bold text-xs uppercase tracking-wider">
+                {stat.title}
               </p>
-              <p className="text-3xl font-black text-gray-900">
-                {loading ? "..." : stat.value}
-              </p>
+              <h3 className="text-3xl font-black text-gray-900 mt-2">
+                {stat.value}
+              </h3>
             </div>
           </motion.div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Fleet Distribution */}
-        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 space-y-8 lg:col-span-2">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900">
-              Машинуудын төлөв
-            </h2>
-            <TrendingUp className="h-5 w-5 text-blue-600" />
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* 2. Car Usage Status */}
+        <div className="xl:col-span-1 bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-blue-50 rounded-xl">
+              <Car className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-gray-900 leading-none">
+                Машины төлөв
+              </h3>
+              <p className="text-sm text-gray-400 font-medium mt-1">
+                Одоогийн байдлаар
+              </p>
+            </div>
           </div>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm font-bold">
-                <span className="text-gray-500">Түрээслэгдэх боломжтой</span>
-                <span className="text-gray-900">
-                  {data.carStatus.available > 0
-                    ? Math.floor(data.carStatus.available * 0.7)
-                    : 0}{" "}
-                  Машин
+
+          <div className="flex-1 flex flex-col justify-center gap-6">
+            <div className="p-5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between group hover:border-blue-200 transition-colors">
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
+                  Ашиглагдаж байгаа
+                </span>
+                <span className="text-2xl font-black text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {stats ? stats.carStatus.rented : 0}
                 </span>
               </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "70%" }}
-                  transition={{ duration: 1, delay: 0.2 }}
-                  className="h-full bg-emerald-500 rounded-full"
-                />
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                <Clock className="h-5 w-5" />
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm font-bold">
-                <span className="text-gray-500">Түрээслэгдсэн</span>
-                <span className="text-gray-900">
-                  {data.carStatus.rented > 0
-                    ? Math.floor(data.carStatus.rented * 0.2)
-                    : 0}{" "}
-                  Машин
+
+            <div className="p-5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between group hover:border-emerald-200 transition-colors">
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
+                  Ашиглагдаагүй
+                </span>
+                <span className="text-2xl font-black text-gray-900 group-hover:text-emerald-600 transition-colors">
+                  {stats ? stats.carStatus.available : 0}
                 </span>
               </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "20%" }}
-                  transition={{ duration: 1, delay: 0.4 }}
-                  className="h-full bg-blue-500 rounded-full"
-                />
+              <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                <CheckCircle2 className="h-5 w-5" />
               </div>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-gray-50">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500 font-medium">Нийт машин</span>
+              <span className="font-bold text-gray-900">
+                {stats ? stats.totalCars : 0}
+              </span>
+            </div>
+            <div className="w-full h-2 bg-gray-100 rounded-full mt-3 overflow-hidden flex">
+              <div
+                className="bg-blue-500 h-full"
+                style={{
+                  width:
+                    stats && stats.totalCars > 0
+                      ? `${(stats.carStatus.rented / stats.totalCars) * 100}%`
+                      : "0%",
+                }}
+              />
+              <div
+                className="bg-emerald-500 h-full"
+                style={{
+                  width:
+                    stats && stats.totalCars > 0
+                      ? `${(stats.carStatus.available / stats.totalCars) * 100}%`
+                      : "0%",
+                }}
+              />
             </div>
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900">
+        {/* 3. Recent Activities */}
+        <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-gray-400" />
               Сүүлийн үйлдлүүд
-            </h2>
-            <Clock className="h-5 w-5 text-gray-400" />
+            </h3>
+            <Link
+              href="/admin/bookings"
+              className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:underline"
+            >
+              Бүгдийг харах
+            </Link>
           </div>
 
-          <div className="space-y-6">
-            {loading ? (
-              <p className="text-sm text-gray-400">
-                Үйлдлийг ачааллаж байна...
-              </p>
-            ) : (
-              activities.slice(0, 5).map((activity) => (
-                <div key={activity.id} className="flex gap-4 items-start">
-                  <div
-                    className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
-                      activity.type === "booking_new"
-                        ? "bg-blue-500"
-                        : activity.type === "booking_cancelled"
-                          ? "bg-red-500"
-                          : activity.type === "car_added"
-                            ? "bg-emerald-500"
-                            : "bg-purple-500"
-                    }`}
-                  />
-                  <div className="space-y-1">
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                      {new Date(activity.time).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                    <p className="text-sm font-bold text-gray-900 leading-tight">
-                      {activity.message}
-                    </p>
-                    {activity.user && (
-                      <div className="flex items-center gap-2 pt-1">
-                        <img
-                          src={activity.user.avatar}
-                          className="h-4 w-4 rounded-full"
-                          alt=""
-                        />
-                        <span className="text-[10px] text-gray-500 font-medium">
-                          {activity.user.name}
-                        </span>
-                      </div>
-                    )}
+          <div className="space-y-3">
+            {recentBookings.length > 0 ? (
+              recentBookings.map((booking, i) => (
+                <div
+                  key={booking._id}
+                  onClick={() =>
+                    router.push(`/admin/bookings?id=${booking._id}`)
+                  } // Or open modal/detail page if implemented
+                  className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                      <Users className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+                        Шинэ захиалга бүртгэгдлээ
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {booking.car?.brand} {booking.car?.model} -{" "}
+                        {(booking.user as any)?.name || "Guest"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                    <div
+                      className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${getStatusColor(booking.status)}`}
+                    >
+                      {getStatusIcon(booking.status)}
+                      <span className="uppercase">{booking.status}</span>
+                    </div>
+                    <span className="text-xs font-bold text-gray-400 whitespace-nowrap">
+                      {new Date(booking.createdAt).toLocaleDateString()}
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               ))
+            ) : (
+              <div className="py-12 text-center text-gray-400 text-sm font-medium bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                Одоогоор шинэ үйлдэл алга байна.
+              </div>
             )}
 
-            {activities.length === 0 && !loading && (
-              <p className="text-sm text-gray-400">
-                Сүүлийн үйлдэл байхгүй байна.
-              </p>
+            {recentBookings.length > 0 && (
+              <button
+                onClick={() => router.push("/admin/bookings")}
+                className="w-full py-3 mt-2 rounded-xl border border-gray-100 text-sm font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all flex items-center justify-center gap-2"
+              >
+                <span>Бүгдийг харах</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
             )}
           </div>
         </div>

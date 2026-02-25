@@ -141,6 +141,8 @@ export const updateCar = async (req: AuthenticatedRequest, res: Response) => {
       }
     }
 
+    // Increment version to avoid Mongoose VersionError on array mutations
+    car.increment();
     await car.save();
 
     res

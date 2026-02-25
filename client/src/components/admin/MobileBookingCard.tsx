@@ -1,26 +1,22 @@
 "use client";
 
-import React from "react";
+import { Booking } from "@/types";
+import { format } from "date-fns";
 import {
-  Calendar,
-  User as UserIcon,
+  CalendarDays,
+  Clock,
   MapPin,
-  DollarSign,
-  ChevronRight,
-  Eye,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
-  MoreVertical,
+  Eye,
 } from "lucide-react";
-import { motion } from "framer-motion";
-import { User, Car, Booking } from "@/types";
 
 interface MobileBookingCardProps {
   booking: Booking;
   onView: (booking: Booking) => void;
   onApprove: (booking: Booking) => void;
   onReject: (booking: Booking) => void;
-  onComplete: (booking: Booking) => void;
+  onComplete?: (booking: Booking) => void;
 }
 
 export default function MobileBookingCard({
@@ -31,163 +27,111 @@ export default function MobileBookingCard({
   onComplete,
 }: MobileBookingCardProps) {
   const statusColors = {
-    pending: "bg-amber-50 text-amber-700 border-amber-100",
-    confirmed: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    completed: "bg-blue-50 text-blue-700 border-blue-100",
-    cancelled: "bg-red-50 text-red-700 border-red-100",
+    pending: "bg-amber-50 text-amber-600 border-amber-100",
+    confirmed: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    cancelled: "bg-red-50 text-red-600 border-red-100",
+    completed: "bg-blue-50 text-blue-600 border-blue-100",
   };
 
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-4 space-y-4"
-    >
-      {/* Header: ID + Status */}
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            Захиалга
-          </span>
-          <span className="text-sm font-black text-gray-900">
-            #{booking._id.substring(0, 8)}
-          </span>
-        </div>
-        <span
-          className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${statusColors[booking.status as keyof typeof statusColors] || "bg-gray-50 text-gray-500"}`}
-        >
-          {booking.status}
-        </span>
-      </div>
+  const status = (booking.status || "pending") as keyof typeof statusColors;
 
-      {/* Car Info */}
-      <div className="flex items-center gap-3 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
-        <div className="h-12 w-20 rounded-lg bg-white overflow-hidden border border-gray-200 shadow-sm shrink-0">
-          {booking.car?.thumbnail?.url ? (
+  return (
+    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div className="flex gap-3">
+          <div className="h-12 w-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-100">
             <img
-              src={booking.car?.thumbnail?.url}
+              src={booking.car?.thumbnail?.url || "/placeholder.jpg"}
               alt=""
               className="h-full w-full object-cover"
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-300">
-              <MapPin className="h-5 w-5" />
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col min-w-0">
-          <span className="text-sm font-bold text-gray-900 truncate">
-            {booking.car?.brand} {booking.car?.model}
-          </span>
-          <span className="text-[10px] text-gray-500 font-medium">
-            Машины ID: {booking.car?._id || "N/A"}
-          </span>
-        </div>
-      </div>
-
-      {/* User + Pricing */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-gray-400">
-            <UserIcon className="h-3 w-3" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              Хэрэглэгч
-            </span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-gray-900 truncate">
-              {booking.user?.name || "Unknown"}
-            </span>
-            <span className="text-[10px] text-gray-500 truncate">
-              {booking.user?.email}
+          <div>
+            <h4 className="text-sm font-black text-gray-900 leading-tight">
+              {booking.car?.brand} {booking.car?.model}
+            </h4>
+            <span
+              className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border inline-block mt-1 ${
+                statusColors[status] || statusColors.pending
+              }`}
+            >
+              {status}
             </span>
           </div>
         </div>
-
-        <div className="space-y-1 text-right">
-          <div className="flex items-center justify-end gap-1.5 text-gray-400">
-            <DollarSign className="h-3 w-3" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              Төлбөр
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-black text-blue-600">
-              ${booking.totalPrice?.toLocaleString()}
-            </span>
-            <span className="text-[10px] text-gray-400 font-medium">
-              Буцаан олголтгүй
-            </span>
-          </div>
+        <div className="text-right">
+          <p className="text-lg font-black text-blue-600">
+            ${booking.totalPrice?.toLocaleString()}
+          </p>
         </div>
       </div>
 
-      {/* Dates */}
-      <div className="flex items-center justify-between p-2.5 bg-blue-50/50 rounded-xl border border-blue-100/30">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-3.5 w-3.5 text-blue-500" />
-          <div className="flex flex-col">
-            <span className="text-[10px] text-blue-600/70 font-bold uppercase leading-none mb-0.5">
-              Авах
-            </span>
-            <span className="text-xs font-bold text-blue-900">
-              {new Date(booking.startDate).toLocaleDateString()}
-            </span>
-          </div>
+      {/* Details */}
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        <div className="p-2 bg-gray-50 rounded-lg">
+          <p className="text-gray-400 font-bold uppercase text-[9px]">
+            Pick-up
+          </p>
+          <p className="font-semibold text-gray-900 mt-0.5">
+            {format(new Date(booking.startDate), "MMM dd, HH:mm")}
+          </p>
         </div>
-        <div className="h-px w-8 bg-blue-200" />
-        <div className="flex items-center gap-2 text-right">
-          <div className="flex flex-col">
-            <span className="text-[10px] text-blue-600/70 font-bold uppercase leading-none mb-0.5">
-              Өгөх
-            </span>
-            <span className="text-xs font-bold text-blue-900">
-              {new Date(booking.endDate).toLocaleDateString()}
-            </span>
-          </div>
-          <Calendar className="h-3.5 w-3.5 text-blue-500" />
+        <div className="p-2 bg-gray-50 rounded-lg text-right">
+          <p className="text-gray-400 font-bold uppercase text-[9px]">
+            Drop-off
+          </p>
+          <p className="font-semibold text-gray-900 mt-0.5">
+            {format(new Date(booking.endDate), "MMM dd, HH:mm")}
+          </p>
         </div>
+      </div>
+
+      {/* User */}
+      <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
+        <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">
+          {(booking.user?.name || "G").charAt(0)}
+        </div>
+        <span className="text-xs font-bold text-gray-700">
+          {booking.user?.name || "Guest User"}
+        </span>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-2 border-t border-gray-50">
+      <div className="grid grid-cols-4 gap-2 pt-1">
         <button
           onClick={() => onView(booking)}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-50 text-gray-600 rounded-xl text-[11px] font-bold hover:bg-gray-100 transition-colors"
+          className="col-span-1 flex items-center justify-center p-2 bg-gray-50 text-gray-600 rounded-xl hover:bg-gray-100 font-bold text-xs border border-gray-100"
         >
-          <Eye className="h-3.5 w-3.5" />
-          Харах
+          <Eye className="h-4 w-4" />
         </button>
 
-        {booking.status === "pending" && (
+        {status === "pending" ? (
           <>
             <button
               onClick={() => onApprove(booking)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-white rounded-xl text-[11px] font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
+              className="col-span-2 flex items-center justify-center gap-1 p-2 bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-100"
             >
-              <CheckCircle className="h-3.5 w-3.5" />
-              Зөвшөөрөх
+              <CheckCircle2 className="h-4 w-4" /> Approve
             </button>
             <button
               onClick={() => onReject(booking)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 rounded-xl text-[11px] font-bold hover:bg-red-100 transition-colors"
+              className="col-span-1 flex items-center justify-center p-2 bg-red-50 text-red-500 rounded-xl font-bold text-xs border border-red-100"
             >
-              <XCircle className="h-3.5 w-3.5" />
-              Татгалзах
+              <XCircle className="h-4 w-4" />
             </button>
           </>
-        )}
-        {booking.status === "confirmed" && (
+        ) : status === "confirmed" && onComplete ? (
           <button
             onClick={() => onComplete(booking)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-500 text-white rounded-xl text-[11px] font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-100"
+            className="col-span-3 flex items-center justify-center gap-1 p-2 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-100"
           >
-            <CheckCircle className="h-3.5 w-3.5" />
-            Дуусгах
+            <CheckCircle2 className="h-4 w-4" /> Mark Complete
           </button>
+        ) : (
+          <div className="col-span-3" />
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

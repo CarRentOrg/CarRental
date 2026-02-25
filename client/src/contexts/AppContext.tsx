@@ -29,7 +29,7 @@ interface AppContextType {
   setDateRange: (s: string | null, e: string | null) => void;
 
   refreshCars: () => Promise<void>;
-  fetchMyBookings: () => Promise<void>;
+  fetchMyBookings: (force?: boolean) => Promise<void>;
   getCarById: (id: string) => Promise<Car | undefined>;
 }
 
@@ -71,19 +71,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const fetchMyBookings = useCallback(async () => {
-    if (!user || bookings.length > 0) {
-      if (!user) setBookings([]);
-      return;
-    }
-    setLoadingBookings(true);
-    try {
-      const bookingsData = await api.bookings.getMyBookings();
-      setBookings(bookingsData);
-    } finally {
-      setLoadingBookings(false);
-    }
-  }, [user]);
+  const fetchMyBookings = useCallback(
+    async (force?: boolean) => {
+      if (!user) {
+        setBookings([]);
+        return;
+      }
+      if (!force && bookings.length > 0) {
+        return;
+      }
+      setLoadingBookings(true);
+      try {
+        const bookingsData = await api.bookings.getMyBookings();
+        setBookings(bookingsData);
+      } finally {
+        setLoadingBookings(false);
+      }
+    },
+    [user],
+  );
 
   const getCarById = useCallback(async (id: string) => {
     try {

@@ -30,6 +30,13 @@ const seedData = async () => {
       role: "admin",
     });
 
+    const ownerUser = await User.create({
+      name: "Owner User",
+      email: "owner@example.com",
+      password: hashedPassword,
+      role: "owner",
+    });
+
     const normalUser = await User.create({
       name: "John Doe",
       email: "john@example.com",
@@ -40,7 +47,7 @@ const seedData = async () => {
     console.log((colors as any).green.inverse("Users Created..."));
 
     // Cars
-    const cars = await Car.create([
+    const carsData: any[] = [
       {
         name: "Tesla Model S",
         brand: "Tesla",
@@ -56,7 +63,7 @@ const seedData = async () => {
           "https://images.unsplash.com/photo-1617788138017-80ad40651399?ixlib=rb-4.0.3&auto=format&fit=crop&w=1770&q=80",
         ],
         description: "Luxury electric sedan with autopilot.",
-        ownerId: adminUser._id,
+        ownerId: ownerUser._id,
       },
       {
         name: "BMW X5",
@@ -73,7 +80,7 @@ const seedData = async () => {
           "https://images.unsplash.com/photo-1555215695-3004980adade?ixlib=rb-4.0.3&auto=format&fit=crop&w=1770&q=80",
         ],
         description: "Premium SUV for comfort and style.",
-        ownerId: adminUser._id,
+        ownerId: ownerUser._id,
       },
       {
         name: "Toyota Camry",
@@ -90,9 +97,11 @@ const seedData = async () => {
           "https://images.unsplash.com/photo-1621007947382-bb3c3968e3bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1770&q=80",
         ],
         description: "Reliable and fuel-efficient sedan.",
-        ownerId: adminUser._id,
+        ownerId: ownerUser._id,
       },
-    ]);
+    ];
+
+    const cars = await Car.create(carsData);
 
     console.log((colors as any).green.inverse("Cars Created..."));
 
@@ -101,6 +110,7 @@ const seedData = async () => {
       {
         user: normalUser._id,
         car: cars[0]._id,
+        ownerId: ownerUser._id, // Added ownerId
         startDate: new Date(),
         endDate: new Date(new Date().setDate(new Date().getDate() + 3)),
         totalPrice: 450,
@@ -110,6 +120,7 @@ const seedData = async () => {
       {
         user: normalUser._id,
         car: cars[1]._id,
+        ownerId: ownerUser._id, // Added ownerId
         startDate: new Date(new Date().setDate(new Date().getDate() + 5)),
         endDate: new Date(new Date().setDate(new Date().getDate() + 7)),
         totalPrice: 240,

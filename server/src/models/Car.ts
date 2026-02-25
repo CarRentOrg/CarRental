@@ -11,6 +11,7 @@ export interface ICar extends Omit<Document, "model"> {
   seats: number;
   price_per_day: number;
   price_rates: {
+    hourly: number;
     daily: number;
     weekly: number;
     monthly: number;
@@ -45,6 +46,7 @@ const carSchema = new Schema<ICar>(
     price_per_day: { type: Number, required: true },
     price_rates: {
       type: {
+        hourly: { type: Number, required: false },
         daily: { type: Number, required: false },
         weekly: { type: Number, required: false },
         monthly: { type: Number, required: false },
@@ -70,5 +72,7 @@ const carSchema = new Schema<ICar>(
     timestamps: true,
   },
 );
+
+carSchema.index({ ownerId: 1 });
 
 export default mongoose.model<ICar>("Car", carSchema);

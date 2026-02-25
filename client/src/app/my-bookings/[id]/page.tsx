@@ -74,7 +74,7 @@ export default function BookingDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="h-8 w-8 border-2 border-white/20 border-t-blue-500 rounded-full animate-spin" />
+        <div className="h-8 w-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
@@ -90,7 +90,7 @@ export default function BookingDetailPage() {
     pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
     confirmed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
     cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
-    completed: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    completed: "bg-white/5 text-white border-white/20",
   };
 
   return (
@@ -195,7 +195,7 @@ export default function BookingDetailPage() {
                   <span className="text-lg font-bold text-white">
                     Total Amount
                   </span>
-                  <span className="text-3xl font-black text-blue-500">
+                  <span className="text-3xl font-black text-white">
                     ${booking.totalPrice.toLocaleString()}
                   </span>
                 </div>

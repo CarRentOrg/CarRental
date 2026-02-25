@@ -4,6 +4,7 @@ export interface IBooking extends Document {
   user: mongoose.Types.ObjectId;
   car: mongoose.Types.ObjectId;
   car_id: string;
+  ownerId: mongoose.Types.ObjectId;
   userSnapshot: {
     name: string;
     email: string;
@@ -29,6 +30,11 @@ const bookingSchema = new Schema<IBooking>(
     car: {
       type: Schema.Types.ObjectId,
       ref: "Car",
+      required: true,
+    },
+    ownerId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     userSnapshot: {
@@ -90,5 +96,9 @@ const bookingSchema = new Schema<IBooking>(
 
 // Index for finding overlaps quickly including locked ones
 bookingSchema.index({ car: 1, status: 1, startDate: 1, endDate: 1 });
+
+// Scalability Indexes
+bookingSchema.index({ ownerId: 1, status: 1 }); // Dashboard stats
+bookingSchema.index({ ownerId: 1, createdAt: -1 }); // Recent bookings list
 
 export default mongoose.model<IBooking>("Booking", bookingSchema);
