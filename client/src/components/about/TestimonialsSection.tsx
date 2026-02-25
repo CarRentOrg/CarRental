@@ -36,7 +36,7 @@ export default function TestimonialsSection() {
     <section className="py-24 px-6 bg-zinc-950">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <span className="text-blue-500 font-bold tracking-widest uppercase text-sm">
+          <span className="text-white font-bold tracking-widest uppercase text-sm">
             Voices of Trust
           </span>
           <h2 className="text-4xl md:text-5xl font-black mt-2">
@@ -54,7 +54,7 @@ export default function TestimonialsSection() {
               transition={{ delay: i * 0.1 }}
               className="bg-zinc-900 p-8 rounded-3xl border border-white/5 relative"
             >
-              <Quote className="absolute top-8 right-8 h-8 w-8 text-blue-600/20 rotate-180" />
+              <Quote className="absolute top-8 right-8 h-8 w-8 text-white/10 rotate-180" />
               <div className="flex gap-1 text-amber-500 mb-6">
                 {[...Array(5)].map((_, j) => (
                   <Star key={j} className="h-4 w-4 fill-current" />

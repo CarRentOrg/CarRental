@@ -36,12 +36,12 @@ export default function WhyChooseSection() {
           >
             <h2 className="text-4xl md:text-5xl font-black leading-tight">
               Why Drivers <br /> Choose{" "}
-              <span className="text-blue-600">Luxerra</span>
+              <span className="text-white">Luxerra</span>
             </h2>
             <div className="space-y-6">
               {BENEFITS.map((point, i) => (
                 <div key={i} className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-500 shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
                     <point.icon className="h-5 w-5" />
                   </div>
                   <span className="text-xl font-semibold">{point.label}</span>

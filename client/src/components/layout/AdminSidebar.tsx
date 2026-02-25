@@ -2,261 +2,185 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Car,
-  CalendarCheck,
-  Settings,
-  LogOut,
-  PlusCircle,
+  CalendarDays,
   BarChart3,
   Users,
-  ChevronLeft,
-  ChevronRight,
+  Settings,
   X,
+  Plus,
+  LogOut,
+  ChevronRight,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import clsx from "clsx";
+import { motion, AnimatePresence } from "framer-motion";
+import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-
-const MENU_ITEMS = [
-  { icon: LayoutDashboard, label: "Хяналтын самбар", href: "/admin" },
-  { icon: Car, label: "Машин удирдах", href: "/admin/cars" },
-  { icon: CalendarCheck, label: "Захиалгууд", href: "/admin/bookings" },
-  { icon: BarChart3, label: "Тайлан / Статистик", href: "/admin/analytics" },
-  { icon: Users, label: "Харилцагчид", href: "/admin/customers" },
-];
 
 interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-function SidebarContent({
-  isCollapsed,
-  onNavigate,
-  onCloseMobile,
-}: {
-  isCollapsed: boolean;
-  onNavigate?: () => void;
-  onCloseMobile?: () => void;
-}) {
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { logout } = useOwnerAuth();
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    async function loadStats() {
+    const fetchPending = async () => {
       try {
-        const stats = await api.owner.dashboard();
-        setPendingCount(stats.totalPending);
-      } catch (err) {
-        console.error("Failed to load sidebar stats", err);
+        const res = await api.owner.bookings.getPending();
+        setPendingCount(res.count || 0);
+      } catch (e) {
+        console.error("Failed to fetch pending count", e);
       }
-    }
-    loadStats();
-    // Refresh every minute to stay updated
-    const interval = setInterval(loadStats, 60000);
+    };
+    fetchPending();
+    const interval = setInterval(fetchPending, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Logo & Close Button (Mobile) */}
-      <div className="p-6 flex items-center justify-between">
-        <Link
-          href="/admin"
-          onClick={onCloseMobile}
-          className="flex items-center gap-3 overflow-hidden"
-        >
-          <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
-            <Car className="h-6 w-6 text-white" />
-          </div>
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-                className="whitespace-nowrap"
-              >
-                <span className="text-xl font-black tracking-tight text-gray-900 leading-none">
-                  Admin
-                  <span className="text-blue-600 block text-xs uppercase tracking-widest font-bold">
-                    Panel
-                  </span>
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Link>
+  const menuItems = [
+    {
+      title: "Хяналтын самбар",
+      icon: LayoutDashboard,
+      href: "/admin",
+      exact: true,
+    },
+    {
+      title: "Машин удирдах",
+      icon: Car,
+      href: "/admin/cars",
+    },
+    {
+      title: "Захиалгууд",
+      icon: CalendarDays,
+      href: "/admin/bookings",
+      badge: pendingCount > 0 ? pendingCount : undefined,
+    },
+    {
+      title: "Тайлан / Статистик",
+      icon: BarChart3,
+      href: "/admin/analytics",
+    },
+    {
+      title: "Харилцагчид",
+      icon: Users,
+      href: "/admin/customers",
+    },
+  ];
 
-        {/* Mobile Close Button */}
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      {/* Logo Area */}
+      <div className="p-8 pb-4 flex items-center justify-between">
+        <Link href="/admin" className="flex flex-col group">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-blue-600 rounded-xl p-2 text-white shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform duration-300">
+              <Car className="h-6 w-6" />
+            </div>
+            <h1 className="text-2xl font-black tracking-tight text-gray-900">
+              Admin
+            </h1>
+          </div>
+          <span className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold ml-1">
+            Panel
+          </span>
+        </Link>
         <button
-          onClick={onCloseMobile}
-          className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors"
+          onClick={onClose}
+          className="lg:hidden p-2 text-gray-400 hover:text-gray-900 bg-gray-50 rounded-xl transition-colors"
         >
-          <X className="h-6 w-6" />
+          <X className="h-5 w-5" />
         </button>
       </div>
 
-      {/* Menu */}
-      <nav className="flex-1 px-3 space-y-1 mt-4 overflow-y-auto no-scrollbar">
-        {MENU_ITEMS.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/admin" && pathname.startsWith(item.href));
+      <div className="px-6 py-2">
+        <div className="h-px bg-gray-100" />
+      </div>
 
-          const handleClick = () => {
-            if (onNavigate) onNavigate();
-            if (onCloseMobile) onCloseMobile();
-          };
+      {/* Navigation */}
+      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+        {menuItems.map((item) => {
+          const isActive = item.exact
+            ? pathname === item.href
+            : pathname.startsWith(item.href);
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              onClick={handleClick}
-              className={clsx(
-                "group relative flex items-center px-3 py-3 rounded-xl text-sm font-bold transition-all duration-200",
+              onClick={() => window.innerWidth < 1024 && onClose()}
+              className={`group flex items-center justify-between px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 relative overflow-hidden ${
                 isActive
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900",
-              )}
+                  ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              }`}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="active-pill"
-                  className="absolute inset-0 rounded-xl bg-blue-50/80"
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+              <div className="flex items-center gap-3.5 relative z-10">
+                <item.icon
+                  className={`h-5 w-5 transition-colors ${
+                    isActive
+                      ? "text-blue-600"
+                      : "text-gray-400 group-hover:text-gray-600"
+                  }`}
                 />
-              )}
+                <span>{item.title}</span>
+              </div>
 
-              <item.icon
-                className={clsx(
-                  "h-5 w-5 shrink-0 z-10 transition-colors",
-                  isActive
-                    ? "text-blue-600"
-                    : "text-gray-400 group-hover:text-gray-600",
-                )}
-              />
-
-              <AnimatePresence mode="wait">
-                {!isCollapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="ml-3 z-10 whitespace-nowrap flex-1 flex items-center justify-between"
-                  >
-                    {item.label}
-                    {item.href === "/admin/bookings" && pendingCount > 0 && (
-                      <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-                        {pendingCount}
-                      </span>
-                    )}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-
-              {isCollapsed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
-                  {item.label}
-                </div>
-              )}
+              {item.badge ? (
+                <span className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-orange-100 animate-pulse relative z-10">
+                  {item.badge}
+                </span>
+              ) : isActive ? (
+                <ChevronRight className="h-4 w-4 text-blue-400 relative z-10" />
+              ) : null}
             </Link>
           );
         })}
 
-        {/* Quick Action */}
-        <div className="pt-6">
-          {!isCollapsed && (
-            <p className="px-3 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">
-              Хурдан үйлдэл
-            </p>
-          )}
+        <div className="pt-6 mt-6 border-t border-gray-100">
+          <p className="px-4 text-[10px] font-black uppercase text-gray-400 tracking-widest mb-3">
+            хурдан үйлдэл
+          </p>
           <Link
             href="/admin/cars/new"
-            onClick={() => {
-              if (onNavigate) onNavigate();
-              if (onCloseMobile) onCloseMobile();
-            }}
-            className={clsx(
-              "flex items-center px-3 py-3 rounded-xl text-sm font-bold bg-gray-900 text-white hover:bg-gray-800 transition-all",
-              isCollapsed ? "justify-center" : "gap-3",
-            )}
+            onClick={() => window.innerWidth < 1024 && onClose()}
+            className="flex items-center gap-3 px-4 py-3.5 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all font-bold shadow-lg shadow-blue-100 group hover:shadow-xl hover:shadow-blue-200 hover:-translate-y-0.5"
           >
-            <PlusCircle className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Машин нэмэх</span>}
+            <div className="bg-white/20 p-1 rounded-lg">
+              <Plus className="h-4 w-4" />
+            </div>
+            <span>Машин нэмэх</span>
           </Link>
         </div>
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-gray-100 space-y-1">
+      <div className="p-4 border-t border-gray-100 bg-gray-50/50">
         <Link
           href="/admin/settings"
-          onClick={() => {
-            if (onNavigate) onNavigate();
-            if (onCloseMobile) onCloseMobile();
-          }}
-          className={clsx(
-            "flex items-center px-3 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all",
-            isCollapsed ? "justify-center" : "gap-3",
-          )}
+          className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-gray-900 hover:bg-white rounded-xl transition-all font-bold text-sm mb-1"
         >
-          <Settings className="h-5 w-5 shrink-0" />
-          {!isCollapsed && <span>Тохиргоо</span>}
+          <Settings className="h-4 w-4" />
+          <span>Тохиргоо</span>
         </Link>
         <button
-          className={clsx(
-            "w-full flex items-center px-3 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all",
-            isCollapsed ? "justify-center" : "gap-3",
-          )}
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:text-white hover:bg-red-500 rounded-xl transition-all font-bold text-sm group"
         >
-          <LogOut className="h-5 w-5 shrink-0" />
-          {!isCollapsed && <span>Гарах</span>}
+          <LogOut className="h-4 w-4 group-hover:text-white transition-colors" />
+          <span>Гарах</span>
         </button>
       </div>
     </div>
   );
-}
-
-export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Handle Resize
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 1024;
-      setIsMobile(mobile);
-      if (mobile) {
-        setIsCollapsed(false); // Mobile sidebar shouldn't "collapse" to 80px icons
-      } else {
-        // Restore desktop collapse state if needed, or keep it expanded by default
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Handle Esc key
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [onClose]);
 
   return (
     <>
-      {/* Backdrop for Mobile */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -264,44 +188,18 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-gray-900/60 backdrop-blur-[2px] z-40 lg:hidden"
+            className="fixed inset-0 bg-gray-900/20 backdrop-blur-xs z-40 lg:hidden"
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar Overlay (Mobile) / Fixed (Desktop) */}
-      <motion.aside
-        initial={false}
-        animate={{
-          x: isMobile ? (isOpen ? 0 : -300) : 0,
-          width: isMobile ? 280 : isCollapsed ? 80 : 260,
-        }}
-        transition={{ type: "spring", stiffness: 400, damping: 40 }}
-        className={clsx(
-          "flex flex-col bg-white border-r border-gray-100 h-screen z-50",
-          isMobile ? "fixed inset-y-0 left-0" : "sticky top-0 shrink-0",
-          "text-[12px] sm:text-[13px] md:text-sm", // Text size reduction
-        )}
-        style={{
-          // On mobile, we don't want the sidebar element to push the flex content
-          position: isMobile ? "fixed" : ("sticky" as any),
-          flexBasis: isMobile ? 0 : undefined,
-          minWidth: isMobile ? 0 : undefined,
-        }}
+      <aside
+        className={`fixed top-0 left-0 z-50 h-screen w-72 bg-white border-r border-gray-100 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+        }`}
       >
-        {/* Collapse Toggle - Hidden on mobile */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-20 h-6 w-6 bg-white border border-gray-100 rounded-full items-center justify-center shadow-sm hover:bg-gray-50 transition-colors z-50 text-gray-400 hover:text-gray-900 hidden lg:flex"
-        >
-          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-        </button>
-
-        <SidebarContent
-          isCollapsed={isMobile ? false : isCollapsed}
-          onCloseMobile={onClose}
-        />
-      </motion.aside>
+        {sidebarContent}
+      </aside>
     </>
   );
 }

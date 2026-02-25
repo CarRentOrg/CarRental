@@ -1,4 +1,4 @@
-import { Car, Booking, User } from "@/types";
+import { Car, Booking, User, DashboardStats } from "@/types";
 
 export const API_Base_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -10,22 +10,12 @@ export interface AuthResponse {
   token: string;
   user: User;
   message?: string;
+  flow?: "password" | "otp";
 }
 interface GetAllUsersResponse {
   success: boolean;
   total: number;
   data: (User & { total_bookings?: number; total_spent?: number })[];
-}
-
-export interface DashboardStats {
-  totalCars: number;
-  totalBookings: number;
-  totalRevenue: number;
-  totalPending: number;
-  carStatus: {
-    available: number;
-    rented: number;
-  };
 }
 
 export interface Activity {
@@ -108,6 +98,15 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       }),
+
+    updateProfile: (data: { name?: string; email?: string; phone?: string }) =>
+      fetchAPI<{ success: boolean; message: string; user: User }>(
+        "/auth/update-profile",
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+        },
+      ),
   },
 
   payment: {
@@ -261,16 +260,21 @@ export const api = {
 
     getCars: () => fetchAPI<Car[]>("/owner/cars"),
 
+    toggleAvailability: (carId: string) =>
+      fetchAPI<{ success: boolean; message: string }>("/owner/toggle-car", {
+        method: "POST",
+        body: JSON.stringify({ carId }),
+      }),
+
     dashboard: () => fetchAPI<DashboardStats>("/owner/dashboard"),
     activity: () => fetchAPI<Activity[]>("/owner/activity"),
     bookings: {
-      getAll: () =>
-        fetchAPI<{ success: boolean; total: number; data: Booking[] }>(
-          "/owner/bookings",
-        ),
+      getAll: () => fetchAPI<Booking[]>("/owner/bookings"),
+      getPending: () => fetchAPI<{ count: number }>("/owner/bookings/pending"),
     },
     customers: {
       getAll: () => fetchAPI<GetAllUsersResponse>("/owner/customers"),
     },
+    getBookingUsers: () => fetchAPI<GetAllUsersResponse>("/owner/customers"),
   },
 };

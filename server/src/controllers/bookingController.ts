@@ -69,6 +69,13 @@ export const initBooking = async (req: AuthenticatedRequest, res: Response) => {
       return;
     }
 
+    // 0. FETCH CAR & OWNER
+    const car = await Car.findById(carId);
+    if (!car) {
+      res.status(404).json({ success: false, message: "Car not found" });
+      return;
+    }
+
     // 1. ATOMIC OVERLAP CHECK
     // Check for any booking that is Confirmed OR Locked
     // Overlap Logic: (StartA < EndB) and (EndA > StartB)
@@ -93,6 +100,7 @@ export const initBooking = async (req: AuthenticatedRequest, res: Response) => {
 
     const booking = await Booking.create({
       car: carId,
+      ownerId: car.ownerId || carId, // Fallback if ownerId missing (migration safety)
       startDate: start,
       endDate: end,
       totalPrice,
@@ -421,6 +429,14 @@ export const approveBooking = async (req: Request, res: Response) => {
         .json({ success: false, message: "Booking not found" });
     }
 
+    // Backfill ownerId if missing (Legacy Support)
+    if (!booking.ownerId) {
+      const car = await Car.findById(booking.car);
+      if (car && car.ownerId) {
+        booking.ownerId = car.ownerId;
+      }
+    }
+
     if (booking.status !== "pending") {
       return res.status(400).json({
         success: false,
@@ -464,6 +480,14 @@ export const rejectBooking = async (req: Request, res: Response) => {
         .json({ success: false, message: "Booking not found" });
     }
 
+    // Backfill ownerId if missing (Legacy Support)
+    if (!booking.ownerId) {
+      const car = await Car.findById(booking.car);
+      if (car && car.ownerId) {
+        booking.ownerId = car.ownerId;
+      }
+    }
+
     if (booking.status !== "pending" && booking.status !== "confirmed") {
       return res.status(400).json({
         success: false,
@@ -493,6 +517,14 @@ export const completeBooking = async (req: Request, res: Response) => {
       return res
         .status(404)
         .json({ success: false, message: "Booking not found" });
+    }
+
+    // Backfill ownerId if missing (Legacy Support)
+    if (!booking.ownerId) {
+      const car = await Car.findById(booking.car);
+      if (car && car.ownerId) {
+        booking.ownerId = car.ownerId;
+      }
     }
 
     if (booking.status !== "confirmed") {

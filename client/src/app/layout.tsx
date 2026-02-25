@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col bg-black`}
+        className={` ${interDisplay.className} font-outfit antialiased min-h-screen flex flex-col`}
       >
         <Toaster position="top-right" />
         <Suspense fallback={null}>

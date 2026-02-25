@@ -17,7 +17,7 @@ export default function CTASection() {
           fill
           className="object-cover opacity-20"
         />
-        <div className="absolute inset-0 bg-blue-900/80 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-black/80 mix-blend-multiply" />
         <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
       </div>
 
@@ -28,12 +28,12 @@ export default function CTASection() {
           viewport={{ once: true }}
           className="text-5xl md:text-7xl font-black text-white"
         >
-          Drive Your <span className="text-blue-400">Dream</span> Today
+          Drive Your <span className="text-white">Dream</span> Today
         </motion.h2>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
           <Link
             href="/cars"
-            className="px-10 py-5 bg-white text-blue-900 rounded-full font-black text-lg hover:bg-blue-50 transition-all flex items-center gap-2 shadow-2xl hover:scale-105 active:scale-95"
+            className="px-10 py-5 bg-white text-black rounded-full font-black text-lg hover:bg-zinc-100 transition-all flex items-center gap-2 shadow-2xl hover:scale-105 active:scale-95"
           >
             Book a Car <ArrowRight className="h-5 w-5" />
           </Link>

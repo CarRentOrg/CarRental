@@ -26,7 +26,7 @@ export default function HeroSection() {
           transition={{ duration: 0.8, ease: "backOut" }}
           className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white drop-shadow-2xl"
         >
-          DRIVEN BY <span className="text-blue-600">EXCELLENCE</span>
+          DRIVEN BY <span className="text-white">EXCELLENCE</span>
         </motion.h1>
 
         <motion.p

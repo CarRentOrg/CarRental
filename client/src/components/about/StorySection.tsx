@@ -52,7 +52,7 @@ export default function StorySection() {
           variants={fadeIn}
           className="text-center max-w-3xl mx-auto space-y-6"
         >
-          <span className="text-blue-500 font-bold tracking-widest uppercase text-sm">
+          <span className="text-white font-bold tracking-widest uppercase text-sm">
             Our Story
           </span>
           <h2 className="text-3xl md:text-5xl font-black">
@@ -82,8 +82,8 @@ export default function StorySection() {
               variants={fadeIn}
               className="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-white/5 hover:bg-zinc-900 transition-colors group"
             >
-              <div className="h-14 w-14 bg-blue-600/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <item.icon className="h-7 w-7 text-blue-500" />
+              <div className="h-14 w-14 bg-white/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <item.icon className="h-7 w-7 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
               <p className="text-gray-400 leading-relaxed text-sm md:text-base">

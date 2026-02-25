@@ -103,8 +103,8 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
             <div className="p-6 sm:p-10 space-y-8">
               {/* Header */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-blue-500">
-                  <div className="h-12 w-12 bg-blue-500/10 rounded-2xl flex items-center justify-center">
+                <div className="flex items-center gap-4 text-white">
+                  <div className="h-12 w-12 bg-white/5 rounded-2xl flex items-center justify-center">
                     <Lock className="h-6 w-6" />
                   </div>
                   <div>
@@ -169,7 +169,7 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
                               currentPassword: e.target.value,
                             })
                           }
-                          className="w-full bg-black/50 border border-white/5 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-zinc-700"
+                          className="w-full bg-black/50 border border-white/5 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-white/10 transition-all placeholder:text-zinc-700"
                           placeholder="••••••••"
                         />
                         <button
@@ -201,7 +201,7 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
                               newPassword: e.target.value,
                             })
                           }
-                          className="w-full bg-black/50 border border-white/5 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-zinc-700"
+                          className="w-full bg-black/50 border border-white/5 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-white/10 transition-all placeholder:text-zinc-700"
                           placeholder="Min. 8 characters"
                         />
                         <button
@@ -233,7 +233,7 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
                               confirmPassword: e.target.value,
                             })
                           }
-                          className="w-full bg-black/50 border border-white/5 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-zinc-700"
+                          className="w-full bg-black/50 border border-white/5 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-white/10 transition-all placeholder:text-zinc-700"
                           placeholder="Repeat new password"
                         />
                         <button
@@ -254,7 +254,7 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all shadow-xl shadow-blue-500/10 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-white hover:bg-zinc-100 text-black rounded-2xl font-bold transition-all shadow-xl shadow-black/10 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

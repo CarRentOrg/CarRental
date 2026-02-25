@@ -31,14 +31,14 @@ export default function ConfirmationPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-20 px-4">
       <div className="max-w-2xl w-full">
         <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
-          <div className="bg-blue-600 p-12 text-center text-white">
+          <div className="bg-white p-12 text-center text-black">
             <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white/20 backdrop-blur-md mb-6 animate-pulse">
               <CheckCircle2 className="h-10 w-10 text-white" />
             </div>
             <h1 className="text-4xl font-extrabold mb-4">
               {t("confirmation.title")}
             </h1>
-            <p className="text-blue-100 text-lg">{t("confirmation.desc")}</p>
+            <p className="text-zinc-800 text-lg">{t("confirmation.desc")}</p>
           </div>
 
           <div className="p-12 space-y-10">
@@ -47,7 +47,7 @@ export default function ConfirmationPage() {
                 <span className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
                   {t("confirmation.bookingId")}
                 </span>
-                <span className="text-xl font-black text-blue-600">
+                <span className="text-xl font-black text-black">
                   {bookingNumber}
                 </span>
               </div>
@@ -68,7 +68,7 @@ export default function ConfirmationPage() {
               <ul className="space-y-5">
                 {steps.map((step, i) => (
                   <li key={i} className="flex items-start space-x-4">
-                    <div className="shrink-0 h-6 w-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-black">
+                    <div className="shrink-0 h-6 w-6 rounded-full bg-zinc-200 text-black flex items-center justify-center text-xs font-black">
                       {i + 1}
                     </div>
                     <p className="text-gray-600 font-medium">{step}</p>
@@ -92,7 +92,7 @@ export default function ConfirmationPage() {
             </div>
 
             <div className="flex justify-center pt-4">
-              <button className="text-sm font-bold text-blue-600 flex items-center space-x-2 hover:underline">
+              <button className="text-sm font-bold text-black flex items-center space-x-2 hover:underline">
                 <Share2 className="h-4 w-4" />
                 <span>{t("confirmation.share")}</span>
               </button>

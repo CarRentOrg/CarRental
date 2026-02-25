@@ -1,50 +1,46 @@
 "use client";
 
-import { Search, Mail, Phone, Calendar } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
-import { AdminTable, Column } from "@/components/admin/AdminTable";
+import { useState, useEffect } from "react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { AdminTable, Column } from "@/components/admin/AdminTable";
+import { Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
-import { User } from "@/types";
+
+interface CustomerData {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  createdAt: string;
+  totalBookings: number;
+  totalSpent: number;
+}
 
 export default function AdminCustomersPage() {
-  const [customers, setCustomers] = useState<User[]>([]);
-  const [filteredCustomers, setFilteredCustomers] = useState<User[]>([]);
+  const [customers, setCustomers] = useState<CustomerData[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<CustomerData[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  // Pagination State
+  // Pagination
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const LIMIT = 10;
 
   useEffect(() => {
     loadCustomers();
-  }, [page]);
-  useEffect(() => {
-    const lowerSearch = search.toLowerCase();
-    setFilteredCustomers(
-      customers.filter(
-        (c) =>
-          (c.name && c.name.toLowerCase().includes(lowerSearch)) ||
-          (c.email && c.email.toLowerCase().includes(lowerSearch)),
-      ),
-    );
-  }, [search, customers]);
-
-  const displayedCustomers = useMemo(() => {
-    const start = (page - 1) * LIMIT;
-    return filteredCustomers.slice(start, start + LIMIT);
-  }, [filteredCustomers, page]);
+  }, []);
 
   async function loadCustomers() {
     try {
       setLoading(true);
-      const response = await api.owner.customers.getAll();
-      setCustomers(response.data || []);
-      setFilteredCustomers(response.data || []);
-      setTotal(response.total || 0);
+      const res = await api.owner.getBookingUsers();
+      const data = (res as any)?.data || res || [];
+      setCustomers(data);
+      setFilteredCustomers(data);
     } catch (error) {
       console.error("Failed to load customers:", error);
     } finally {
@@ -52,67 +48,70 @@ export default function AdminCustomersPage() {
     }
   }
 
-  const columns: Column<
-    User & { total_bookings?: number; total_spent?: number }
-  >[] = [
+  useEffect(() => {
+    const q = search.toLowerCase();
+    setFilteredCustomers(
+      customers.filter(
+        (c) =>
+          c.name?.toLowerCase().includes(q) ||
+          c.email?.toLowerCase().includes(q),
+      ),
+    );
+  }, [search, customers]);
+
+  const columns: Column<CustomerData>[] = [
     {
-      header: "Хэрэглэгч",
+      header: "Нэр",
       cell: (row) => (
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-gray-900">{row.name}</span>
-            <span className="text-[10px] text-gray-500 uppercase tracking-widest">
-              {row.role}
-            </span>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-md shadow-blue-100">
+            {row.name?.charAt(0)?.toUpperCase() || "?"}
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-900">{row.name}</p>
+            <p className="text-[10px] text-gray-400 font-medium capitalize">
+              {row.role || "user"}
+            </p>
           </div>
         </div>
       ),
     },
     {
-      header: "Contact",
+      header: "Холбоо барих",
       cell: (row) => (
-        <div className="flex flex-col gap-1 text-xs text-gray-500">
-          <div className="flex items-center gap-2">
-            <Mail className="h-3 w-3" />
-            <span>{row.email}</span>
-          </div>
-          {row.phone && (
-            <div className="flex items-center gap-2">
-              <Phone className="h-3 w-3" />
-              <span>{row.phone}</span>
-            </div>
-          )}
+        <div>
+          <p className="text-sm text-gray-700 font-medium">{row.email}</p>
+          <p className="text-xs text-gray-400">{row.phone || "Утас байхгүй"}</p>
         </div>
       ),
     },
     {
-      header: "Бүртгүүлсэн",
+      header: "Бүртгүүлсэн огноо",
       cell: (row) => (
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Calendar className="h-3 w-3" />
-          <span>{new Date(row.created_at).toLocaleDateString()}</span>
-        </div>
+        <span className="text-xs font-bold text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+          {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "N/A"}
+        </span>
       ),
     },
     {
       header: "Статистик",
       cell: (row) => (
         <div className="flex gap-4">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-              Захиалга
-            </span>
-            <span className="text-sm font-black text-gray-900">
-              {row.total_bookings || 0}
-            </span>
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              Bookings
+            </p>
+            <p className="text-sm font-bold text-gray-900">
+              {row.totalBookings}
+            </p>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-              Зарцуулсан
-            </span>
-            <span className="text-sm font-black text-emerald-600">
-              ${(row.total_spent || 0).toLocaleString()}
-            </span>
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              Spent
+            </p>
+            <p className="text-sm font-bold text-blue-600">
+              ₮{row.totalSpent?.toLocaleString() || 0}
+            </p>
           </div>
         </div>
       ),
@@ -127,34 +126,33 @@ export default function AdminCustomersPage() {
     >
       <AdminPageHeader
         title="Харилцагчид"
-        description="Хэрэглэгчийн бүртгэлийг харах болон удирдах."
+        description="Бүртгэлтэй болон захиалга өгсөн хэрэглэгчдийн жагсаалт."
         breadcrumbs={[
           { label: "Хяналтын самбар", href: "/admin" },
           { label: "Харилцагчид" },
         ]}
       />
 
-      <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px]">
-        <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full md:max-w-md group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-8 border-b border-gray-100">
+          <div className="relative max-w-md group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
             <input
               type="text"
               placeholder="Search customers..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all text-sm font-medium placeholder:text-gray-400"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:outline-none transition-all text-sm font-medium placeholder:text-gray-400"
             />
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-2 sm:p-4">
           <AdminTable
             columns={columns}
-            data={displayedCustomers}
+            data={filteredCustomers}
             loading={loading}
             emptyMessage="No customers found."
-            // Pagination
             page={page}
             total={filteredCustomers.length}
             limit={LIMIT}

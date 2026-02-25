@@ -1,282 +1,196 @@
 "use client";
 
+import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 import {
   Bell,
+  Search,
   User,
-  Car,
-  ExternalLink,
-  Settings,
   LogOut,
-  ShieldCheck,
+  Settings,
+  ChevronDown,
   Menu,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
-import { usePathname } from "next/navigation";
-import { api } from "@/lib/api";
-import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
-
-interface Notification {
-  id: string;
-  message: string;
-  createdAt: string;
-  isRead: boolean;
-  bookingId?: string;
-}
 
 interface AdminTopHeaderProps {
   onMenuClick: () => void;
 }
 
 export default function AdminTopHeader({ onMenuClick }: AdminTopHeaderProps) {
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const pathname = usePathname();
-  const { owner, logout } = useOwnerAuth();
-
-  // Close dropdowns on click outside
-  const notificationRef = useRef<HTMLDivElement>(null);
+  const { user, logout } = useOwnerAuth();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
-      ) {
-        setShowNotifications(false);
-      }
       if (
         profileRef.current &&
         !profileRef.current.contains(event.target as Node)
       ) {
-        setShowProfile(false);
+        setIsProfileOpen(false);
+      }
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target as Node)
+      ) {
+        setIsNotifOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Poll for notifications
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        // TODO: Implement notifications API endpoint
-        // const data = await api.notifications.getAll();
-        // setNotifications(data);
-        setNotifications([]); // Empty for now
-      } catch (error) {
-        console.error("Failed to fetch notifications", error);
-      }
-    };
-
-    fetchNotifications();
-
-    // Poll every 5 seconds to simulate real-time
-    const interval = setInterval(fetchNotifications, 30000); // Changed to 30s to reduce calls
-    return () => clearInterval(interval);
-  }, []);
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-  const handleMarkAllRead = async () => {
-    // TODO: Implement notifications API endpoint
-    // await api.notifications.markAllRead();
-    // Optimistic update
-    setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
-  };
-
-  const handleNotificationClick = async (id: string, bookingId?: string) => {
-    // TODO: Implement notifications API endpoint
-    // await api.notifications.markRead(id);
-    // Optimistic update
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-    );
-    setShowNotifications(false);
-
-    if (bookingId) {
-      // In a real app, maybe redirect.
-    }
-  };
-
   return (
-    <header className="h-14 sm:h-16 bg-white border-b border-gray-100 flex items-center justify-between px-3 sm:px-6 lg:px-8 sticky top-0 z-30 w-full">
-      {/* Left: Hamburger & Welcome */}
-      <div className="flex items-center gap-2 sm:gap-4">
+    <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <div className="px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+        {/* Mobile Menu Button */}
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+          className="lg:hidden p-2 -ml-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-6 w-6" />
         </button>
 
-        <div className="hidden xs:block text-[11px] sm:text-sm font-medium text-gray-500">
-          Тавтай морил,{" "}
-          <span className="text-gray-900 font-bold">
-            {owner?.name || "Админ"}
-          </span>
+        {/* Search Bar (Optional placeholder) */}
+        <div className="hidden md:flex flex-1 max-w-sm">
+          {/* Add global search here if needed later */}
         </div>
-      </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center space-x-0.5 sm:space-x-2 md:space-x-4">
-        <Link
-          href="/"
-          className="flex items-center space-x-1 px-2 py-1.5 rounded-lg text-[11px] sm:text-sm font-bold text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
-        >
-          <ExternalLink className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Сайт руу очих</span>
-        </Link>
-
-        {/* Notifications */}
-        <div className="relative" ref={notificationRef}>
-          <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all relative"
+        {/* Right Actions */}
+        <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+          <Link
+            href="/"
+            target="_blank"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-500 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 rounded-xl transition-all border border-transparent hover:border-blue-100"
           >
-            <Bell className="h-4.5 w-4.5" />
+            <ExternalLink className="h-4 w-4" />
+            <span>Сайт руу очих</span>
+          </Link>
+
+          {/* Notifications */}
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => setIsNotifOpen(!isNotifOpen)}
+              className={`p-3 rounded-xl transition-all relative ${
+                isNotifOpen
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-2 right-2.5 h-2 w-2 bg-red-500 rounded-full border-2 border-white" />
+            </button>
 
             <AnimatePresence>
-              {unreadCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="absolute top-2 right-2 h-1.5 w-1.5 bg-red-500 rounded-full border border-white"
-                />
+              {isNotifOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 overflow-hidden origin-top-right focus:outline-none"
+                >
+                  <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+                    <h3 className="font-bold text-gray-900">Notifications</h3>
+                    <span className="text-xs font-bold text-blue-600 px-2 py-1 bg-blue-50 rounded-lg">
+                      New
+                    </span>
+                  </div>
+                  <div className="max-h-[300px] overflow-y-auto">
+                    <div className="px-4 py-8 text-center text-gray-400 text-sm">
+                      <Bell className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                      <p>No new notifications</p>
+                    </div>
+                  </div>
+                </motion.div>
               )}
             </AnimatePresence>
-          </button>
+          </div>
 
-          <AnimatePresence>
-            {showNotifications && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-gray-100 rounded-2xl shadow-xl shadow-gray-200/50 py-2 z-50"
-              >
-                <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    Мэдэгдлүүд
-                  </span>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={handleMarkAllRead}
-                      className="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline"
+          {/* Profile Dropdown */}
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className={`flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-xl transition-all border border-transparent ${
+                isProfileOpen
+                  ? "bg-gray-50 border-gray-100"
+                  : "hover:bg-gray-50"
+              }`}
+            >
+              <div className="h-9 w-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md shadow-blue-100">
+                <User className="h-4 w-4" />
+              </div>
+              <div className="hidden md:flex flex-col items-start">
+                <span className="text-sm font-bold text-gray-900 leading-none">
+                  {user?.name || "Admin"}
+                </span>
+                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">
+                  удирдлага
+                </span>
+              </div>
+              <ChevronDown
+                className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
+                  isProfileOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            <AnimatePresence>
+              {isProfileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 origin-top-right focus:outline-none"
+                >
+                  <div className="px-4 py-3 border-b border-gray-100 md:hidden">
+                    <p className="text-sm font-bold text-gray-900">
+                      {user?.name || "Admin"}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  <div className="p-1.5">
+                    <Link
+                      href="/admin/profile"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors"
                     >
-                      Бүгдийг уншсан
+                      <User className="h-4 w-4" />
+                      Profile
+                    </Link>
+                    <Link
+                      href="/admin/settings"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Link>
+                  </div>
+
+                  <div className="p-1.5 border-t border-gray-100 mt-1">
+                    <button
+                      onClick={logout}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign out
                     </button>
-                  )}
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="px-4 py-6 text-center text-sm text-gray-400">
-                      Одоогоор мэдэгдэл алга.
-                    </div>
-                  ) : (
-                    notifications.map((n) => (
-                      <Link
-                        key={n.id}
-                        href={n.bookingId ? "/admin/bookings" : "#"}
-                        onClick={() =>
-                          handleNotificationClick(n.id, n.bookingId)
-                        }
-                      >
-                        <div
-                          className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0 ${!n.isRead ? "bg-blue-50/50" : ""}`}
-                        >
-                          <p
-                            className={`text-sm text-gray-700 leading-snug ${!n.isRead ? "font-semibold" : ""}`}
-                          >
-                            {n.message}
-                          </p>
-                          <p className="text-[10px] font-medium text-gray-400 mt-1 uppercase">
-                            {formatDistanceToNow(new Date(n.createdAt), {
-                              addSuffix: true,
-                            })}
-                          </p>
-                        </div>
-                      </Link>
-                    ))
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <div className="h-5 w-px bg-gray-100 mx-0.5 sm:mx-1"></div>
-
-        {/* Profile */}
-        <div className="relative" ref={profileRef}>
-          <button
-            onClick={() => setShowProfile(!showProfile)}
-            className="flex items-center space-x-2 group outline-none"
-          >
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-linear-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-md shadow-blue-100 group-hover:scale-105 transition-all">
-              <User className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <div className="text-left hidden lg:block">
-              <h4 className="text-xs font-semibold text-gray-900 leading-none">
-                {owner?.name || "Админ"}
-              </h4>
-
-              <h4 className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mt-1">
-                Удирдлага
-              </h4>
-            </div>
-          </button>
-
-          <AnimatePresence>
-            {showProfile && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl shadow-gray-200/50 py-2 z-50 whitespace-nowrap"
-              >
-                <div className="px-4 py-3 border-b border-gray-50">
-                  <p className="text-sm font-bold text-gray-900">
-                    {owner?.name || "Админ"}
-                  </p>
-                  <p className="text-[10px] font-medium text-gray-400 truncate">
-                    {owner?.email || "admin@carrental.com"}
-                  </p>
-                </div>
-
-                <div className="p-1">
-                  <Link
-                    href="/admin/profile"
-                    className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
-                  >
-                    <ShieldCheck className="h-4 w-4 text-gray-400" />
-                    <span>Миний Профайл</span>
-                  </Link>
-                  <Link
-                    href="/admin/settings"
-                    className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
-                  >
-                    <Settings className="h-4 w-4 text-gray-400" />
-                    <span>Тохиргоо</span>
-                  </Link>
-                </div>
-                <div className="p-1 border-t border-gray-50 mt-1">
-                  <button
-                    onClick={logout}
-                    className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all text-left"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Системээс гарах</span>
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </header>
