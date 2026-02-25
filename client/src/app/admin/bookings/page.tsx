@@ -422,9 +422,9 @@ export default function AdminBookingsPage() {
                         <Image
                           src={
                             viewBooking.car?.thumbnail?.url ||
-                            "/placeholder.jpg"
+                            "/placeholder.svg"
                           }
-                          alt=""
+                          alt={viewBooking.car?.brand || ""}
                           className="h-full w-full object-cover"
                           width={100}
                           height={100}
