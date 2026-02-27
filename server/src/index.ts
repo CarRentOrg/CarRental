@@ -18,20 +18,44 @@ import connectDB from "./config/db";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// ---------------------------------------------------------------------------
+// CORS — allow localhost in dev and the production Vercel URL in production.
+// Set NEXT_PUBLIC_CLIENT_URL in your Vercel environment variables to your
+// frontend deployment URL, e.g. https://car-rental.vercel.app
+// ---------------------------------------------------------------------------
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000", // Important for credentials (cookies)
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
     credentials: true,
   }),
 );
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(cookieParser()); // Parse cookies
+app.use(cookieParser());
+
+// ---------------------------------------------------------------------------
+// Connect to DB on module load so the connection is established even in
+// serverless mode (where app.listen() is never called).
+// ---------------------------------------------------------------------------
+connectDB();
 
 // Routes
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello Express Server");
+  res.send("Car Rental API is running.");
 });
 
 app.use("/api/bookings", bookingRoutes);
@@ -43,14 +67,15 @@ app.use("/api/payment", paymentRoutes);
 // Error Handler
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
-  app.listen(PORT, async () => {
+// ---------------------------------------------------------------------------
+// Start a persistent server only in local development.
+// On Vercel (serverless), the exported `app` is used directly.
+// ---------------------------------------------------------------------------
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
     console.log(
       (colors as any).rainbow(`Server started at http://localhost:${PORT}`),
     );
-
-    // Connect to MongoDB
-    await connectDB();
   });
 }
 
