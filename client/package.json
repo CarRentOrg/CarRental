@@ -20,7 +20,7 @@
     "imagekitio-react": "^4.3.0",
     "lucide-react": "^0.563.0",
     "navigation": "^6.3.1",
-    "next": "^16.1.6",
+    "next": "^15.1.6",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-dropzone": "^15.0.0",
