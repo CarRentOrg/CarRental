@@ -13,12 +13,20 @@ interface CarCardProps {
 
 export default function CarCard({ car, onBook }: CarCardProps) {
   const { t } = useLanguage();
-  const price = car.price_rates?.daily ?? car.price_per_day;
+  const rawPrice = car.price_rates?.daily ?? car.price_per_day ?? car.pricePerDay;
+  const price = typeof rawPrice === "string" ? parseInt(rawPrice) : (rawPrice ?? 0);
+
+  const seats = car.seats ?? car.seating_capacity;
+  const image = car.thumbnail?.url ?? car.image ?? "/placeholder.svg";
+
+  const transmissionLabel = car.transmission
+    ? car.transmission.charAt(0).toUpperCase() + car.transmission.slice(1)
+    : "Unknown";
 
   const specs = [
-    car.seats && { icon: Users, label: `${car.seats}` },
+    seats && { icon: Users, label: `${seats}` },
     car.fuel_type && { icon: Fuel, label: car.fuel_type },
-    car.transmission && { icon: Gauge, label: car.transmission },
+    car.transmission && { icon: Gauge, label: transmissionLabel },
     car.year && { icon: Calendar, label: `${car.year}` },
   ].filter(Boolean) as { icon: typeof Users; label: string }[];
 
@@ -36,9 +44,9 @@ export default function CarCard({ car, onBook }: CarCardProps) {
           aria-label={`View details for ${car.brand} ${car.model}`}
         >
           <div className="relative aspect-16/10 w-full overflow-hidden bg-zinc-800">
-            {car.thumbnail ? (
+            {image ? (
               <Image
-                src={car.thumbnail.url}
+                src={image}
                 alt={`${car.brand} ${car.model}`}
                 fill
                 priority

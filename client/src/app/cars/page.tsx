@@ -60,11 +60,12 @@ export default function CarsPage() {
     }
 
     if (selectedTransmissions.length > 0) {
-      result = result.filter((c) =>
-        selectedTransmissions.includes(
-          c.transmission.charAt(0).toUpperCase() + c.transmission.slice(1),
-        ),
-      );
+      result = result.filter((c) => {
+        if (!c.transmission) return false;
+        const normalized =
+          c.transmission.charAt(0).toUpperCase() + c.transmission.slice(1);
+        return selectedTransmissions.includes(normalized);
+      });
     }
 
     if (sortOption === "price_asc") {
@@ -227,11 +228,10 @@ export default function CarsPage() {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all ${
-                      currentPage === page
+                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all ${currentPage === page
                         ? "bg-white text-black"
                         : "text-gray-400 hover:bg-white/10 hover:text-white"
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>

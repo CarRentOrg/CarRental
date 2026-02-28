@@ -63,9 +63,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const carsData = await api.cars.getAll();
+      const carsArray = Array.isArray(carsData) ? carsData : [];
 
-      setCars(carsData);
-      setTotalCars(carsData.length);
+      setCars(carsArray);
+      setTotalCars(carsArray.length);
     } finally {
       setLoading(false);
     }
@@ -110,7 +111,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [fetchMyBookings]);
 
   const filterAvailableCars = useCallback(() => {
-    setAvailableCars(cars.filter((c) => c.is_available));
+    setAvailableCars(cars.filter((c) => c.is_available || c.isAvaliable));
   }, [cars]);
 
   useEffect(() => {

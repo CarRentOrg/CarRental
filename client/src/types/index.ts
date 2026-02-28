@@ -19,7 +19,9 @@ export interface Car {
   transmission: "automatic" | "manual";
   fuel_type: "petrol" | "diesel" | "electric" | "hybrid";
   seats: number;
+  seating_capacity?: number; // fallback
   price_per_day?: number;
+  pricePerDay?: number | string; // fallback
   price_rates?: {
     hourly?: number;
     daily: number;
@@ -27,12 +29,15 @@ export interface Car {
     monthly: number;
   };
   is_available: boolean;
-  thumbnail: { url: string; fileId: string };
+  isAvaliable?: boolean; // fallback
+  thumbnail?: { url: string; fileId: string };
+  image?: string; // fallback
   images?: { url: string; fileId: string }[];
   description?: string;
   features?: string[];
   location?: string;
   ownerId?: string;
+  owner?: any; // optional owner object
   created_at?: string;
   updated_at?: string;
 }
@@ -91,11 +96,11 @@ export interface NewsPost {
 export interface Activity {
   id: string;
   type:
-    | "booking_new"
-    | "booking_cancelled"
-    | "car_added"
-    | "user_registered"
-    | string;
+  | "booking_new"
+  | "booking_cancelled"
+  | "car_added"
+  | "user_registered"
+  | string;
   title: string;
   message: string;
   time: string;

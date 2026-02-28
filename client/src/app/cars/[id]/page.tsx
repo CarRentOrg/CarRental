@@ -50,23 +50,22 @@ export default function CarDetailPage() {
     );
   }
 
-  // =====================
   // Images (REAL DATA SAFE)
-  // =====================
-  // Extract URLs from images array, fallback to thumbnail.url
   const images: string[] = (
     car.images && car.images.length > 0
       ? car.images.map((img) => img.url).filter(Boolean)
       : car.thumbnail?.url
         ? [car.thumbnail.url]
-        : []
+        : car.image
+          ? [car.image]
+          : ["/placeholder.svg"]
   ) as string[];
 
-  // =====================
-  // Rates (REAL DATA)
-  // =====================
+  const priceDaily = car.price_rates?.daily ?? car.price_per_day ?? car.pricePerDay;
+  const seats = car.seats ?? car.seating_capacity;
+
   const rates = [
-    { season: "Daily", price: car.price_rates?.daily ?? 0 },
+    { season: "Daily", price: typeof priceDaily === "string" ? parseInt(priceDaily) : (priceDaily ?? 0) },
     {
       season: "Weekly (15% off)",
       price: car.price_rates?.weekly ?? 0,
@@ -102,7 +101,7 @@ export default function CarDetailPage() {
             {[
               {
                 icon: Users,
-                title: `${car.seats} Persons`,
+                title: `${seats} Persons`,
                 subtitle: "Capacity",
               },
               {
@@ -170,7 +169,7 @@ export default function CarDetailPage() {
             </p>
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-white">
-                ₮{(car.price_rates?.daily ?? 0).toLocaleString()}
+                ₮{(typeof priceDaily === 'string' ? parseInt(priceDaily) : (priceDaily ?? 0)).toLocaleString()}
               </span>
               <span className="text-xl text-zinc-400 font-medium">/day</span>
             </div>

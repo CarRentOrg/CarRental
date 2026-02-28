@@ -59,7 +59,12 @@ async function fetchAPI<T>(
   }
 
   const json = await res.json();
-  return json.data ?? json;
+  if (json.data && Array.isArray(json.data)) return json.data;
+  if (json.cars && Array.isArray(json.cars)) return json.cars;
+  if (json.bookings && Array.isArray(json.bookings)) return json.bookings;
+  if (json.users && Array.isArray(json.users)) return json.users;
+  if (json.data) return json.data;
+  return json;
 }
 
 export const api = {
