@@ -1,8 +1,6 @@
 import { Car, Booking, User, DashboardStats } from "@/types";
 
-export const API_Base_URL =
-  process.env.NEXT_PUBLIC_API_URL || "/api";
-
+export const API_Base_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export interface GetMeResponse {
   user: User;
@@ -54,7 +52,7 @@ async function fetchAPI<T>(
     try {
       const err = await res.json();
       message = err.message || message;
-    } catch { }
+    } catch {}
     throw new Error(message);
   }
 

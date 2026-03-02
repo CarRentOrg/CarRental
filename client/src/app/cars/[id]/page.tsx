@@ -61,11 +61,18 @@ export default function CarDetailPage() {
           : ["/placeholder.svg"]
   ) as string[];
 
-  const priceDaily = car.price_rates?.daily ?? car.price_per_day ?? car.pricePerDay;
+  const priceDaily =
+    car.price_rates?.daily ?? car.price_per_day ?? car.pricePerDay;
   const seats = car.seats ?? car.seating_capacity;
 
   const rates = [
-    { season: "Daily", price: typeof priceDaily === "string" ? parseInt(priceDaily) : (priceDaily ?? 0) },
+    {
+      season: "Daily",
+      price:
+        typeof priceDaily === "string"
+          ? parseInt(priceDaily)
+          : (priceDaily ?? 0),
+    },
     {
       season: "Weekly (15% off)",
       price: car.price_rates?.weekly ?? 0,
@@ -169,7 +176,11 @@ export default function CarDetailPage() {
             </p>
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-white">
-                ₮{(typeof priceDaily === 'string' ? parseInt(priceDaily) : (priceDaily ?? 0)).toLocaleString()}
+                ₮
+                {(typeof priceDaily === "string"
+                  ? parseInt(priceDaily)
+                  : (priceDaily ?? 0)
+                ).toLocaleString()}
               </span>
               <span className="text-xl text-zinc-400 font-medium">/day</span>
             </div>
