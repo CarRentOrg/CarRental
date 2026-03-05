@@ -30,7 +30,11 @@ const connectDB = async (): Promise<void> => {
     }
     const uriWithDb = parsedUri.toString();
 
-    cached = mongoose.connect(uriWithDb);
+    const clientOptions = {
+      serverApi: { version: '1' as const, strict: true, deprecationErrors: true }
+    };
+
+    cached = mongoose.connect(uriWithDb, clientOptions);
     (global as any).__mongooseConn = cached;
 
     const conn = await cached;
