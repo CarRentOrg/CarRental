@@ -1,3 +1,5 @@
+import { Car, Clock, CreditCard, Shield } from "lucide-react";
+
 export const translations = {
   en: {
     nav: {
@@ -5,7 +7,7 @@ export const translations = {
       cars: "Cars",
       about: "About",
       contact: "Contact",
-      mybooking: "My Bookings",
+      myBooking: "My Bookings",
       admin: "Admin Control",
       rentalTerms: "Rental Terms",
       news: "News",
@@ -66,8 +68,17 @@ export const translations = {
         sports: "Sports",
         hatchback: "Hatchback",
       },
+      fuel: {
+        petrol: "Petrol",
+        diesel: "Diesel",
+        hybrid: "Hybrid",
+        electric: "Electric",
+      },
+      aboutThisVehicle: "About This Vehicle",
+      daily: "Daily",
+
       backToResults: "Back to results",
-      reserveCar: "Reserve this car",
+      reserveCar: "Book Now",
       freeCancellation: "Free cancellation up to 48h",
       termsDescription:
         "We're here for you — ready to help find the perfect car that matches your needs.",
@@ -112,21 +123,23 @@ export const translations = {
         assistance: "24/7 Roadside assistance",
       },
     },
-    steps: {
-      s1: {
-        title: "Choose your car",
-        desc: "Pick the premium model that suits your style and plans.",
-      },
-      s2: { title: "Contact Us", desc: "Reach out and reserve your dates." },
-      s3: {
-        title: "Confirm & Secure",
-        desc: "Send documents, pay deposit and we'll handle the rest.",
-      },
-      s4: {
-        title: "Drive Away",
-        desc: "We deliver the car to your desired location.",
-      },
+
+    car_rental_guide: {
+      readyToDrive: "Ready to drive?",
+      bookInUnder5Minutes: "Book in under 5 minutes",
+      howItWorks: "How it works",
+      getRolling: "Get Rolling",
+      in4Steps: "in 4 Steps",
+      step1Title: "Choose your car",
+      step2Title: "Contact Us",
+      step3Title: "Confirm & Secure",
+      step4Title: "Drive Away",
+      step1Desc: "Pick the premium model that suits your style and plans.",
+      step2Desc: "Reach out and reserve your dates.",
+      step3Desc: "Send documents, pay deposit and we'll handle the rest.",
+      step4Desc: "We deliver the car to your desired location.",
     },
+
     terms: {
       title: "Rental Terms",
       subtitle: "Premium Service, Unmatched Experience",
@@ -142,6 +155,48 @@ export const translations = {
       callUs: "Call Us Now",
       assistant: "Your Personal Rental Assistant",
     },
+    termsList: [
+      {
+        icon: Clock,
+        title: "Rental Policy",
+        items: [
+          "Minimum rental period: 24 hours",
+          "Driver must be 21 years or older",
+          "Valid driver's license required",
+          "International license accepted with translation",
+        ],
+      },
+      {
+        icon: Shield,
+        title: "Insurance & Protection",
+        items: [
+          "Basic insurance included in rental price",
+          "Optional premium coverage available",
+          "Collision damage waiver recommended",
+          "Maximum liability: $5,000 deductible",
+        ],
+      },
+      {
+        icon: CreditCard,
+        title: "Payment Terms",
+        items: [
+          "Security deposit: $500 (refundable)",
+          "Credit card required for deposit",
+          "Free cancellation up to 48 hours",
+          "Full refund for early cancellations",
+        ],
+      },
+      {
+        icon: Car,
+        title: "Vehicle Condition",
+        items: [
+          "Pre-rental inspection documented",
+          "Return with same fuel level",
+          "Daily mileage limit: 200 km",
+          "Additional mileage: $0.50/km",
+        ],
+      },
+    ],
     faq: {
       title: "Frequently Asked Questions",
       q1: "What are the terms and conditions for using the car?",
@@ -274,7 +329,7 @@ export const translations = {
       about: "Бидний Тухай",
       contact: "Холбоо Барих",
       admin: "Админ",
-      mybooking: "Миний Захиалга",
+      myBooking: "Миний Захиалга",
       rentalTerms: "Түрээсийн Нөхцөл",
       news: "Мэдээ",
       bookNow: "Захиалах",
@@ -334,6 +389,14 @@ export const translations = {
         sports: "Спорт",
         hatchback: "Хэтчбек",
       },
+      fuel: {
+        petrol: "Бензин",
+        diesel: "Дизель",
+        hybrid: "Хайбрид",
+        electric: "Цахилгаан",
+      },
+      aboutThisVehicle: "Нэмэлт мэдээлэл",
+      daily: "өдөрт",
       backToResults: "Буцах",
       reserveCar: "Захиалга хийх",
       freeCancellation: "48 цагийн дотор цуцлах боломжтой",
@@ -380,23 +443,22 @@ export const translations = {
         assistance: "24/7 Замын тусламж",
       },
     },
-    steps: {
-      s1: {
-        title: "Машинаа сонгох",
-        desc: "Өөрийн хэрэгцээнд тохирсон машинаа сонгоорой.",
-      },
-      s2: {
-        title: "Холбоо Барих",
-        desc: "Бидэнтэй холбогдож огноогоо баталгаажуулаарай.",
-      },
-      s3: {
-        title: "Баталгаажуулах",
-        desc: "Бичиг баримтаа илгээж, барьцаа төлөөд үлдсэнийг бидэнд даатга.",
-      },
-      s4: {
-        title: "Аялалд Гарах",
-        desc: "Бид машиныг хүссэн байршилд хүргэж өгнө.",
-      },
+    car_rental_guide: {
+      readyToDrive: "Жолоодоход бэлэн үү?",
+      bookInUnder5Minutes: "5 минутаас бага хугацаанд захиалах",
+      howItWorks: "Хэрхэн захиалах вэ?",
+      getRolling: "4 алхамаар явцгаая",
+      in4Steps: "4 алхамаар",
+      step1Title: "Машинаа сонгох",
+      step2Title: "Бидэнтэй холбоо барих",
+      step3Title: "Баталгаажуулж хадгалах",
+      step4Title: "Жолоодож аваад явах",
+      step1Desc:
+        "Өөрийн хэв маяг, төлөвлөгөөнд тохирох премиум загварыг сонгоно уу.",
+      step2Desc: "Бидэнтэй холбогдож, өдрүүдээ захиал.",
+      step3Desc:
+        "Баримт бичгийг илгээж, урьдчилгаа төлөөд үлдсэнийг бид зохицуулна.",
+      step4Desc: "Машиныг хүссэн газарт чинь хүргэнэ.",
     },
     terms: {
       title: "Түрээсийн Нөхцөл",
@@ -412,6 +474,45 @@ export const translations = {
       depositDesc: "Барьцаа",
       callUs: "Бидэнтэй Холбогдох",
       assistant: "Таны Түрээсийн Туслах",
+    },
+
+    termsList: {
+      rentalPolicy: {
+        title: "Түрээсийн бодлого",
+        items: [
+          "Хамгийн бага түрээсийн хугацаа: 24 цаг",
+          "Жолооч 21 настай буюу түүнээс дээш байх ёстой",
+          "Хүчингүй бус жолооны үнэмлэх шаардлагатай",
+          "Олон улсын үнэмлэх орчуулгатайгаар хүлээн зөвшөөрөгдөнө",
+        ],
+      },
+      insurance: {
+        title: "Даатгал ба хамгаалалт",
+        items: [
+          "Түрээсийн үнэд үндсэн даатгал багтсан",
+          "Нэмэлт премиум даатгал сонгох боломжтой",
+          "Осол гэмтлийн хамгаалалт санал болгож байна",
+          "Хамгийн их хариуцлага: $5,000 deductible",
+        ],
+      },
+      payment: {
+        title: "Төлбөрийн нөхцөл",
+        items: [
+          "Барьцаа: $500 (эргэж төлөгдөнө)",
+          "Барьцаанд кредит карт шаардлагатай",
+          "48 цагийн өмнө үнэгүй цуцлах боломжтой",
+          "Эрт цуцалбал бүрэн буцаан олголт",
+        ],
+      },
+      vehicle: {
+        title: "Тээврийн хэрэгслийн нөхцөл",
+        items: [
+          "Түрээсийн өмнөх шалгалт баримтжуулна",
+          "Ижил шатахуунтай буцаан өгнө",
+          "Өдрийн хязгаар: 200 км",
+          "Нэмэлт км: $0.50/км",
+        ],
+      },
     },
     faq: {
       title: "Түгээмэл Асуулт",

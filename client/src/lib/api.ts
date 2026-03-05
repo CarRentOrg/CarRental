@@ -216,10 +216,10 @@ export const api = {
         body: JSON.stringify({ bookingId }),
       }),
 
-    reject: (bookingId: string) =>
+    reject: (bookingId: string, reason?: string) =>
       fetchAPI<Booking>("/bookings/reject", {
         method: "POST",
-        body: JSON.stringify({ bookingId }),
+        body: JSON.stringify({ bookingId, reason }),
       }),
 
     complete: (bookingId: string) =>

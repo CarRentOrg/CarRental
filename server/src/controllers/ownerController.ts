@@ -6,6 +6,7 @@ import Booking from "../models/Booking";
 import { AuthenticatedRequest } from "../types";
 import mongoose from "mongoose";
 import { error } from "console";
+import { getNextCarId } from "../utils/carIdGenerator";
 
 export const changeRoleToOwner = async (
   req: AuthenticatedRequest,
@@ -79,8 +80,11 @@ export const addCar = async (req: AuthenticatedRequest, res: Response) => {
       );
     }
 
+    const carId = await getNextCarId();
+
     const newCar = await Car.create({
       ...carData,
+      carId,
       ownerId: userId,
       thumbnail: thumbnailUrl,
       images,

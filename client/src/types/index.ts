@@ -96,11 +96,11 @@ export interface NewsPost {
 export interface Activity {
   id: string;
   type:
-  | "booking_new"
-  | "booking_cancelled"
-  | "car_added"
-  | "user_registered"
-  | string;
+    | "booking_new"
+    | "booking_cancelled"
+    | "car_added"
+    | "user_registered"
+    | string;
   title: string;
   message: string;
   time: string;

@@ -356,15 +356,15 @@ export const changeBookingStatus = async (req: Request, res: Response) => {
 
     // Send Notification
     const user = await User.findById(booking.user);
-    if (user && user.email) {
-      // Only send confirmation email if confirmed.
-      // We might want to add other emails for cancellation etc later.
-      if (status === "confirmed") {
-        await EmailService.sendBookingConfirmation(
-          user.email,
-          booking._id.toString(),
-        );
-      }
+    const car = await Car.findById(booking.car);
+    if (user && user.email && status === "confirmed") {
+      await EmailService.sendBookingConfirmation(user.email, {
+        bookingId: booking._id.toString(),
+        carName: car ? `${car.brand} ${car.model}` : "Your Car",
+        startDate: booking.startDate.toLocaleDateString(),
+        endDate: booking.endDate.toLocaleDateString(),
+        totalPrice: booking.totalPrice.toLocaleString(),
+      });
     }
 
     res.status(200).json({ success: true, data: booking });
@@ -449,18 +449,23 @@ export const approveBooking = async (req: Request, res: Response) => {
 
     // NOTIFICATIONS
     const user: any = booking.user;
-    const message =
-      "Your booking has been confirmed. We look forward to serving you.";
+    const car = await Car.findById(booking.car);
 
     if (user.email) {
-      await EmailService.sendBookingConfirmation(
-        user.email,
-        booking._id.toString(),
-      );
+      await EmailService.sendBookingConfirmation(user.email, {
+        bookingId: booking._id.toString(),
+        carName: car ? `${car.brand} ${car.model}` : "Your Car",
+        startDate: booking.startDate.toLocaleDateString(),
+        endDate: booking.endDate.toLocaleDateString(),
+        totalPrice: booking.totalPrice.toLocaleString(),
+      });
     }
 
     if (user.phone) {
-      await SmsService.sendMockNotification(user.phone, message);
+      await SmsService.sendMockNotification(
+        user.phone,
+        "Your booking has been confirmed. We look forward to serving you.",
+      );
     }
 
     res.status(200).json({ success: true, data: booking });
@@ -471,8 +476,8 @@ export const approveBooking = async (req: Request, res: Response) => {
 
 export const rejectBooking = async (req: Request, res: Response) => {
   try {
-    const { bookingId } = req.body;
-    const booking = await Booking.findById(bookingId);
+    const { bookingId, reason } = req.body;
+    const booking = await Booking.findById(bookingId).populate("user");
 
     if (!booking) {
       return res
@@ -501,6 +506,17 @@ export const rejectBooking = async (req: Request, res: Response) => {
       booking.paymentStatus = "refunded";
     }
     await booking.save();
+
+    // Send rejection email
+    const user: any = booking.user;
+    const car = await Car.findById(booking.car);
+    if (user?.email) {
+      await EmailService.sendBookingRejection(user.email, {
+        bookingId: booking._id.toString(),
+        carName: car ? `${car.brand} ${car.model}` : "Your Car",
+        reason,
+      });
+    }
 
     res.status(200).json({ success: true, data: booking });
   } catch (error) {
@@ -531,6 +547,14 @@ export const completeBooking = async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         message: "Only confirmed bookings can be marked as completed",
+      });
+    }
+
+    // ── End-date guard: booking period must be over ──
+    if (new Date() < new Date(booking.endDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot complete a booking before the rental period ends",
       });
     }
 

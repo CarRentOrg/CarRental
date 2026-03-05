@@ -12,7 +12,7 @@ export default function Footer() {
       <div className="bg-[#0a0a0a] rounded-[2.5rem] px-6 sm:px-12 py-16">
         {/* TOP BAR */}
         <div className="flex items-center justify-between mb-16">
-          <span className="text-lg font-semibold text-white">Luxerra</span>
+          <span className="text-lg font-semibold text-white">LOGO</span>
 
           <div className="flex gap-4 text-gray-400">
             <Link href="https://www.instagram.com">
@@ -99,17 +99,6 @@ export default function Footer() {
             <h3 className="mb-2 text-xs font-medium text-gray-400">
               Join our mailing list and never miss an update!
             </h3>
-
-            <div className="flex items-center bg-[#141414] rounded-full overflow-hidden">
-              <input
-                type="email"
-                placeholder="Your Email"
-                className="flex-1 bg-transparent px-6 py-3 text-xs text-white placeholder-gray-500 focus:outline-none"
-              />
-              <button className="bg-white text-black text-xs font-light px-2 py-1 rounded-full">
-                Submit
-              </button>
-            </div>
 
             <p className="text-xs text-gray-500 mt-2 leading-relaxed">
               By subscribing to our newsletter, you agree to receive emails from

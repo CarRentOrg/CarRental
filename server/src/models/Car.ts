@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface ICar extends Omit<Document, "model"> {
+  carId?: string;
   name: string;
   brand: string;
   model: string;
@@ -27,6 +28,7 @@ export interface ICar extends Omit<Document, "model"> {
 
 const carSchema = new Schema<ICar>(
   {
+    carId: { type: String, unique: true, sparse: true },
     name: { type: String, required: true },
     brand: { type: String, required: true },
     model: { type: String, required: true },

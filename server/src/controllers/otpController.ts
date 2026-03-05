@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/User";
 import OTP from "../models/OTP";
 import jwt from "jsonwebtoken";
+import * as EmailService from "../services/emailService";
 
 // Helper to generate JWT
 const generateToken = (id: string, role: string) => {
@@ -45,12 +46,25 @@ export const requestOTP = async (
       { upsert: true, new: true },
     );
 
-    // MOCK: Send OTP (In production, call SMS/Email API here)
-    console.log(`[AUTH] OTP for ${identifier}: ${code}`);
+    // Send OTP via email (or SMS if phone number)
+    const isEmail = identifier.includes("@");
+
+    if (isEmail) {
+      const sent = await EmailService.sendOTP(identifier, code);
+      if (!sent) {
+        res
+          .status(500)
+          .json({ success: false, message: "Failed to send OTP email" });
+        return;
+      }
+    } else {
+      // Phone-based OTP — log for now, integrate SMS provider when ready
+      console.log(`[AUTH] OTP for ${identifier}: ${code}`);
+    }
 
     res.status(200).json({
       success: true,
-      message: "OTP sent successfully",
+      message: isEmail ? "OTP sent to your email" : "OTP sent to your phone",
       code: process.env.NODE_ENV === "development" ? code : undefined,
     });
   } catch (error: any) {

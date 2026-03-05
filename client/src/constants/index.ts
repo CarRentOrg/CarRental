@@ -6,23 +6,23 @@ import { Users, FileText, Car as CarIcon, Wallet } from "lucide-react";
 export const BOOKING_STEPS = [
   {
     number: "01",
-    title: "Choose your car",
-    description: "Pick the premium model that suits your style and plans.",
+    title: "car_rental_guide.step1Title",
+    description: "car_rental_guide.step1Desc",
   },
   {
     number: "02",
-    title: "Contact Us",
-    description: "Reach out and reserve your dates.",
+    title: "car_rental_guide.step2Title",
+    description: "car_rental_guide.step2Desc",
   },
   {
     number: "03",
-    title: "Confirm & Secure",
-    description: "Send documents, pay deposit and we'll handle the rest.",
+    title: "car_rental_guide.step3Title",
+    description: "car_rental_guide.step3Desc",
   },
   {
     number: "04",
-    title: "Drive Away",
-    description: "We deliver the car to your desired location.",
+    title: "car_rental_guide.step4Title",
+    description: "car_rental_guide.step4Desc",
   },
 ];
 

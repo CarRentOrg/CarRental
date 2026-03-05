@@ -7,9 +7,10 @@ import {
   Check,
   X,
   Eye,
+  AlertCircle,
   X as CloseIcon,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { AdminTable, Column } from "@/components/admin/AdminTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,9 +24,8 @@ import BookingTimeline from "@/components/admin/BookingTimeline";
 import { BookingStatus } from "@/constants";
 
 export default function AdminBookingsPage() {
+  // ── Core data state (single source of truth) ──
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
-
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -43,50 +43,52 @@ export default function AdminBookingsPage() {
 
   // Pagination State
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const LIMIT = 10;
 
-  const isInitialMount = useRef(true);
-  const lastFetchedPage = useRef<number | null>(null);
-
+  // ── Fetch once on mount ──
   useEffect(() => {
-    if (isInitialMount.current || page !== lastFetchedPage.current) {
-      loadBookings();
-      isInitialMount.current = false;
-      lastFetchedPage.current = page;
-    }
-  }, [page]);
+    loadBookings();
+  }, []);
 
-  async function loadBookings() {
+  const loadBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const bookings = await api.owner.bookings.getAll();
-      const list = Array.isArray(bookings) ? bookings : [];
-
-      setBookings(list);
-      setFilteredBookings(list);
-      setTotal(list.length);
+      const data = await api.owner.bookings.getAll();
+      setBookings(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to load bookings:", error);
       setBookings([]);
-      setFilteredBookings([]);
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  useEffect(() => {
-    const lowerSearch = search.toLowerCase();
-    setFilteredBookings(
-      bookings.filter((b) => {
-        const idMatch = b._id?.toLowerCase().includes(lowerSearch);
-        const statusMatch = b.status?.toLowerCase().includes(lowerSearch);
-        const nameMatch = b.user?.name?.toLowerCase().includes(lowerSearch);
-        const carMatch = b.car?.model?.toLowerCase().includes(lowerSearch);
-        return idMatch || statusMatch || nameMatch || carMatch;
-      }),
-    );
+  // ── Derived: filtered bookings (no separate state needed) ──
+  const filteredBookings = useMemo(() => {
+    if (!search.trim()) return bookings;
+    const q = search.toLowerCase();
+    return bookings.filter((b) => {
+      const idMatch = b._id?.toLowerCase().includes(q);
+      const statusMatch = b.status?.toLowerCase().includes(q);
+      const nameMatch = b.user?.name?.toLowerCase().includes(q);
+      const carMatch = b.car?.model?.toLowerCase().includes(q);
+      return idMatch || statusMatch || nameMatch || carMatch;
+    });
   }, [search, bookings]);
+
+  // ── Derived: total for pagination ──
+  const total = filteredBookings.length;
+
+  // ── Derived: current page slice (this is what actually gets rendered) ──
+  const paginatedBookings = useMemo(() => {
+    const start = (page - 1) * LIMIT;
+    return filteredBookings.slice(start, start + LIMIT);
+  }, [filteredBookings, page, LIMIT]);
+
+  // ── Reset to page 1 when search changes ──
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   const openApproveModal = (booking: Booking) => {
     setSelectedBooking(booking);
@@ -134,7 +136,11 @@ export default function AdminBookingsPage() {
         const updatedStatus = "completed" as const;
         updateLocalBookingStatus(selectedBooking._id, updatedStatus);
       } else {
-        await api.bookings.reject(selectedBooking._id);
+        // Send rejection reason (or undefined → backend uses default)
+        await api.bookings.reject(
+          selectedBooking._id,
+          rejectReason.trim() || undefined,
+        );
         const updatedStatus = "cancelled" as const;
         updateLocalBookingStatus(selectedBooking._id, updatedStatus);
       }
@@ -150,11 +156,10 @@ export default function AdminBookingsPage() {
     }
   };
 
-  const updateLocalBookingStatus = (id: string, status: any) => {
+  // ── Optimistic update: only touch the single `bookings` state ──
+  // useMemo-derived values (filtered + paginated) update automatically.
+  const updateLocalBookingStatus = (id: string, status: Booking["status"]) => {
     setBookings((prev) =>
-      prev.map((b) => (b._id === id ? { ...b, status } : b)),
-    );
-    setFilteredBookings((prev) =>
       prev.map((b) => (b._id === id ? { ...b, status } : b)),
     );
   };
@@ -276,15 +281,34 @@ export default function AdminBookingsPage() {
               </button>
             </>
           )}
-          {row.status === "confirmed" && (
-            <button
-              onClick={() => openCompleteModal(row)}
-              className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition-all border border-blue-100"
-              title="Mark as Completed"
-            >
-              <Check className="h-4 w-4" />
-            </button>
-          )}
+          {row.status === "confirmed" &&
+            (() => {
+              const endPassed = new Date() >= new Date(row.endDate);
+              return endPassed ? (
+                <button
+                  onClick={() => openCompleteModal(row)}
+                  className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition-all border border-blue-100"
+                  title="Mark as Completed"
+                >
+                  <Check className="h-4 w-4" />
+                </button>
+              ) : (
+                <div className="relative group">
+                  <button
+                    disabled
+                    className="p-2 bg-gray-50 text-gray-300 rounded-lg border border-gray-100 cursor-not-allowed"
+                    title="Rental period not yet ended"
+                  >
+                    <Check className="h-4 w-4" />
+                  </button>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-[10px] font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <AlertCircle className="h-3 w-3 inline mr-1 -mt-0.5" />
+                    Түрээсийн хугацаа дуусаагүй байна
+                  </div>
+                </div>
+              );
+            })()}
         </div>
       ),
     },
@@ -329,7 +353,7 @@ export default function AdminBookingsPage() {
           <div className="hidden md:block">
             <AdminTable
               columns={columns}
-              data={filteredBookings}
+              data={paginatedBookings}
               loading={loading}
               emptyMessage="No bookings found."
               page={page}
@@ -345,8 +369,8 @@ export default function AdminBookingsPage() {
                 <div className="h-10 w-10 bg-gray-100 rounded-full mb-4" />
                 <div className="h-4 w-32 bg-gray-100 rounded" />
               </div>
-            ) : filteredBookings.length > 0 ? (
-              filteredBookings.map((booking) => (
+            ) : paginatedBookings.length > 0 ? (
+              paginatedBookings.map((booking) => (
                 <MobileBookingCard
                   key={booking._id}
                   booking={booking}
@@ -523,6 +547,36 @@ export default function AdminBookingsPage() {
                   </button>
                 </div>
               )}
+
+              {/* Complete button in view panel — only if endDate passed */}
+              {viewBooking.status === "confirmed" &&
+                new Date() >= new Date(viewBooking.endDate) && (
+                  <div className="p-6 border-t border-gray-100 bg-white">
+                    <button
+                      onClick={() => {
+                        setIsViewOpen(false);
+                        openCompleteModal(viewBooking);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-2xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+                    >
+                      <Check className="h-4 w-4" />
+                      Дуусгах
+                    </button>
+                  </div>
+                )}
+
+              {/* End date not passed — show info banner */}
+              {viewBooking.status === "confirmed" &&
+                new Date() < new Date(viewBooking.endDate) && (
+                  <div className="p-4 border-t border-gray-100 bg-amber-50">
+                    <div className="flex items-center gap-2 text-amber-700 text-xs font-semibold">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      Түрээсийн хугацаа дуусаагүй тул дуусгах боломжгүй. Дуусах
+                      огноо:{" "}
+                      {new Date(viewBooking.endDate).toLocaleDateString()}
+                    </div>
+                  </div>
+                )}
             </motion.div>
           </>
         )}
