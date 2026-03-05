@@ -55,7 +55,10 @@ const connectDB = async (): Promise<void> => {
       bufferCommands: false
     };
 
-    console.log("Creating new MongoDB connection...");
+    // Mask password in logs to verify URI structure safely
+    const maskedUri = uriWithDb.replace(/:([^:@]+)@/, ":****@");
+    console.log(`[connectDB] Attempting connection to: ${maskedUri}`);
+
     cached = mongoose.connect(uriWithDb, clientOptions);
     (global as any).__mongooseConn = cached;
 
