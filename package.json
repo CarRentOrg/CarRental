@@ -10,5 +10,9 @@
         "dev": "cd client && npm run dev",
         "start": "cd client && npm run start",
         "lint": "cd client && npm run lint"
+    },
+    "dependencies": {
+        "@types/bcrypt": "^6.0.0",
+        "bcrypt": "^6.0.0"
     }
 }

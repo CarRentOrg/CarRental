@@ -32,9 +32,12 @@ const connectDB = async (): Promise<void> => {
 
     let uriWithDb = cleanUri;
 
-    // Inject database name if not present
-    // Atlas format often looks like: mongodb+srv://host/?options or mongodb+srv://host?options
-    if (!cleanUri.includes("/car-rental")) {
+    // Inject database name only if no path exists in the URL
+    // Standard Atlas URI: mongodb+srv://host[:port]/?options
+    // We look for a "/" that isn't part of "mongodb+srv://" and see if it has content after it
+    const hasExistingDb = /\/[^/?]/.test(cleanUri.replace("mongodb+srv://", ""));
+
+    if (!hasExistingDb) {
       if (cleanUri.includes("?")) {
         const [base, query] = cleanUri.split("?");
         const separator = base.endsWith("/") ? "" : "/";
