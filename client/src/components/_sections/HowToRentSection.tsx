@@ -2,17 +2,20 @@
 
 import { BOOKING_STEPS } from "@/constants";
 import Image from "next/image";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const HowToRentSection = () => {
+  const { t } = useLanguage();
+
   return (
     <section id="rental-guide" className="py-16 sm:py-28 w-full">
       {/* Section header */}
       <div className="mb-12 sm:mb-16">
         <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 mb-3">
-          How it works
+          {t("car_rental_guide.howItWorks")}
         </p>
         <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-          Get Rolling in 4 Steps
+          {t("car_rental_guide.getRolling")}
         </h2>
       </div>
 
@@ -39,17 +42,17 @@ const HowToRentSection = () => {
                   </div>
                   {/* Connecting line */}
                   {!isLast && (
-                    <div className="w-px flex-1 bg-gradient-to-b from-zinc-800 to-transparent min-h-8" />
+                    <div className="w-px flex-1 bg-linear-to-b from-zinc-800 to-transparent min-h-8" />
                   )}
                 </div>
 
                 {/* Content */}
                 <div className="pb-8">
                   <h4 className="text-base font-semibold text-white mb-1 group-hover:text-white/90 transition-colors">
-                    {step.title}
+                    {t(step.title)}
                   </h4>
                   <p className="text-sm text-zinc-500 leading-relaxed max-w-xs">
-                    {step.description}
+                    {t(step.description)}
                   </p>
                 </div>
               </div>
@@ -58,7 +61,7 @@ const HowToRentSection = () => {
         </div>
 
         {/* Right — Image */}
-        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+        <div className="relative aspect-4/3 rounded-2xl overflow-hidden">
           <Image
             src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80"
             alt="Luxury car"
@@ -67,14 +70,16 @@ const HowToRentSection = () => {
             priority
           />
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-black/20" />
 
           {/* Floating badge */}
           <div className="absolute bottom-5 left-5 right-5">
             <div className="px-4 py-3 rounded-xl bg-black/60 backdrop-blur-md border border-zinc-700/50">
-              <p className="text-xs text-zinc-400 mb-0.5">Ready to drive?</p>
+              <p className="text-xs text-zinc-400 mb-0.5">
+                {t("car_rental_guide.readyToDrive")}
+              </p>
               <p className="text-sm font-semibold text-white">
-                Book in under 5 minutes
+                {t("car_rental_guide.bookInUnder5Minutes")}
               </p>
             </div>
           </div>

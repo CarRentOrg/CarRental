@@ -122,12 +122,19 @@ export default function MobileBookingCard({
             </button>
           </>
         ) : status === "confirmed" && onComplete ? (
-          <button
-            onClick={() => onComplete(booking)}
-            className="col-span-3 flex items-center justify-center gap-1 p-2 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-100"
-          >
-            <CheckCircle2 className="h-4 w-4" /> Mark Complete
-          </button>
+          new Date() >= new Date(booking.endDate) ? (
+            <button
+              onClick={() => onComplete(booking)}
+              className="col-span-3 flex items-center justify-center gap-1 p-2 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-100"
+            >
+              <CheckCircle2 className="h-4 w-4" /> Mark Complete
+            </button>
+          ) : (
+            <div className="col-span-3 flex items-center justify-center gap-1 p-2 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-semibold border border-amber-100">
+              <Clock className="h-3 w-3" />
+              Дуусах: {format(new Date(booking.endDate), "MMM dd, HH:mm")}
+            </div>
+          )
         ) : (
           <div className="col-span-3" />
         )}

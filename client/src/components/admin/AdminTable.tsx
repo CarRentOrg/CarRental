@@ -6,7 +6,6 @@ import {
   MoreHorizontal,
   ArrowUpDown,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ReactNode } from "react";
 
 export interface Column<T> {
@@ -45,10 +44,7 @@ export function AdminTable<T extends { _id: string }>({
 
   // Mobile Card View Rendering
   const renderMobileCard = (row: T) => (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      layout
+    <div
       onClick={() => onRowClick && onRowClick(row)}
       className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4 mb-4 active:scale-[0.99] transition-transform"
     >
@@ -66,7 +62,7 @@ export function AdminTable<T extends { _id: string }>({
           </div>
         </div>
       ))}
-    </motion.div>
+    </div>
   );
 
   return (
@@ -114,13 +110,10 @@ export function AdminTable<T extends { _id: string }>({
                 </tr>
               ) : (
                 data.map((row) => (
-                  <motion.tr
+                  <tr
                     key={row._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    whileHover={{ backgroundColor: "rgba(249, 250, 251, 0.8)" }}
                     onClick={() => onRowClick && onRowClick(row)}
-                    className={`group transition-colors ${onRowClick ? "cursor-pointer" : ""}`}
+                    className={`group transition-colors hover:bg-gray-50/80 ${onRowClick ? "cursor-pointer" : ""}`}
                   >
                     {columns.map((col, idx) => (
                       <td
@@ -134,7 +127,7 @@ export function AdminTable<T extends { _id: string }>({
                             : "-"}
                       </td>
                     ))}
-                  </motion.tr>
+                  </tr>
                 ))
               )}
             </tbody>

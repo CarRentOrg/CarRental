@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Car, { ICar } from "../models/Car";
 import mongoose from "mongoose";
 import { deleteFromImageKit, uploadToImageKit } from "../utils/imageUpload";
+import { getNextCarId } from "../utils/carIdGenerator";
 import { AuthenticatedRequest } from "../types";
 
 export const getCars = async (req: Request, res: Response) => {
@@ -71,8 +72,11 @@ export const createCar = async (req: Request, res: Response) => {
       return;
     }
 
+    const carId = await getNextCarId();
+
     const carData = {
       ...req.body,
+      carId,
       is_available: req.body.is_available ?? true,
       year: req.body.year
         ? parseInt(req.body.year.toString())

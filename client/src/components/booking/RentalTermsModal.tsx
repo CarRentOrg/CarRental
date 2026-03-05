@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Clock, Shield, CreditCard, Car, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RentalTermsModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export default function RentalTermsModal({
   carId,
 }: RentalTermsModalProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [accepted, setAccepted] = useState(false);
 
   const handleContinue = () => {
@@ -27,43 +29,47 @@ export default function RentalTermsModal({
 
   const terms = [
     {
+      key: "rentalPolicy",
       icon: Clock,
-      title: "Rental Policy",
+      title: "termsList.rentalPolicy.title",
       items: [
-        "Minimum rental period: 24 hours",
-        "Driver must be 21 years or older",
-        "Valid driver's license required",
-        "International license accepted with translation",
+        "termsList.rentalPolicy.items.0",
+        "termsList.rentalPolicy.items.1",
+        "termsList.rentalPolicy.items.2",
+        "termsList.rentalPolicy.items.3",
       ],
     },
     {
+      key: "insurance",
       icon: Shield,
-      title: "Insurance & Protection",
+      title: "termsList.insurance.title",
       items: [
-        "Basic insurance included in rental price",
-        "Optional premium coverage available",
-        "Collision damage waiver recommended",
-        "Maximum liability: $5,000 deductible",
+        "termsList.insurance.items.0",
+        "termsList.insurance.items.1",
+        "termsList.insurance.items.2",
+        "termsList.insurance.items.3",
       ],
     },
     {
+      key: "payment",
       icon: CreditCard,
-      title: "Payment Terms",
+      title: "termsList.payment.title",
       items: [
-        "Security deposit: $500 (refundable)",
-        "Credit card required for deposit",
-        "Free cancellation up to 48 hours",
-        "Full refund for early cancellations",
+        "termsList.payment.items.0",
+        "termsList.payment.items.1",
+        "termsList.payment.items.2",
+        "termsList.payment.items.3",
       ],
     },
     {
+      key: "vehicle",
       icon: Car,
-      title: "Vehicle Condition",
+      title: "termsList.vehicle.title",
       items: [
-        "Pre-rental inspection documented",
-        "Return with same fuel level",
-        "Daily mileage limit: 200 km",
-        "Additional mileage: $0.50/km",
+        "termsList.vehicle.items.0",
+        "termsList.vehicle.items.1",
+        "termsList.vehicle.items.2",
+        "termsList.vehicle.items.3",
       ],
     },
   ];
@@ -124,7 +130,7 @@ export default function RentalTermsModal({
                         <section.icon className="h-6 w-6 text-white" />
                       </div>
                       <h3 className="text-xl font-bold text-white">
-                        {section.title}
+                        {t(section.title)}
                       </h3>
                     </div>
                     <ul className="space-y-3">
@@ -135,7 +141,7 @@ export default function RentalTermsModal({
                         >
                           <Check className="h-5 w-5 text-white shrink-0 mt-0.5" />
                           <span className="text-sm leading-relaxed">
-                            {item}
+                            {t(item)}
                           </span>
                         </li>
                       ))}

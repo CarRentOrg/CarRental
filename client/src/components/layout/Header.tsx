@@ -134,7 +134,7 @@ export default function Header() {
         <nav className="hidden lg:flex items-center space-x-8 text-xs font-semibold tracking-wide uppercase text-white/70">
           <NavLink href="/cars">{t("nav.cars")}</NavLink>
           <NavLink href="/#rental-terms">{t("nav.rentalTerms")}</NavLink>
-          <NavLink href="/profile">{t("nav.myBookings")}</NavLink>
+          <NavLink href="/profile">{t("nav.myBooking")}</NavLink>
           <NavLink href="/about">{t("nav.about")}</NavLink>
         </nav>
 
@@ -150,9 +150,7 @@ export default function Header() {
               <Instagram className="h-5 w-5" />
             </a>
             <a
-              href="https://wa.me/123456789"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/contact"
               className="hover:text-white hover:scale-110 transition-all"
             >
               <MessageCircle className="h-5 w-5" />
@@ -228,7 +226,7 @@ export default function Header() {
                   {t("nav.cars")}
                 </NavLink>
                 <NavLink href="/profile" setOpen={setOpen}>
-                  {t("nav.mybooking")}
+                  {t("nav.myBooking")}
                 </NavLink>
                 {isOwner && (
                   <NavLink href="/admin" setOpen={setOpen}>

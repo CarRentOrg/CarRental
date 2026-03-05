@@ -10,11 +10,13 @@ import RentalTermsSection from "@/components/_sections/RentalTermsSection";
 import FAQSection from "@/components/_sections/FAQSection";
 import RentalTermsModal from "@/components/booking/RentalTermsModal";
 import { useApp } from "@/contexts/AppContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Car } from "@/types";
 
 export default function CarDetailPage() {
   const { id } = useParams();
   const { getCarById } = useApp();
+  const { t } = useLanguage();
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -67,19 +69,11 @@ export default function CarDetailPage() {
 
   const rates = [
     {
-      season: "Daily",
+      season: t("cars.daily"),
       price:
         typeof priceDaily === "string"
           ? parseInt(priceDaily)
           : (priceDaily ?? 0),
-    },
-    {
-      season: "Weekly (15% off)",
-      price: car.price_rates?.weekly ?? 0,
-    },
-    {
-      season: "Monthly (30% off)",
-      price: car.price_rates?.monthly ?? 0,
     },
   ];
 
@@ -109,32 +103,17 @@ export default function CarDetailPage() {
               {
                 icon: Users,
                 title: `${seats} Persons`,
-                subtitle: "Capacity",
+                subtitle: t("cars.capacity"),
               },
               {
                 icon: Gauge,
                 title: car.transmission,
-                subtitle: "Transmission",
+                subtitle: t("cars.transmission"),
               },
               {
                 icon: Fuel,
                 title: car.fuel_type,
-                subtitle: "Fuel Type",
-              },
-              {
-                icon: Zap,
-                title: "Electric Power",
-                subtitle: "Performance",
-              },
-              {
-                icon: Bluetooth,
-                title: "Bluetooth",
-                subtitle: "Feature",
-              },
-              {
-                icon: ShieldCheck,
-                title: "Insurance",
-                subtitle: "Included",
+                subtitle: t("cars.fuelType"),
               },
             ].map((item, i) => (
               <div
@@ -156,7 +135,7 @@ export default function CarDetailPage() {
           {car.description && (
             <div className="prose prose-invert max-w-none">
               <h3 className="text-white text-2xl font-bold mb-4">
-                About This Vehicle
+                {t("cars.aboutThisVehicle")}
               </h3>
               <p className="text-zinc-300 leading-relaxed">{car.description}</p>
             </div>
@@ -170,9 +149,9 @@ export default function CarDetailPage() {
           </div>
 
           {/* Prominent Price Display */}
-          <div className="p-5 rounded-2xl bg-zinc-900/30 border border-zinc-800">
+          {/* <div className="p-5 rounded-2xl bg-zinc-900/30 border border-zinc-800">
             <p className="text-sm text-zinc-400 uppercase tracking-wide mb-2">
-              Starting From
+              {t("cars.startingFrom")}
             </p>
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-white">
@@ -184,12 +163,14 @@ export default function CarDetailPage() {
               </span>
               <span className="text-xl text-zinc-400 font-medium">/day</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Booking Card */}
           <div className="p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800 space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-white">Rental Rates</h2>
+              <h2 className="text-xl font-bold text-white">
+                {t("cars.rentalRates")}
+              </h2>
               <p className="text-sm text-zinc-400 mt-1">
                 {car.brand} {car.model}
               </p>
@@ -213,12 +194,12 @@ export default function CarDetailPage() {
               onClick={() => setShowTermsModal(true)}
               className="w-full py-3.5 bg-white hover:bg-zinc-100 text-black font-bold rounded-xl transition-all shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 hover:scale-[1.02] active:scale-[0.98]"
             >
-              Book Now
+              {t("cars.reserveCar")}
             </button>
 
             <div className="flex items-center justify-center gap-2 text-sm text-zinc-400">
               <ShieldCheck className="h-5 w-5" />
-              <span>Free cancellation up to 48h</span>
+              <span>{t("cars.freeCancellation")}</span>
             </div>
           </div>
         </div>
