@@ -137,9 +137,7 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         role: user.role,
       },
-      // IMPORTANT: We do NOT send token in body anymore for HttpOnly strictness
-      // But user might need to know layout state?
-      // Actually, for AuthContext to know we represent "authenticated" by success
+      token,
     });
   } catch (error: any) {
     console.error("OTP VERIFY ERROR:", error);

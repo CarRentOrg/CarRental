@@ -66,7 +66,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         return;
       }
 
-      const token = generateToken(user.id, "owner");
+      const token = generateToken(user.id, "owner", "30d");
       res.cookie("ownerToken", token, cookieOptions(30 * 24 * 60 * 60 * 1000));
       res.cookie(
         "auth_hint",
@@ -82,6 +82,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           name: user.name,
           role: user.role,
         },
+        token,
       });
       return;
     }
