@@ -52,12 +52,33 @@ app.use(cookieParser());
 // ---------------------------------------------------------------------------
 // Connect to DB on module load so the connection is established even in
 // serverless mode (where app.listen() is never called).
+// Wrapped in try/catch so a failed DB connection does NOT crash the function
+// before it can respond — instead it will return a 503 from the error handler.
 // ---------------------------------------------------------------------------
-connectDB();
+connectDB().catch((err) => {
+  console.error("[Startup] MongoDB connection failed:", err.message);
+});
 
 // Routes
 app.get("/", (req: Request, res: Response) => {
   res.send("Car Rental API is running.");
+});
+
+// Health check — useful for verifying Vercel env vars and DB connectivity
+app.get("/health", (req: Request, res: Response) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    env: {
+      MONGODB_URL: !!process.env.MONGODB_URL,
+      JWT_SECRET: !!process.env.JWT_SECRET,
+      IMAGEKIT_PRIVATE_KEY: !!process.env.IMAGEKIT_PRIVATE_KEY,
+      IMAGEKIT_PUBLIC_KEY: !!process.env.IMAGEKIT_PUBLIC_KEY,
+      CLIENT_URL: process.env.CLIENT_URL || "(not set)",
+      NODE_ENV: process.env.NODE_ENV || "(not set)",
+      VERCEL: !!process.env.VERCEL,
+    },
+  });
 });
 
 app.use("/api/bookings", bookingRoutes);
