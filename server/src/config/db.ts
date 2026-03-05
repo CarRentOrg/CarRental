@@ -22,11 +22,13 @@ const connectDB = async (): Promise<void> => {
   }
 
   try {
-    // Insert the database name before any query string parameters.
-    // e.g. "mongodb+srv://host/?appName=X" → "mongodb+srv://host/car-rental?appName=X"
-    const uriWithDb = uri.includes("?")
-      ? uri.replace("?", "/car-rental?")
-      : `${uri}/car-rental`;
+    // Robustly inject the database name using the URL parser to avoid "//" issues
+    const parsedUri = new URL(uri);
+    // If no specific DB is targeted, set it to car-rental
+    if (parsedUri.pathname === "/" || parsedUri.pathname === "") {
+      parsedUri.pathname = "/car-rental";
+    }
+    const uriWithDb = parsedUri.toString();
 
     cached = mongoose.connect(uriWithDb);
     (global as any).__mongooseConn = cached;
