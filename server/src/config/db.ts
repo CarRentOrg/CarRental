@@ -22,7 +22,13 @@ const connectDB = async (): Promise<void> => {
   }
 
   try {
-    cached = mongoose.connect(`${uri}/car-rental`);
+    // Insert the database name before any query string parameters.
+    // e.g. "mongodb+srv://host/?appName=X" → "mongodb+srv://host/car-rental?appName=X"
+    const uriWithDb = uri.includes("?")
+      ? uri.replace("?", "/car-rental?")
+      : `${uri}/car-rental`;
+
+    cached = mongoose.connect(uriWithDb);
     (global as any).__mongooseConn = cached;
 
     const conn = await cached;
