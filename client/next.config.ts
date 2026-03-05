@@ -77,7 +77,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://car-rental-server.vercel.app/api/:path*",
+        destination: "https://car-rental-server-kappa-murex.vercel.app/api/:path*",
       },
     ];
   },
