@@ -50,13 +50,17 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 
 // ---------------------------------------------------------------------------
-// Connect to DB on module load so the connection is established even in
-// serverless mode (where app.listen() is never called).
-// Wrapped in try/catch so a failed DB connection does NOT crash the function
-// before it can respond — instead it will return a 503 from the error handler.
+// Connect to DB via middleware so it's guaranteed to be established BEFORE
+// any route handler runs in serverless mode.
 // ---------------------------------------------------------------------------
-connectDB().catch((err) => {
-  console.error("[Startup] MongoDB connection failed:", err.message);
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("MongoDB connection failed in middleware:", error);
+    next(error); // Passes the error to the errorHandler middleware
+  }
 });
 
 // Routes

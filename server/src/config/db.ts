@@ -12,6 +12,11 @@ const connectDB = async (): Promise<void> => {
     return;
   }
 
+  // If already connected, do not create a new connection
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
   const uri = process.env.MONGODB_URL;
 
   if (!uri) {
@@ -31,9 +36,13 @@ const connectDB = async (): Promise<void> => {
     const uriWithDb = parsedUri.toString();
 
     const clientOptions = {
-      serverApi: { version: '1' as const, strict: true, deprecationErrors: true }
+      // Required for modern MongoDB Atlas serverless environments
+      serverApi: { version: '1' as const, strict: true, deprecationErrors: true },
+      // Important to prevent timeouts in serverless
+      bufferCommands: false
     };
 
+    console.log("Creating new MongoDB connection...");
     cached = mongoose.connect(uriWithDb, clientOptions);
     (global as any).__mongooseConn = cached;
 
