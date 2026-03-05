@@ -27,6 +27,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://car-rental-client-6khh.vercel.app",
+  "https://car-rental-client.vercel.app",
   ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
 ];
 
