@@ -15,7 +15,7 @@ import { AdminTable, Column } from "@/components/admin/AdminTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 import { api } from "@/lib/api";
 import { Booking } from "@/types";
 import Image from "next/image";
@@ -145,12 +145,12 @@ export default function AdminBookingsPage() {
         updateLocalBookingStatus(selectedBooking._id, updatedStatus);
       }
 
-      toast.success(
+      showToast.success(
         `Booking successfully ${modalAction === "approve" ? "approved" : modalAction === "complete" ? "completed" : "rejected"}`,
       );
       closeModal();
     } catch (error: any) {
-      toast.error(error.message || `Failed to ${modalAction} booking`);
+      showToast.error(error.message || `Failed to ${modalAction} booking`);
     } finally {
       setActionLoading(false);
     }

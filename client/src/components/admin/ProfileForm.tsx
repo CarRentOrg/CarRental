@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 import { api } from "@/lib/api";
-import { toast } from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 export default function ProfileForm() {
   const { user, checkAuth } = useOwnerAuth(); // re-fetch user on update
@@ -46,11 +46,11 @@ export default function ProfileForm() {
     setIsLoading(true);
     try {
       await api.auth.updateProfile(data);
-      toast.success("Profile updated successfully");
+      showToast.success("Profile updated successfully");
       await checkAuth(); // Refresh context
       setIsEditing(false);
     } catch (error: any) {
-      toast.error(error.message || "Failed to update profile");
+      showToast.error(error.message || "Failed to update profile");
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +58,7 @@ export default function ProfileForm() {
 
   const onPasswordSubmit = async (data: any) => {
     if (data.newPassword !== data.confirmPassword) {
-      toast.error("New passwords do not match");
+      showToast.error("New passwords do not match");
       return;
     }
     setIsLoading(true);
@@ -67,11 +67,11 @@ export default function ProfileForm() {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
-      toast.success("Password changed successfully");
+      showToast.success("Password changed successfully");
       setIsChangingPassword(false);
       resetEx();
     } catch (error: any) {
-      toast.error(error.message || "Failed to change password");
+      showToast.error(error.message || "Failed to change password");
     } finally {
       setIsLoading(false);
     }

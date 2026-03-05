@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Lock, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
 import { api } from "@/lib/api";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -60,7 +60,7 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
         newPassword: formData.newPassword,
       });
       setSuccess(true);
-      toast.success("Password changed successfully!");
+      showToast.success("Password changed successfully!");
       setTimeout(() => {
         onClose();
         setSuccess(false);
@@ -73,7 +73,7 @@ const ChangePasswordModal = ({ isOpen, onClose }: ChangePasswordModalProps) => {
     } catch (err: any) {
       const msg = err.message || "Failed to change password";
       setError(msg);
-      toast.error(msg);
+      showToast.error(msg);
     } finally {
       setLoading(false);
     }

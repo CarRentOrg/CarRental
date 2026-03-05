@@ -12,7 +12,7 @@ import DateRangePicker from "@/components/ui/DateRangePicker";
 import Returnbutton from "@/components/shared/returnbutton";
 import { api } from "@/lib/api";
 import { Car, Booking } from "@/types";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 // Modals
 import PaymentModal from "@/components/booking/PaymentModal";
@@ -160,9 +160,9 @@ function BookingContent() {
 
       setLockedBooking(res);
       setShowPayment(true);
-      toast.success("Car reserved for 10 minutes!");
+      showToast.success("Car reserved for 10 minutes!");
     } catch (err: any) {
-      toast.error(err.message || "Failed to reserve car");
+      showToast.error(err.message || "Failed to reserve car");
       // If 409 Conflict, it will show "Car is not available..."
     } finally {
       setIsSubmitting(false);
@@ -170,8 +170,8 @@ function BookingContent() {
   };
 
   const handleBookClick = async () => {
-    if (!startDate || !endDate) return toast.error("Select dates first");
-    if (!isSelectionValid) return toast.error("Dates not available");
+    if (!startDate || !endDate) return showToast.error("Select dates first");
+    if (!isSelectionValid) return showToast.error("Dates not available");
 
     // Server-side availability check before proceeding
     setIsSubmitting(true);
@@ -183,7 +183,7 @@ function BookingContent() {
       });
 
       if (!res.available) {
-        toast.error("Car is not available for selected dates");
+        showToast.error("Car is not available for selected dates");
         // Refresh bookings to show new blockages
         const updatedBookings = await api.bookings.getForCar(car!._id);
         setExistingBookings(updatedBookings);
@@ -197,7 +197,7 @@ function BookingContent() {
         setShowOTP(true);
       }
     } catch (error) {
-      toast.error("Failed to check availability");
+      showToast.error("Failed to check availability");
     } finally {
       setIsSubmitting(false);
     }
@@ -206,7 +206,7 @@ function BookingContent() {
   const handlePaymentSuccess = async (paymentId: string) => {
     // Robust check: Use lockedBooking state
     if (!lockedBooking?._id) {
-      toast.error("No active reservation found. Please try again.");
+      showToast.error("No active reservation found. Please try again.");
       return;
     }
 
@@ -220,13 +220,13 @@ function BookingContent() {
       });
 
       setSubmitSuccess(true);
-      toast.success("Booking confirmed!");
+      showToast.success("Booking confirmed!");
 
       setTimeout(() => {
         router.push(`/profile`); // Redirect to profile
       }, 2000);
     } catch (err: any) {
-      toast.error(err.message || "Confirmation failed");
+      showToast.error(err.message || "Confirmation failed");
       setIsSubmitting(false);
     }
   };

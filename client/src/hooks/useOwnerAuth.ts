@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 /**
  * Hook for specialized Owner authentication logic.
@@ -18,7 +18,7 @@ export const useOwnerAuth = () => {
   // Simple guard within the hook if needed (though OwnerGuard is preferred)
   const requireOwner = () => {
     if (!isLoading && (!user || !isOwner)) {
-      toast.error("Unauthorized. Access restricted to owners.");
+      showToast.error("Unauthorized. Access restricted to owners.");
       router.push("/login");
       return false;
     }

@@ -27,7 +27,7 @@ import { Car } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
-import { toast } from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 import type { UseFormRegister, UseFormGetFieldState } from "react-hook-form";
 
 // --- Schema for Form State (String-based numbers) ---
@@ -332,7 +332,7 @@ export default function CarForm({
       ];
     } else if (currentStep === 3) {
       if (!thumbnailPreview && !thumbnailFile) {
-        toast.error("Thumbnail image is required");
+        showToast.error("Thumbnail image is required");
         return;
       }
       // "description" is optional, so no strict validation needed unless we add rules
@@ -342,7 +342,7 @@ export default function CarForm({
     if (isValid) {
       // Double check thumbnail on step 3 exit
       if (currentStep === 3 && !thumbnailPreview) {
-        toast.error("Please upload a thumbnail image");
+        showToast.error("Please upload a thumbnail image");
         return;
       }
       setCurrentStep((prev) => Math.min(prev + 1, 4));
@@ -353,7 +353,7 @@ export default function CarForm({
 
   const handleFinalSubmit: SubmitHandler<CarFormValues> = async (data) => {
     if (!thumbnailPreview && !thumbnailFile) {
-      toast.error("Thumbnail is required");
+      showToast.error("Thumbnail is required");
       return;
     }
 

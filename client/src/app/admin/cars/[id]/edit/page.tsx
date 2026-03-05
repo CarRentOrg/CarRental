@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef, use } from "react";
 import { api } from "@/lib/api";
 import { Car } from "@/types";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 function getChangedFields(
   original: Car,
@@ -102,7 +102,7 @@ export default function AdminEditCarPage({
     const hasNewFiles = !!thumbnailFile || galleryFiles.length > 0;
 
     if (!hasFieldChanges && !hasNewFiles) {
-      toast("No changes detected", { icon: "ℹ️" });
+      showToast.info("No changes detected", { icon: "ℹ️" });
       return;
     }
 
@@ -124,11 +124,11 @@ export default function AdminEditCarPage({
       });
 
       await api.owner.updateCar(car._id, formData);
-      toast.success("Car updated successfully!");
+      showToast.success("Car updated successfully!");
       router.push("/admin/cars");
     } catch (error: any) {
       console.error(error);
-      toast.error(error?.message || "Failed to update car");
+      showToast.error(error?.message || "Failed to update car");
     } finally {
       setSubmitting(false);
     }

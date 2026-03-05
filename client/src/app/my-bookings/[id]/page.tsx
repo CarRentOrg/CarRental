@@ -17,7 +17,7 @@ import { api } from "@/lib/api";
 import { Booking } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import Returnbutton from "@/components/shared/returnbutton";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 export default function BookingDetailPage() {
   const params = useParams();
@@ -36,12 +36,12 @@ export default function BookingDetailPage() {
         if (data) {
           setBooking(data);
         } else {
-          toast.error("Booking not found");
+          showToast.error("Booking not found");
           router.push("/profile");
         }
       } catch (error) {
         console.error("Failed to fetch booking", error);
-        toast.error("Failed to load booking details");
+        showToast.error("Failed to load booking details");
       } finally {
         setLoading(false);
       }
@@ -59,13 +59,13 @@ export default function BookingDetailPage() {
     setIsCancelling(true);
     try {
       await api.bookings.reject(booking._id);
-      toast.success("Booking cancelled");
+      showToast.success("Booking cancelled");
       await fetchMyBookings();
       // Refresh local data
       const updated = await api.bookings.getById(id);
       setBooking(updated);
     } catch (error) {
-      toast.error("Failed to cancel booking");
+      showToast.error("Failed to cancel booking");
     } finally {
       setIsCancelling(false);
     }

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import CarForm, { CarFormData } from "@/components/admin/CarForm";
 import { api } from "@/lib/api";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 import { useState } from "react";
 
 export default function AdminNewCarPage() {
@@ -23,7 +23,7 @@ export default function AdminNewCarPage() {
       if (thumbnailFile) {
         formData.append("thumbnail", thumbnailFile);
       } else {
-        toast.error("Thumbnail image is required");
+        showToast.error("Thumbnail image is required");
         setLoading(false);
         return;
       }
@@ -34,11 +34,11 @@ export default function AdminNewCarPage() {
       });
 
       await api.owner.addCar(formData);
-      toast.success("Car created successfully!");
+      showToast.success("Car created successfully!");
       router.push("/admin/cars");
     } catch (error: any) {
       console.error("Failed to create car:", error);
-      toast.error(error?.message || "Failed to create car");
+      showToast.error(error?.message || "Failed to create car");
     } finally {
       setLoading(false);
     }

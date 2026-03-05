@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Smartphone, ArrowRight, Loader2 } from "lucide-react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 interface OTPModalProps {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export default function OTPModal({
   }, [isOpen]);
 
   const handleSendOTP = async () => {
-    if (!identifier) return toast.error("Please enter your details");
+    if (!identifier) return showToast.error("Please enter your details");
 
     setLoading(true);
     setError("");
@@ -58,22 +58,22 @@ export default function OTPModal({
     if (success) {
       setStep("otp");
       setTimer(60);
-      toast.success(`OTP sent to ${identifier}`);
+      showToast.success(`OTP sent to ${identifier}`);
     } else {
-      toast.error("Failed to send OTP");
+      showToast.error("Failed to send OTP");
     }
   };
 
   const handleVerify = async () => {
     const code = otp.join("");
-    if (code.length < 6) return toast.error("Enter full code");
+    if (code.length < 6) return showToast.error("Enter full code");
 
     setLoading(true);
     setError("");
     try {
       const user = await verifyOTP(identifier, code);
       if (user) {
-        toast.success("Verified!");
+        showToast.success("Verified!");
         onSuccess();
         onClose();
       }
@@ -81,7 +81,7 @@ export default function OTPModal({
       const msg =
         e.message || "Уншсан код буруу эсвэл хугацаа нь дууссан байна.";
       setError(msg);
-      toast.error(msg);
+      showToast.error(msg);
     } finally {
       setLoading(false);
     }

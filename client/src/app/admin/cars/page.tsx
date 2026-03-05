@@ -14,7 +14,7 @@ import {
 import { useState, useEffect } from "react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pagination } from "@/components/ui/Pagination";
 import { api } from "@/lib/api";
@@ -63,7 +63,7 @@ export default function AdminCarsPage() {
 
     try {
       await api.owner.toggleAvailability(carId);
-      toast.success("Availability updated");
+      showToast.success("Availability updated");
     } catch (error: any) {
       // Revert on error
       setCars((prev) =>
@@ -71,7 +71,7 @@ export default function AdminCarsPage() {
           c._id === carId ? { ...c, is_available: !c.is_available } : c,
         ),
       );
-      toast.error(error.message || "Failed to toggle availability");
+      showToast.error(error.message || "Failed to toggle availability");
     } finally {
       setTogglingId(null);
     }
@@ -83,10 +83,10 @@ export default function AdminCarsPage() {
       await api.owner.deleteCar(deleteId);
       setCars((prev) => prev.filter((c) => c._id !== deleteId));
       setDeleteId(null);
-      toast.success("Car deleted successfully");
+      showToast.success("Car deleted successfully");
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to delete car");
+      showToast.error(error.message || "Failed to delete car");
     }
   }
 
