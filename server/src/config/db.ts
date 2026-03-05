@@ -27,13 +27,23 @@ const connectDB = async (): Promise<void> => {
   }
 
   try {
-    // Robustly inject the database name using the URL parser to avoid "//" issues
-    const parsedUri = new URL(uri);
-    // If no specific DB is targeted, set it to car-rental
-    if (parsedUri.pathname === "/" || parsedUri.pathname === "") {
-      parsedUri.pathname = "/car-rental";
+    // Clean the URI (trim spaces and remove quotes if present)
+    const cleanUri = uri.trim().replace(/^["']|["']$/g, "");
+
+    let uriWithDb = cleanUri;
+
+    // Inject database name if not present
+    // Atlas format often looks like: mongodb+srv://host/?options or mongodb+srv://host?options
+    if (!cleanUri.includes("/car-rental")) {
+      if (cleanUri.includes("?")) {
+        const [base, query] = cleanUri.split("?");
+        const separator = base.endsWith("/") ? "" : "/";
+        uriWithDb = `${base}${separator}car-rental?${query}`;
+      } else {
+        const separator = cleanUri.endsWith("/") ? "" : "/";
+        uriWithDb = `${cleanUri}${separator}car-rental`;
+      }
     }
-    const uriWithDb = parsedUri.toString();
 
     const clientOptions = {
       // Required for modern MongoDB Atlas serverless environments
