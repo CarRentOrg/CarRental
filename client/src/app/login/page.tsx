@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Mail, Key } from "lucide-react";
 import { api } from "@/lib/api";
@@ -35,7 +35,7 @@ export default function LoginPage() {
         setStep("PASSWORD");
       }
     } catch (err: any) {
-      toast.error(err.message || "Access Denied");
+      showToast.error(err.message || "Access Denied");
     } finally {
       setLoading(false);
     }
@@ -48,16 +48,16 @@ export default function LoginPage() {
     try {
       const user = await ownerLogin(email, password);
       if (user) {
-        toast.success("Welcome, Owner!");
+        showToast.success("Welcome, Owner!");
         const target = callbackUrl.startsWith("/admin")
           ? callbackUrl
           : "/admin";
         router.replace(target);
       } else {
-        toast.error("Invalid password");
+        showToast.error("Invalid password");
       }
     } catch (err: any) {
-      toast.error(err.message || "Invalid password");
+      showToast.error(err.message || "Invalid password");
     } finally {
       setLoading(false);
     }

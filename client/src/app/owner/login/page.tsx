@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import { Car, Lock } from "lucide-react";
 
@@ -24,13 +24,13 @@ export default function OwnerLoginPage() {
       const user = await login({ email, password });
 
       if (user?.role === "owner") {
-        toast.success("Welcome, Owner!");
+        showToast.success("Welcome, Owner!");
         router.push("/admin");
       } else if (user) {
-        toast.error("Unauthorized access");
+        showToast.error("Unauthorized access");
       }
     } catch (err: any) {
-      toast.error(err.message || "Invalid credentials");
+      showToast.error(err.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }

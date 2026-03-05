@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 
@@ -28,7 +28,7 @@ const Login = () => {
       if (state === "login") {
         const user = await login({ email, password });
         if (user) {
-          toast.success("Welcome back!");
+          showToast.success("Welcome back!");
           setShowLogin(false);
           if (user.role === "owner") {
             router.push(callbackUrl || "/admin/dashboard");
@@ -36,19 +36,19 @@ const Login = () => {
             router.push(callbackUrl || "/");
           }
         } else {
-          toast.error("Invalid credentials");
+          showToast.error("Invalid credentials");
         }
       } else {
         const response = await api.auth.register({ name, email, password });
         if (response.token) {
-          toast.success("Registration successful! Please login.");
+          showToast.success("Registration successful! Please login.");
           setState("login");
         } else {
-          toast.error(response.message || "Registration failed");
+          showToast.error(response.message || "Registration failed");
         }
       }
     } catch (err: any) {
-      toast.error(err.message || "Auth failed");
+      showToast.error(err.message || "Auth failed");
     } finally {
       setLoading(false);
     }

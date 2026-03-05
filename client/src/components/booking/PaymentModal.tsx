@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle2, Loader2, Landmark } from "lucide-react";
 import { api } from "@/lib/api";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -34,7 +34,7 @@ export default function PaymentModal({
           const res = await api.payment.createIntent(amount, bookingData);
           setPaymentData(res);
         } catch (error) {
-          toast.error("Failed to setup payment");
+          showToast.error("Failed to setup payment");
           onClose();
         } finally {
           setLoading(false);
@@ -51,14 +51,14 @@ export default function PaymentModal({
     try {
       const res = await api.payment.verify(paymentData.paymentId);
       if (res.status === "paid") {
-        toast.success("Payment Received!");
+        showToast.success("Payment Received!");
         onSuccess(paymentData.paymentId);
         onClose();
       } else {
-        toast.error("Payment not found or pending");
+        showToast.error("Payment not found or pending");
       }
     } catch (error) {
-      toast.error("Verification failed");
+      showToast.error("Verification failed");
     } finally {
       setVerifying(false);
     }
@@ -137,7 +137,7 @@ export default function PaymentModal({
                 {/* DEV BUTTON */}
                 <button
                   onClick={() => {
-                    toast.success("DEV: Simulating payment success...");
+                    showToast.success("DEV: Simulating payment success...");
                     onSuccess(paymentData.paymentId);
                     onClose();
                   }}

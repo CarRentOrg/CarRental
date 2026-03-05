@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { Car } from "@/types";
 import { api } from "@/lib/api";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 interface ModalState {
   type: "add" | "edit" | "delete" | null;
@@ -69,7 +69,7 @@ export function AdminCarsProvider({ children }: { children: ReactNode }) {
       setTotal(data?.length || 0);
     } catch (error) {
       console.error("Failed to load cars", error);
-      toast.error("Failed to load cars");
+      showToast.error("Failed to load cars");
     } finally {
       setLoading(false);
     }
@@ -82,12 +82,12 @@ export function AdminCarsProvider({ children }: { children: ReactNode }) {
   const addCar = async (formData: FormData) => {
     try {
       await api.owner.addCar(formData);
-      toast.success("Vehicle created successfully");
+      showToast.success("Vehicle created successfully");
       closeModal();
       loadCars();
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to create vehicle");
+      showToast.error(error.message || "Failed to create vehicle");
       throw error;
     }
   };
@@ -95,12 +95,12 @@ export function AdminCarsProvider({ children }: { children: ReactNode }) {
   const updateCar = async (id: string, formData: FormData) => {
     try {
       await api.owner.updateCar(id, formData);
-      toast.success("Vehicle updated successfully");
+      showToast.success("Vehicle updated successfully");
       closeModal();
       loadCars();
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to update vehicle");
+      showToast.error(error.message || "Failed to update vehicle");
       throw error;
     }
   };
@@ -108,12 +108,12 @@ export function AdminCarsProvider({ children }: { children: ReactNode }) {
   const deleteCar = async (id: string) => {
     try {
       await api.owner.deleteCar(id);
-      toast.success("Vehicle deleted successfully");
+      showToast.success("Vehicle deleted successfully");
       closeModal();
       loadCars();
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to delete vehicle");
+      showToast.error(error.message || "Failed to delete vehicle");
       throw error;
     }
   };

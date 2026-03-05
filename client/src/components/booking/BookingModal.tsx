@@ -16,7 +16,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useApp } from "@/contexts/AppContext";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/toast";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -70,7 +70,7 @@ export default function BookingModal({
         setStep("success");
       }
     } catch (err: any) {
-      toast.error(err.message || "Booking failed");
+      showToast.error(err.message || "Booking failed");
     } finally {
       setIsLoading(false);
     }
