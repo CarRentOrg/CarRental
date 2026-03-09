@@ -20,14 +20,13 @@ export interface Car {
   fuel_type: "petrol" | "diesel" | "electric" | "hybrid";
   seats: number;
   seating_capacity?: number; // fallback
-  price_per_day?: number;
-  pricePerDay?: number | string; // fallback
-  price_rates?: {
-    hourly?: number;
-    daily: number;
-    weekly: number;
-    monthly: number;
-  };
+  price_per_day: number;
+  deposit?: number;
+  enable_discount?: boolean;
+  discount_days?: number;
+  discount_price_per_day?: number;
+  has_driver?: boolean;
+  driver_fee_per_day?: number;
   is_available: boolean;
   isAvaliable?: boolean; // fallback
   thumbnail?: { url: string; fileId: string };
@@ -36,6 +35,8 @@ export interface Car {
   description?: string;
   features?: string[];
   location?: string;
+  deposit_amount?: number;
+  driver_fee?: number;
   ownerId?: string;
   owner?: any; // optional owner object
   created_at?: string;
@@ -51,13 +52,30 @@ export interface Booking {
   user_id: string;
   startDate: string;
   endDate: string;
+  startTime?: string;
+  endTime?: string;
   totalPrice: number;
-  status: "pending" | "confirmed" | "cancelled" | "completed" | "locked";
+  status:
+    | "draft"
+    | "pending"
+    | "payment_pending"
+    | "confirmed"
+    | "rejected"
+    | "cancelled"
+    | "completed"
+    | "expired";
   paymentStatus?: "pending" | "paid" | "failed";
   rateApplied?: string;
   createdAt: string;
   updatedAt?: string;
   note?: string;
+  // Payment: Deposit + Driver
+  withDriver?: boolean;
+  driverFee?: number;
+  depositAmount?: number;
+  depositTransactionId?: string;
+  finalTransactionId?: string;
+  finalPaymentStatus?: "pending" | "paid";
 }
 
 export interface DashboardStats {

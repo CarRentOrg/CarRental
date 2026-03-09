@@ -134,12 +134,26 @@ export const toggleCarAvailability = async (
         .json({ success: false, message: "Car not found or unauthorized" });
     }
 
-    car.is_available = !car.is_available;
-    await car.save();
+    await Car.updateOne(
+      { _id: car._id },
+      { $set: { is_available: !car.is_available } },
+    );
 
-    res.status(200).json({ success: true, message: "Availability Toggled" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: { error } });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Availability Toggled",
+        is_available: !car.is_available,
+      });
+  } catch (error: any) {
+    console.error("Toggle car error:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: error.message || "Internal server error",
+      });
   }
 };
 

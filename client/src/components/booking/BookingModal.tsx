@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useApp } from "@/contexts/AppContext";
 import { showToast } from "@/lib/toast";
+import { formatCurrency } from "@/lib/utils";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -156,7 +157,7 @@ export default function BookingModal({
                         Total Price
                       </span>
                       <span className="text-3xl font-black text-blue-500">
-                        ${totalPrice.toLocaleString()}
+                        ₮{formatCurrency(totalPrice)}
                       </span>
                     </div>
                     <button

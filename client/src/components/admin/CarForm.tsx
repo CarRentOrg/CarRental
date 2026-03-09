@@ -30,33 +30,97 @@ import { useDropzone } from "react-dropzone";
 import { showToast } from "@/lib/toast";
 import type { UseFormRegister, UseFormGetFieldState } from "react-hook-form";
 
+const parseCurrency = (val: string | undefined | null) => {
+  if (!val) return 0;
+  return Number(val.replace(/'/g, ""));
+};
+
+const formatCurrency = (val: number | string | undefined | null) => {
+  if (val === undefined || val === null || val === "") return "";
+  const num = Number(String(val).replace(/[^0-9]/g, ""));
+  return num ? num.toLocaleString("en-US").replace(/,/g, "'") : "";
+};
+
 // --- Schema for Form State (String-based numbers) ---
 // We treat numbers as strings here to fix mobile keyboard issues and "0" defaults
-const carFormSchema = z.object({
-  brand: z.string().min(1, "Brand is required"),
-  model: z.string().min(1, "Model is required"),
-  year: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 1900, {
-    message: "Invalid year",
-  }),
-  type: z.string().min(1, "Car type is required"),
-  transmission: z.string().min(1, "Transmission is required"),
-  fuel_type: z.string().min(1, "Fuel type is required"),
-  seats: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 1, {
-    message: "Seats must be at least 1",
-  }),
-  price_rates: z.object({
-    daily: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: "Price must be positive",
+const carFormSchema = z
+  .object({
+    brand: z.string().min(1, "Брэндийг заавал оруулах шаардлагатай"),
+    model: z.string().min(1, "Моделийг заавал оруулах шаардлагатай"),
+    year: z
+      .string()
+      .refine((val) => !isNaN(Number(val)) && Number(val) > 1900, {
+        message: "Буруу жил",
+      }),
+    type: z.string().min(1, "Машины төрөл заавал оруулах шаардлагатай"),
+    transmission: z
+      .string()
+      .min(1, "Дугуйн дамжуулалт заавал оруулах шаардлагатай"),
+    fuel_type: z.string().min(1, "Түлшний төрөл заавал оруулах шаардлагатай"),
+    seats: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 1, {
+      message: "Суудал 1-с доошгүй байх ёстой",
     }),
-    hourly: z.string().optional(),
-    weekly: z.string().optional(),
-  }),
-  location: z.string().min(1, "Location is required"),
-  description: z.string().optional(),
-  features: z.array(z.string()).optional(),
-  is_available: z.boolean().default(true),
-  images: z.array(z.string()).optional(),
-});
+    price_per_day: z
+      .string()
+      .min(1, "Өдрийн үнэ заавал оруулах шаардлагатай")
+      .refine((val) => !isNaN(parseCurrency(val)) && parseCurrency(val) >= 0, {
+        message: "Үнэ эерэг байх ёстой",
+      }),
+    deposit: z
+      .string()
+      .min(1, "Барьцааны дүн заавал оруулах шаардлагатай")
+      .refine((val) => !isNaN(parseCurrency(val)) && parseCurrency(val) >= 0, {
+        message: "Барьцаа эерэг байх ёстой",
+      }),
+    enable_discount: z.boolean().default(false),
+    discount_days: z.string().optional(),
+    discount_price_per_day: z.string().optional(),
+    has_driver: z.boolean().default(false),
+    driver_fee_per_day: z.string().optional(),
+    location: z.string().min(1, "Байршлыг заавал оруулах шаардлагатай"),
+    description: z.string().optional(),
+    features: z.array(z.string()).optional(),
+    is_available: z.boolean().default(true),
+    images: z.array(z.string()).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.enable_discount) {
+        if (
+          !data.discount_days ||
+          isNaN(Number(data.discount_days)) ||
+          Number(data.discount_days) <= 0
+        )
+          return false;
+        const discPrice = data.discount_price_per_day
+          ? parseCurrency(data.discount_price_per_day)
+          : NaN;
+        if (!data.discount_price_per_day || isNaN(discPrice) || discPrice < 0)
+          return false;
+      }
+      return true;
+    },
+    {
+      message: "Хөнгөлөлтийн өдөр болон үнэ зөв байх ёстой",
+      path: ["discount_days"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.has_driver) {
+        const driverFee = data.driver_fee_per_day
+          ? parseCurrency(data.driver_fee_per_day)
+          : NaN;
+        if (!data.driver_fee_per_day || isNaN(driverFee) || driverFee < 0)
+          return false;
+      }
+      return true;
+    },
+    {
+      message: "Жолоочийн төлбөр зөв байх ёстой",
+      path: ["driver_fee_per_day"],
+    },
+  );
 
 type CarFormValues = z.infer<typeof carFormSchema>;
 
@@ -72,11 +136,12 @@ export type CarFormData = {
   fuel_type: string;
   seats: number;
   price_per_day: number;
-  price_rates: {
-    daily: number;
-    hourly?: number;
-    weekly?: number;
-  };
+  deposit: number;
+  enable_discount?: boolean;
+  discount_days?: number;
+  discount_price_per_day?: number;
+  has_driver?: boolean;
+  driver_fee_per_day?: number;
   location: string;
   description?: string;
   features?: string[];
@@ -96,10 +161,10 @@ interface CarFormProps {
 }
 
 const STEPS = [
-  { id: 1, title: "Basic Info", icon: CarIcon },
-  { id: 2, title: "Specs & Price", icon: Settings2 },
-  { id: 3, title: "Images", icon: ImageIcon },
-  { id: 4, title: "Review", icon: Eye },
+  { id: 1, title: "Үндсэн мэдээлэл", icon: CarIcon },
+  { id: 2, title: "Техникийн үзүүлэлт & Үнэ", icon: Settings2 },
+  { id: 3, title: "Зургууд", icon: ImageIcon },
+  { id: 4, title: "Шалгах", icon: Eye },
 ];
 
 // --- Premium Reusable Input Component (defined OUTSIDE CarForm to prevent remount on re-render) ---
@@ -172,10 +237,23 @@ const FormInput = ({
       ) : (
         <input
           id={name}
-          type={type === "number" ? "text" : type}
-          inputMode={type === "number" ? "numeric" : undefined}
-          step={type === "number" ? "any" : undefined}
-          {...register(name)}
+          type={type === "number" || type === "currency" ? "text" : type}
+          inputMode={
+            type === "number" || type === "currency" ? "numeric" : undefined
+          }
+          {...register(name, {
+            onChange:
+              type === "currency"
+                ? (e) => {
+                    const rawValue = e.target.value.replace(/[^0-9]/g, "");
+                    e.target.value = rawValue
+                      ? Number(rawValue)
+                          .toLocaleString("en-US")
+                          .replace(/,/g, "'")
+                      : "";
+                  }
+                : undefined,
+          })}
           placeholder={placeholder}
           className={`${inputBaseClasses} ${error ? errorInputClasses : ""}`}
           {...props}
@@ -222,17 +300,25 @@ export default function CarForm({
         transmission: initialData.transmission,
         fuel_type: initialData.fuel_type,
         seats: String(initialData.seats),
-        price_rates: {
-          daily: String(
-            initialData.price_rates?.daily || initialData.price_per_day || 0,
-          ),
-          hourly: initialData.price_rates?.hourly
-            ? String(initialData.price_rates.hourly)
+        price_per_day:
+          initialData.price_per_day !== undefined
+            ? formatCurrency(initialData.price_per_day)
             : "",
-          weekly: initialData.price_rates?.weekly
-            ? String(initialData.price_rates.weekly)
+        deposit:
+          initialData.deposit !== undefined
+            ? formatCurrency(initialData.deposit)
             : "",
-        },
+        enable_discount: initialData.enable_discount || false,
+        discount_days: initialData.discount_days
+          ? String(initialData.discount_days)
+          : "",
+        discount_price_per_day: initialData.discount_price_per_day
+          ? formatCurrency(initialData.discount_price_per_day)
+          : "",
+        has_driver: initialData.has_driver || false,
+        driver_fee_per_day: initialData.driver_fee_per_day
+          ? formatCurrency(initialData.driver_fee_per_day)
+          : "",
         location: initialData.location || "",
         description: initialData.description || "",
         features: initialData.features || [],
@@ -243,11 +329,17 @@ export default function CarForm({
         brand: "",
         model: "",
         year: String(new Date().getFullYear()),
-        type: "sedan",
-        transmission: "automatic",
-        fuel_type: "petrol",
-        seats: "5",
-        price_rates: { daily: "", hourly: "", weekly: "" },
+        type: "",
+        transmission: "",
+        fuel_type: "",
+        seats: "",
+        price_per_day: "",
+        deposit: "",
+        enable_discount: false,
+        discount_days: "",
+        discount_price_per_day: "",
+        has_driver: false,
+        driver_fee_per_day: "",
         location: "",
         is_available: true,
         description: "",
@@ -328,7 +420,12 @@ export default function CarForm({
         "fuel_type",
         "seats",
         "location",
-        "price_rates.daily",
+        "price_per_day",
+        "deposit",
+        ...(watch("enable_discount")
+          ? ["discount_days", "discount_price_per_day"]
+          : []),
+        ...(watch("has_driver") ? ["driver_fee_per_day"] : []),
       ];
     } else if (currentStep === 3) {
       if (!thumbnailPreview && !thumbnailFile) {
@@ -363,16 +460,19 @@ export default function CarForm({
       name: `${data.brand} ${data.model}`.trim(),
       year: Number(data.year),
       seats: Number(data.seats),
-      price_per_day: Number(data.price_rates.daily),
-      price_rates: {
-        daily: Number(data.price_rates.daily),
-        hourly: data.price_rates.hourly
-          ? Number(data.price_rates.hourly)
-          : undefined,
-        weekly: data.price_rates.weekly
-          ? Number(data.price_rates.weekly)
-          : undefined,
-      },
+      price_per_day: parseCurrency(data.price_per_day),
+      deposit: parseCurrency(data.deposit),
+      enable_discount: data.enable_discount,
+      discount_days: data.enable_discount
+        ? Number(data.discount_days)
+        : undefined,
+      discount_price_per_day: data.enable_discount
+        ? parseCurrency(data.discount_price_per_day)
+        : undefined,
+      has_driver: data.has_driver,
+      driver_fee_per_day: data.has_driver
+        ? parseCurrency(data.driver_fee_per_day)
+        : undefined,
       features: data.features || [],
       images: data.images || [],
     };
@@ -389,11 +489,9 @@ export default function CarForm({
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
-              {initialData ? "Edit Vehicle" : "Add New Vehicle"}
+              {initialData ? "Засах" : "Шинэ машин нэмэх"}
             </h1>
-            <p className="text-sm text-gray-400 font-medium mt-1">
-              Complete the steps below to list a car.
-            </p>
+            <p className="text-sm text-gray-400 font-medium mt-1"></p>
           </div>
           <button
             type="button"
@@ -586,20 +684,103 @@ export default function CarForm({
                     <FormInput
                       register={register}
                       getFieldState={getFieldState}
-                      label="Daily Rate (Required)"
-                      name="price_rates.daily"
-                      type="number"
-                      placeholder="150000"
+                      label="Daily Price"
+                      name="price_per_day"
+                      type="currency"
+                      placeholder="150'000"
                     />
                     <FormInput
                       register={register}
                       getFieldState={getFieldState}
-                      label="Hourly Rate (Optional)"
-                      name="price_rates.hourly"
-                      type="number"
-                      placeholder="Optional"
+                      label="Security Deposit"
+                      name="deposit"
+                      type="currency"
+                      placeholder="500'000"
                     />
                   </div>
+
+                  <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-gray-900">
+                        Урт хугацааны хөнгөлөлт
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Олон хоногийн түрээсэнд хөнгөлөлт олгоно
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        {...register("enable_discount")}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+
+                  {formData.enable_discount && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="grid grid-cols-2 gap-4"
+                    >
+                      <FormInput
+                        register={register}
+                        getFieldState={getFieldState}
+                        label="Хөнгөлөлт авах доод хоног"
+                        name="discount_days"
+                        type="number"
+                        placeholder="e.g. 5"
+                      />
+                      <FormInput
+                        register={register}
+                        getFieldState={getFieldState}
+                        label="Хөнгөлөлттэй үнэ (өдөрт)"
+                        name="discount_price_per_day"
+                        type="currency"
+                        placeholder="130'000"
+                      />
+                    </motion.div>
+                  )}
+
+                  <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-gray-900">
+                        Жолоочтой түрээс боломжтой Жолоочтой түрээс
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Хэрэглэгчдэд машиныг жолоочтойгоор түрээслэх боломж
+                        олгоно
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        {...register("has_driver")}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+
+                  {formData.has_driver && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="grid grid-cols-1 gap-4"
+                    >
+                      <FormInput
+                        register={register}
+                        getFieldState={getFieldState}
+                        label="Жолоочийн үнэ (өдөрт)"
+                        name="driver_fee_per_day"
+                        type="currency"
+                        placeholder="80'000"
+                      />
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -616,7 +797,7 @@ export default function CarForm({
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <label className="text-xs font-bold text-gray-700 uppercase tracking-wide ml-1">
-                      Main Thumbnail (Required)
+                      Үндсэн зураг (шаардлагатай)
                     </label>
                     {thumbnailPreview && (
                       <button
@@ -628,7 +809,7 @@ export default function CarForm({
                         }}
                         className="text-xs text-red-500 font-bold hover:underline"
                       >
-                        Remove
+                        Устгах
                       </button>
                     )}
                   </div>
@@ -665,7 +846,7 @@ export default function CarForm({
                         </div>
                         <div>
                           <p className="font-bold text-gray-900 text-lg">
-                            Click or drag image here
+                            Зургаа энд дарж оруулна уу
                           </p>
                           <p className="text-sm text-gray-400 mt-1">
                             Supports JPG, PNG (Max 5MB)
@@ -680,7 +861,7 @@ export default function CarForm({
                 <div className="border-t border-gray-100 pt-6 space-y-4">
                   <div className="flex justify-between items-center">
                     <label className="text-xs font-bold text-gray-700 uppercase tracking-wide ml-1">
-                      Other Images (Optional)
+                      Нэмэлт зургууд (заавал биш)
                     </label>
                     <span className="text-xs text-gray-400 font-medium">
                       {galleryPreviews.length}/5 uploaded
@@ -730,7 +911,7 @@ export default function CarForm({
                           <Upload className="h-5 w-5 text-gray-400" />
                         </div>
                         <p className="text-sm font-bold text-gray-600">
-                          Click or drag images here
+                          Зургаа энд дарж эсвэл чирж оруулна уу
                         </p>
                         <p className="text-xs text-gray-400">
                           JPG, PNG, WebP — up to 5 images
@@ -744,10 +925,10 @@ export default function CarForm({
                   <FormInput
                     register={register}
                     getFieldState={getFieldState}
-                    label="Description (Optional)"
+                    label="Тайлбар (заавал биш)"
                     name="description"
                     type="textarea"
-                    placeholder="Describe the car's features, condition, etc..."
+                    placeholder="Машины онцлог, байдал зэргийг тайлбарлана уу..."
                   />
                 </div>
               </motion.div>
@@ -766,11 +947,11 @@ export default function CarForm({
                   <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="text-sm font-bold text-blue-900">
-                      Summary Review
+                      Мэдээллийн хураангуй
                     </h4>
                     <p className="text-sm text-blue-700 mt-1 leading-relaxed">
-                      Please review the car details below. This is how it will
-                      appear to customers.
+                      Доорх машины мэдээллийг шалгана уу. Хэрэглэгчдэд дараах
+                      байдлаар харагдана.
                     </p>
                   </div>
                 </div>
@@ -787,7 +968,7 @@ export default function CarForm({
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-emerald-600 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
-                      Available
+                      Түрээслэх боломжтой
                     </div>
                   </div>
                   <div className="p-6 space-y-4">
@@ -800,17 +981,44 @@ export default function CarForm({
                           {formData.model || "Model"} {formData.year}
                         </h3>
                       </div>
-                      <div className="text-right">
-                        <p className="text-blue-600 font-black text-xl">
-                          ₮
-                          {Number(
-                            formData.price_rates?.daily || 0,
-                          ).toLocaleString()}
+                      <div className="text-right flex flex-col justify-end">
+                        <p className="text-blue-600 font-black text-xl leading-none">
+                          ₮{formatCurrency(formData.price_per_day)}
                         </p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wide">
-                          per day
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wide mt-1 text-right">
+                          өдөрт
                         </p>
                       </div>
+                    </div>
+
+                    <div className="space-y-2 py-3 border-t border-gray-50">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500">Барьцаа:</span>
+                        <span className="font-bold text-gray-900">
+                          ₮{formatCurrency(formData.deposit)}
+                        </span>
+                      </div>
+
+                      {formData.has_driver && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-500">Жолооч:</span>
+                          <span className="font-bold text-gray-900">
+                            (₮{formatCurrency(formData.driver_fee_per_day)}/
+                            өдөрт)
+                          </span>
+                        </div>
+                      )}
+
+                      {formData.enable_discount && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-500">Хөнгөлөлт:</span>
+                          <span className="font-bold text-emerald-600">
+                            {formData.discount_days}+ өдөр → ₮
+                            {formatCurrency(formData.discount_price_per_day)}
+                            /өдөр
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 py-4 border-y border-gray-50">
@@ -829,14 +1037,14 @@ export default function CarForm({
                       <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-gray-50">
                         <Users className="h-4 w-4 text-gray-400" />
                         <span className="text-[10px] font-bold text-gray-600">
-                          {formData.seats || "-"} Seats
+                          {formData.seats || "-"} суудал
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
                       <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                      {formData.location || "Location not set"}
+                      {formData.location || "Байршил тохируулаагүй"}
                     </div>
                   </div>
                 </div>
@@ -852,7 +1060,7 @@ export default function CarForm({
                 onClick={onCancel}
                 className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
               >
-                Cancel
+                Цуцлах
               </button>
             ) : (
               <button
@@ -861,7 +1069,7 @@ export default function CarForm({
                 className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 rounded-xl transition-all"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Back
+                Буцах
               </button>
             )}
 
@@ -871,7 +1079,7 @@ export default function CarForm({
                 onClick={nextStep}
                 className="flex items-center gap-2 px-8 py-3.5 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-black transition-all shadow-lg shadow-gray-200 hover:shadow-xl hover:shadow-gray-300 transform hover:-translate-y-0.5 active:translate-y-0"
               >
-                Next Step
+                Дараагийн алхам
                 <ChevronRight className="h-4 w-4" />
               </button>
             ) : (
@@ -883,12 +1091,12 @@ export default function CarForm({
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Creating...
+                    Үүсгэж байна...
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="h-4 w-4" />
-                    Confirm & Create
+                    Баталгаажуулах
                   </>
                 )}
               </button>

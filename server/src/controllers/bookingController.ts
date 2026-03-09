@@ -11,10 +11,14 @@ interface BookingRequest {
   carId: string;
   startDate: string;
   endDate: string;
+  startTime?: string;
+  endTime?: string;
   totalPrice: number;
   note?: string;
+  withDriver?: boolean;
+  driverFee?: number;
+  depositAmount?: number;
   user?: {
-    // Optional guest user info if not logged in
     email?: string;
     phone?: string;
     name?: string;
@@ -28,8 +32,13 @@ export const initBooking = async (req: AuthenticatedRequest, res: Response) => {
       carId,
       startDate,
       endDate,
+      startTime,
+      endTime,
       totalPrice,
       note,
+      withDriver,
+      driverFee,
+      depositAmount,
       user: guestUser,
     }: BookingRequest = req.body;
 
@@ -60,6 +69,19 @@ export const initBooking = async (req: AuthenticatedRequest, res: Response) => {
 
     const start = new Date(startDate);
     const end = new Date(endDate);
+
+    if (startTime) {
+      const [h, m] = startTime.split(":").map(Number);
+      start.setHours(h, m, 0, 0);
+    }
+
+    if (endTime) {
+      const [h, m] = endTime.split(":").map(Number);
+      end.setHours(h, m, 0, 0);
+    } else if (!startTime && !endTime) {
+      end.setHours(23, 59, 59, 999);
+    }
+
     const now = new Date();
 
     if (start < now) {
@@ -77,12 +99,12 @@ export const initBooking = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // 1. ATOMIC OVERLAP CHECK
-    // Check for any booking that is Confirmed OR Locked
+    // Check for any booking that is Confirmed or Completed
     // Overlap Logic: (StartA < EndB) and (EndA > StartB)
     const conflictingBooking = await Booking.findOne({
       car: carId,
-      status: { $in: ["confirmed", "locked", "completed"] }, // Blocked statuses
-      $or: [{ startDate: { $lt: end }, endDate: { $gt: start } }],
+      status: { $in: ["confirmed", "completed"] }, // Blocked statuses
+      $and: [{ startDate: { $lt: end } }, { endDate: { $gt: start } }],
     });
 
     if (conflictingBooking) {
@@ -94,33 +116,125 @@ export const initBooking = async (req: AuthenticatedRequest, res: Response) => {
       return;
     }
 
-    // 2. CREATE LOCK
-    // Set expiry to 10 minutes from now
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // 2. CREATE DRAFT
+    // Set expiry to 30 minutes from now
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
     const booking = await Booking.create({
       car: carId,
-      ownerId: car.ownerId || carId, // Fallback if ownerId missing (migration safety)
+      ownerId: car.ownerId || carId,
       startDate: start,
       endDate: end,
+      startTime,
+      endTime,
       totalPrice,
       note,
       user: userId,
-      status: "locked", // LOCK THE CAR
+      status: "draft",
       paymentStatus: "pending",
-      expiresAt: expiresAt, // Auto-expire if not paid
+      expiresAt: expiresAt,
+      withDriver: withDriver || false,
+      driverFee: driverFee || 0,
+      depositAmount: depositAmount || 0,
     });
 
-    // Valid Lock Created
     res.status(201).json({
       success: true,
       data: booking,
-      message: "Car locked for 10 minutes. Please proceed to payment.",
+      message: "Draft booking created.",
       expiresAt,
     });
   } catch (error) {
     console.error("INIT BOOKING ERROR:", error);
     res.status(500).json({ success: false, message: { error } });
+  }
+};
+
+export const updateDraftBooking = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const {
+      startDate,
+      endDate,
+      startTime,
+      endTime,
+      totalPrice,
+      note,
+      withDriver,
+      driverFee,
+      depositAmount,
+    } = req.body;
+
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      res.status(404).json({ success: false, message: "Booking not found" });
+      return;
+    }
+
+    if (booking.user.toString() !== req.user?._id?.toString()) {
+      res.status(401).json({ success: false, message: "Unauthorized" });
+      return;
+    }
+
+    if (booking.status !== "draft" && booking.status !== "payment_pending") {
+      res.status(400).json({
+        success: false,
+        message: "Only draft or payment_pending bookings can be updated.",
+      });
+      return;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (startTime) {
+      const [h, m] = startTime.split(":").map(Number);
+      start.setHours(h, m, 0, 0);
+    }
+
+    if (endTime) {
+      const [h, m] = endTime.split(":").map(Number);
+      end.setHours(h, m, 0, 0);
+    } else if (!startTime && !endTime) {
+      end.setHours(23, 59, 59, 999);
+    }
+
+    // Check overlap again
+    const conflictingBooking = await Booking.findOne({
+      car: booking.car,
+      status: { $in: ["confirmed", "completed"] },
+      $and: [{ startDate: { $lt: end } }, { endDate: { $gt: start } }],
+    });
+
+    if (conflictingBooking) {
+      res.status(409).json({
+        success: false,
+        message: "Car is not available for the selected dates.",
+        conflict: true,
+      });
+      return;
+    }
+
+    booking.startDate = start;
+    booking.endDate = end;
+    booking.startTime = startTime;
+    booking.endTime = endTime;
+    booking.totalPrice = totalPrice;
+    booking.note = note;
+    booking.withDriver = withDriver || false;
+    booking.driverFee = driverFee || 0;
+    booking.depositAmount = depositAmount || 0;
+    booking.expiresAt = new Date(Date.now() + 30 * 60 * 1000); // refresh expiry
+
+    await booking.save();
+
+    res.status(200).json({ success: true, data: booking });
+  } catch (error) {
+    console.error("UPDATE DRAFT ERROR:", error);
+    res.status(500).json({ success: false, message: error });
   }
 };
 
@@ -152,30 +266,30 @@ export const confirmBooking = async (
       return;
     }
 
-    if (booking.status !== "locked") {
+    if (booking.status !== "draft" && booking.status !== "payment_pending") {
       res.status(400).json({
         success: false,
-        message: "Booking is not in locked state (maybe expired or cancelled)",
+        message: "Booking is not in draft state (maybe expired or cancelled)",
       });
       return;
     }
 
-    // Verify Expiry (Double check, though DB TTL might have wiped it)
+    // Verify Expiry
     if (booking.expiresAt && new Date() > booking.expiresAt) {
-      res.status(400).json({ success: false, message: "Booking lock expired" });
+      booking.status = "expired";
+      await booking.save();
+      res
+        .status(400)
+        .json({ success: false, message: "Booking draft expired" });
       return;
     }
 
-    // 3. FINALIZE (Move to Pending for Owner Approval)
+    // 3. FINALIZE (Move to Pending directly based on new flow)
     booking.status = "pending";
     booking.paymentStatus = "paid";
     booking.transactionId = paymentId;
     booking.expiresAt = undefined; // Remove expiry
     await booking.save();
-
-    // Note: We don't send confirmation email here yet,
-    // because it needs owner approval first.
-    // We could send a "Payment Received / Pending Approval" email if desired.
 
     res.status(200).json({ success: true, data: booking });
   } catch (error) {
@@ -297,23 +411,28 @@ export const deleteBooking = async (req: Request, res: Response) => {
 
 export const checkAvailabilityofCar = async (req: Request, res: Response) => {
   try {
-    const { carId, startDate, endDate } = req.body;
+    const { carId, startDate, endDate, startTime, endTime } = req.body;
     const start = new Date(startDate);
     const end = new Date(endDate);
+
+    if (startTime) {
+      const [h, m] = startTime.split(":").map(Number);
+      start.setHours(h, m, 0, 0);
+    }
+
+    if (endTime) {
+      const [h, m] = endTime.split(":").map(Number);
+      end.setHours(h, m, 0, 0);
+    } else if (!startTime && !endTime) {
+      end.setHours(23, 59, 59, 999);
+    }
+
     const now = new Date();
 
     const conflictingBooking = await Booking.findOne({
       car: carId,
-      $or: [
-        { status: "confirmed" },
-        { status: "completed" },
-        {
-          status: "locked",
-          expiresAt: { $gt: now }, // Check for active locks
-        },
-      ],
+      status: { $in: ["confirmed", "completed"] },
       // Overlap Logic: (StartA < EndB) and (EndA > StartB)
-      // MongoDB: { startDate: { $lt: end }, endDate: { $gt: start } }
       $and: [{ startDate: { $lt: end } }, { endDate: { $gt: start } }],
     });
 
@@ -338,6 +457,21 @@ export const changeBookingStatus = async (req: Request, res: Response) => {
         message: "Please provide bookingId and status",
       });
       return;
+    }
+
+    const authReq = req as AuthenticatedRequest;
+    if (status === "confirmed" && authReq.user) {
+      const existingBooking = await Booking.findById(bookingId);
+      if (
+        existingBooking &&
+        existingBooking.user.toString() === authReq.user._id.toString()
+      ) {
+        res.status(403).json({
+          success: false,
+          message: "Users cannot confirm their own booking",
+        });
+        return;
+      }
     }
 
     const booking = await Booking.findByIdAndUpdate(
@@ -397,19 +531,10 @@ export const getCarBookings = async (req: Request, res: Response) => {
     const now = new Date();
 
     // Fetch active bookings that block the calendar
-    // 1. Confirmed, Completed, OR Pending (Paid)
-    // 2. Locked AND Not Expired (temporarily block)
+    // 1. Confirmed, Completed
     const bookings = await Booking.find({
       car: carId,
-      $or: [
-        { status: "confirmed" },
-        { status: "completed" },
-        { status: "pending" }, // Blocks after payment even if not approved yet
-        {
-          status: "locked",
-          expiresAt: { $gt: now },
-        },
-      ],
+      status: { $in: ["confirmed", "completed"] },
     }).select("startDate endDate status expiresAt");
 
     res.status(200).json({ success: true, data: bookings });
@@ -437,7 +562,18 @@ export const approveBooking = async (req: Request, res: Response) => {
       }
     }
 
-    if (booking.status !== "pending") {
+    const authReq = req as AuthenticatedRequest;
+    if (
+      authReq.user &&
+      booking.user._id.toString() === authReq.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Users cannot confirm their own booking",
+      });
+    }
+
+    if (booking.status !== "payment_pending" && booking.status !== "pending") {
       return res.status(400).json({
         success: false,
         message: "Only pending bookings can be approved",
@@ -493,14 +629,18 @@ export const rejectBooking = async (req: Request, res: Response) => {
       }
     }
 
-    if (booking.status !== "pending" && booking.status !== "confirmed") {
+    if (
+      booking.status !== "payment_pending" &&
+      booking.status !== "pending" &&
+      booking.status !== "confirmed"
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Only pending or confirmed bookings can be cancelled",
+        message: "Only pending or confirmed bookings can be rejected",
       });
     }
 
-    booking.status = "cancelled";
+    booking.status = "rejected";
     // Optional: If paid, move to refunded or handle paymentStatus
     if (booking.paymentStatus === "paid") {
       booking.paymentStatus = "refunded";
@@ -527,7 +667,7 @@ export const rejectBooking = async (req: Request, res: Response) => {
 export const completeBooking = async (req: Request, res: Response) => {
   try {
     const { bookingId } = req.body;
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId).populate("car");
 
     if (!booking) {
       return res
@@ -546,22 +686,180 @@ export const completeBooking = async (req: Request, res: Response) => {
     if (booking.status !== "confirmed") {
       return res.status(400).json({
         success: false,
-        message: "Only confirmed bookings can be marked as completed",
+        message: "Only confirmed bookings can be finished",
       });
     }
 
-    // ── End-date guard: booking period must be over ──
-    if (new Date() < new Date(booking.endDate)) {
+    // Guard: Trip can only be finished after rental start time
+    if (new Date() < new Date(booking.startDate)) {
       return res.status(400).json({
         success: false,
-        message: "Cannot complete a booking before the rental period ends",
+        message: "Cannot finish trip before the rental start date",
+      });
+    }
+
+    // Calculate remaining payment
+    const rentalTotal = booking.totalPrice;
+    const driverFee = booking.driverFee || 0;
+    const depositPaid = booking.depositAmount || 0;
+    const remainingPayment = rentalTotal + driverFee - depositPaid;
+
+    // If no remaining payment, complete immediately
+    if (remainingPayment <= 0) {
+      booking.status = "completed";
+      booking.finalPaymentStatus = "paid";
+      await booking.save();
+      return res.status(200).json({
+        success: true,
+        data: booking,
+        breakdown: {
+          rentalTotal,
+          driverFee,
+          depositPaid,
+          remainingPayment: 0,
+        },
+      });
+    }
+
+    // Return breakdown for frontend to show payment UI
+    res.status(200).json({
+      success: true,
+      data: booking,
+      requiresPayment: true,
+      breakdown: {
+        rentalTotal,
+        driverFee,
+        depositPaid,
+        remainingPayment,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error });
+  }
+};
+
+/**
+ * @desc    Confirm final payment after trip and mark booking as completed
+ * @route   POST /api/bookings/finish-payment
+ */
+export const finishTripPayment = async (req: Request, res: Response) => {
+  try {
+    const { bookingId, paymentId } = req.body;
+
+    if (!bookingId || !paymentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing bookingId or paymentId",
+      });
+    }
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found" });
+    }
+
+    if (booking.status !== "confirmed") {
+      return res.status(400).json({
+        success: false,
+        message: "Booking is not in a finishable state",
       });
     }
 
     booking.status = "completed";
+    booking.finalTransactionId = paymentId;
+    booking.finalPaymentStatus = "paid";
     await booking.save();
 
     res.status(200).json({ success: true, data: booking });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error });
+  }
+};
+
+/**
+ * @desc    Cancel a booking (user action)
+ * @route   POST /api/bookings/cancel
+ */
+export const cancelBooking = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const { bookingId } = req.body;
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const booking = await Booking.findById(bookingId).populate("user");
+
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found" });
+    }
+
+    // Must be the user who created it
+    if (booking.user._id.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "You can only cancel your own bookings",
+        });
+    }
+
+    if (booking.status === "cancelled" || booking.status === "rejected") {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Booking is already cancelled or rejected",
+        });
+    }
+
+    if (booking.status === "completed") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Booking is already completed" });
+    }
+
+    // 24 Hour check
+    const now = new Date();
+    const startDate = new Date(booking.startDate);
+
+    // Calculate the difference in milliseconds
+    const timeDiffMs = startDate.getTime() - now.getTime();
+
+    // Convert to hours
+    const hoursDifference = timeDiffMs / (1000 * 60 * 60);
+
+    if (hoursDifference < 24) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "You can only cancel a booking if it is at least 24 hours before the rental start time.",
+      });
+    }
+
+    booking.status = "cancelled";
+
+    if (booking.paymentStatus === "paid") {
+      booking.paymentStatus = "refunded";
+    }
+
+    await booking.save();
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        data: booking,
+        message: "Booking cancelled successfully",
+      });
   } catch (error) {
     res.status(500).json({ success: false, message: error });
   }

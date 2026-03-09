@@ -71,7 +71,7 @@ export default function MobileBookingCard({
       <div className="grid grid-cols-2 gap-3 text-xs">
         <div className="p-2 bg-gray-50 rounded-lg">
           <p className="text-gray-400 font-bold uppercase text-[9px]">
-            Pick-up
+            Авах өдөр
           </p>
           <p className="font-semibold text-gray-900 mt-0.5">
             {format(new Date(booking.startDate), "MMM dd, HH:mm")}
@@ -79,7 +79,7 @@ export default function MobileBookingCard({
         </div>
         <div className="p-2 bg-gray-50 rounded-lg text-right">
           <p className="text-gray-400 font-bold uppercase text-[9px]">
-            Drop-off
+            Өгөх өдөр
           </p>
           <p className="font-semibold text-gray-900 mt-0.5">
             {format(new Date(booking.endDate), "MMM dd, HH:mm")}

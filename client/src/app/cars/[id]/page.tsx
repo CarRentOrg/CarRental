@@ -12,6 +12,7 @@ import RentalTermsModal from "@/components/booking/RentalTermsModal";
 import { useApp } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Car } from "@/types";
+import { formatCurrency } from "@/lib/utils";
 
 export default function CarDetailPage() {
   const { id } = useParams();
@@ -63,8 +64,7 @@ export default function CarDetailPage() {
           : ["/placeholder.svg"]
   ) as string[];
 
-  const priceDaily =
-    car.price_rates?.daily ?? car.price_per_day ?? car.pricePerDay;
+  const priceDaily = car.price_per_day;
   const seats = car.seats ?? car.seating_capacity;
 
   const rates = [
@@ -184,7 +184,7 @@ export default function CarDetailPage() {
                 >
                   <span className="text-zinc-300 font-medium">{r.season}</span>
                   <span className="text-white font-bold text-lg">
-                    ₮{r.price.toLocaleString()}
+                    ₮{formatCurrency(r.price)}
                   </span>
                 </div>
               ))}

@@ -164,9 +164,7 @@ export default function RentalTermsModal({
                     <Check className="absolute h-3 w-3 text-black opacity-0 peer-checked:opacity-100 pointer-events-none" />
                   </div>
                   <span className="text-sm text-zinc-300 leading-relaxed group-hover:text-white transition-colors">
-                    I have read and agree to the rental terms and conditions,
-                    including the insurance policy, payment terms, and vehicle
-                    return requirements.
+                    {t("terms.agreement")}
                   </span>
                 </label>
 
@@ -176,7 +174,7 @@ export default function RentalTermsModal({
                   disabled={!accepted}
                   className="w-full py-4 bg-white hover:bg-zinc-100 text-black font-bold rounded-xl transition-all shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:shadow-lg"
                 >
-                  Continue to Booking
+                  {t("terms.continue")}
                 </button>
               </div>
             </motion.div>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Car } from "@/types";
 import { ArrowUpRight, Fuel, Gauge, Users, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatCurrency } from "@/lib/utils";
 
 interface CarCardProps {
   car: Car;
@@ -13,8 +14,9 @@ interface CarCardProps {
 
 export default function CarCard({ car, onBook }: CarCardProps) {
   const { t } = useLanguage();
-  const rawPrice = car.price_rates?.daily ?? car.price_per_day ?? car.pricePerDay;
-  const price = typeof rawPrice === "string" ? parseInt(rawPrice) : (rawPrice ?? 0);
+  const rawPrice = car.price_per_day;
+  const price =
+    typeof rawPrice === "string" ? parseInt(rawPrice) : (rawPrice ?? 0);
 
   const seats = car.seats ?? car.seating_capacity;
   const image = car.thumbnail?.url ?? car.image ?? "/placeholder.svg";
@@ -91,7 +93,7 @@ export default function CarCard({ car, onBook }: CarCardProps) {
             <div className="absolute bottom-4 left-5">
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-bold text-white drop-shadow-lg">
-                  ${price}
+                  ₮{formatCurrency(price)}
                 </span>
                 <span className="text-xs text-white/60 font-medium">
                   /{t("cars.perDay").replace("per ", "")}
@@ -125,7 +127,7 @@ export default function CarCard({ car, onBook }: CarCardProps) {
               <div className="flex items-center gap-1.5 shrink-0 mt-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
                 <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-medium">
-                  Available
+                  {t("cars.available")}
                 </span>
               </div>
             )}
@@ -153,14 +155,13 @@ export default function CarCard({ car, onBook }: CarCardProps) {
           <div className="h-px bg-zinc-800/60" />
 
           {/* Action row */}
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-zinc-600">
-              {t("common.from")}{" "}
+          <div className="flex items-center justify-end">
+            {/* <p className="text-xs text-zinc-600">
               <span className="text-zinc-400 font-semibold">${price}</span>
               <span className="text-zinc-600">
                 /{t("cars.perDay").replace("per ", "")}
               </span>
-            </p>
+            </p> */}
 
             {onBook ? (
               <button
@@ -176,7 +177,7 @@ export default function CarCard({ car, onBook }: CarCardProps) {
                             shadow-lg shadow-black/20"
                 aria-label={`Book ${car.brand} ${car.model}`}
               >
-                <span>Book Now</span>
+                <span>{t("common.bookNow")}</span>
                 <ArrowUpRight className="h-3 w-3 transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
               </button>
             ) : (
@@ -189,7 +190,7 @@ export default function CarCard({ car, onBook }: CarCardProps) {
                             shadow-lg shadow-black/20"
                 aria-label={`View details for ${car.brand} ${car.model}`}
               >
-                <span>View Details</span>
+                <span>{t("common.viewDetails")}</span>
                 <ArrowUpRight className="h-3 w-3 transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
               </Link>
             )}

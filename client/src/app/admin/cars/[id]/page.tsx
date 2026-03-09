@@ -56,10 +56,7 @@ export default function EditCarPage() {
           setValue("name", car.model);
           setValue("brand", car.brand);
           setValue("type", car.type);
-          setValue(
-            "pricePerDay",
-            (car.price_rates?.daily ?? car.price_per_day ?? 0).toString(),
-          );
+          setValue("pricePerDay", (car.price_per_day ?? 0).toString());
           setValue(
             "transmission",
             (car.transmission.charAt(0).toUpperCase() +

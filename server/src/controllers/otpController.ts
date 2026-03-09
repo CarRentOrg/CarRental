@@ -59,7 +59,6 @@ export const requestOTP = async (
       }
     } else {
       // Phone-based OTP — log for now, integrate SMS provider when ready
-      console.log(`[AUTH] OTP for ${identifier}: ${code}`);
     }
 
     res.status(200).json({

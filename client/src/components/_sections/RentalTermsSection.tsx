@@ -69,14 +69,11 @@ const RentalTermsSection = () => {
               </div>
 
               <h3 className="text-xl font-bold text-white leading-snug">
-                Need help choosing
-                <br />
-                the right car?
+                {t("terms.needHelp")}
               </h3>
 
               <p className="text-sm text-zinc-500 leading-relaxed max-w-xs">
-                Our team is ready to assist you — finding the perfect car that
-                matches your needs and budget.
+                {t("terms.ourTeam")}
               </p>
             </div>
 
@@ -93,7 +90,7 @@ const RentalTermsSection = () => {
                     Michael Carter
                   </p>
                   <p className="text-xs text-zinc-600">
-                    Personal Rental Assistant
+                    {t("terms.assistantDesc")}
                   </p>
                 </div>
               </div>
@@ -106,7 +103,7 @@ const RentalTermsSection = () => {
                            transition-all duration-300
                            shadow-lg shadow-black/20"
               >
-                <span>Call Us Now</span>
+                <span>{t("terms.callUs")}</span>
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
               </button>
             </div>
