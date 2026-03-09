@@ -213,6 +213,9 @@ export const translations = {
     },
     faq: {
       title: "Frequently Asked Questions",
+      subtitle: "Common questions",
+      description: "Everything you need to know before renting. Can't find what you're looking for? Feel free to contact us.",
+      answersReady: "answers ready",
       q1: "What are the terms and conditions for using the car?",
       a1: "You must have a valid driver's license, meet the minimum age requirements, and adhere to all terms and conditions of the rental agreement during the rental period.",
       q2: "Can I drive the car outside the city?",
@@ -227,8 +230,8 @@ export const translations = {
       a6: "If you return the car late, an hourly late fee will be charged as specified in the rental agreement.",
     },
     common: {
-      currency: "$/day",
-      currency_symbol: "$",
+      currency: "₮/day",
+      currency_symbol: "₮",
       loading: "Loading...",
       error: "Error",
       success: "Success",
@@ -612,6 +615,9 @@ export const translations = {
     },
     faq: {
       title: "Түгээмэл Асуулт",
+      subtitle: "Түгээмэл асуултууд",
+      description: "Түрээсийн өмнө таны мэдэх шаардлагатай бүх зүйл. Хүссэн мэдээллээ олсонгүй юу? Бидэнтэй холбогдоорой.",
+      answersReady: "хариулт бэлэн",
       q1: "Машин ашиглах нөхцөл, дүрэм юу вэ?",
       a1: "Танд хүчинтэй жолоочийн үнэмлэх байх, жолоочийн насны шаардлагыг хангах, мөн түрээсийн хугацаанд бүх түрээсийн гэрээний нөхцлийг дагах шаардлагатай.",
       q2: "Машиныг хотын гадна жолоодож болох уу?",

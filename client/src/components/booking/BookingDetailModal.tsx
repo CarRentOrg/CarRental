@@ -156,7 +156,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-white">Total</span>
                   <span className="text-2xl font-black text-blue-500">
-                    ₮{formatCurrency(booking.totalPrice)}
+                    {formatCurrency(booking.totalPrice)}
                   </span>
                 </div>
               </div>

@@ -20,6 +20,7 @@ import { useApp } from "@/contexts/AppContext";
 import Returnbutton from "@/components/shared/returnbutton";
 import { showToast } from "@/lib/toast";
 import FinishTripModal from "@/components/booking/FinishTripModal";
+import { formatCurrency } from "@/lib/utils";
 
 export default function BookingDetailPage() {
   const params = useParams();
@@ -188,7 +189,7 @@ export default function BookingDetailPage() {
                   <div className="flex justify-between items-center text-zinc-400">
                     <span>👨‍✈️ Driver Fee</span>
                     <span className="font-medium text-white">
-                      {(booking.driverFee || 0).toLocaleString()}₮
+                      {formatCurrency(booking.driverFee || 0)}
                     </span>
                   </div>
                 )}
@@ -197,7 +198,7 @@ export default function BookingDetailPage() {
                   <div className="flex justify-between items-center text-emerald-400">
                     <span>Deposit Paid</span>
                     <span className="font-medium">
-                      -{(booking.depositAmount || 0).toLocaleString()}₮
+                      -{formatCurrency(booking.depositAmount || 0)}
                     </span>
                   </div>
                 )}
@@ -220,14 +221,13 @@ export default function BookingDetailPage() {
                       : "Total Amount"}
                   </span>
                   <span className="text-3xl font-black text-white">
-                    {(booking.depositAmount || 0) > 0
+                    {formatCurrency((booking.depositAmount || 0) > 0
                       ? (
-                          booking.totalPrice +
-                          (booking.driverFee || 0) -
-                          (booking.depositAmount || 0)
-                        ).toLocaleString()
-                      : booking.totalPrice.toLocaleString()}
-                    ₮
+                        booking.totalPrice +
+                        (booking.driverFee || 0) -
+                        (booking.depositAmount || 0)
+                      )
+                      : booking.totalPrice)}
                   </span>
                 </div>
               </div>

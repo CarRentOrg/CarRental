@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Clock, Shield, CreditCard, Car, Check } from "lucide-react";
+import { X, Clock, Shield, CreditCard, Car, Check, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -20,6 +20,21 @@ export default function RentalTermsModal({
   const router = useRouter();
   const { t } = useLanguage();
   const [accepted, setAccepted] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const progress = Math.min(100, Math.round((scrollTop / (scrollHeight - clientHeight)) * 100));
+    setScrollProgress(progress);
+    if (scrollHeight - scrollTop - clientHeight < 40) {
+      setHasScrolledToBottom(true);
+      setAccepted(true);
+    }
+  }, []);
 
   const handleContinue = () => {
     if (accepted) {
@@ -116,7 +131,18 @@ export default function RentalTermsModal({
               </div>
 
               {/* Content - Scrollable */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+              <div
+                ref={contentRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6"
+              >
+                {/* Scroll hint */}
+                {!hasScrolledToBottom && (
+                  <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2 animate-bounce">
+                    <ChevronDown className="h-4 w-4" />
+                    <span>Scroll to read all terms</span>
+                  </div>
+                )}
                 {terms.map((section, index) => (
                   <motion.div
                     key={index}
@@ -152,14 +178,27 @@ export default function RentalTermsModal({
 
               {/* Footer - Sticky */}
               <div className="p-6 md:p-8 border-t border-zinc-800 bg-zinc-950 space-y-4">
+                {/* Scroll progress bar */}
+                <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-200 ease-out"
+                    style={{ width: `${scrollProgress}%` }}
+                  />
+                </div>
+                {!hasScrolledToBottom && (
+                  <p className="text-xs text-zinc-500 text-center">
+                    Read all terms to enable checkbox ({scrollProgress}%)
+                  </p>
+                )}
                 {/* Checkbox */}
-                <label className="flex items-start gap-3 cursor-pointer group">
+                <label className={`flex items-start gap-3 cursor-pointer group ${!hasScrolledToBottom ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <div className="relative flex items-center justify-center mt-0.5">
                     <input
                       type="checkbox"
                       checked={accepted}
+                      disabled={!hasScrolledToBottom}
                       onChange={(e) => setAccepted(e.target.checked)}
-                      className="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-zinc-700 bg-zinc-900 checked:bg-white checked:border-white transition-all"
+                      className="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-zinc-700 bg-zinc-900 checked:bg-white checked:border-white transition-all disabled:cursor-not-allowed"
                     />
                     <Check className="absolute h-3 w-3 text-black opacity-0 peer-checked:opacity-100 pointer-events-none" />
                   </div>

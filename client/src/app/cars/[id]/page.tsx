@@ -184,7 +184,7 @@ export default function CarDetailPage() {
                 >
                   <span className="text-zinc-300 font-medium">{r.season}</span>
                   <span className="text-white font-bold text-lg">
-                    ₮{formatCurrency(r.price)}
+                    {formatCurrency(r.price)}
                   </span>
                 </div>
               ))}

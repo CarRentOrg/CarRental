@@ -29,6 +29,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith("/admin");
+  const isAuthPage = pathname === "/login" || pathname === "/admin-login";
   return (
     <html lang="en">
       <body
@@ -44,9 +45,9 @@ export default function RootLayout({
                     <ImageKitProvider>
                       <FullPageLoader />
 
-                      {!isAdminPage && <Header />}
+                      {!isAdminPage && !isAuthPage && <Header />}
                       <main className="grow">{children}</main>
-                      {!isAdminPage && pathname === "/" && <Footer />}
+                      {!isAdminPage && !isAuthPage && pathname === "/" && <Footer />}
                     </ImageKitProvider>
                   </LanguageProvider>
                 </DataProvider>

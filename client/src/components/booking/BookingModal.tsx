@@ -157,7 +157,7 @@ export default function BookingModal({
                         Total Price
                       </span>
                       <span className="text-3xl font-black text-blue-500">
-                        ₮{formatCurrency(totalPrice)}
+                        {formatCurrency(totalPrice)}
                       </span>
                     </div>
                     <button

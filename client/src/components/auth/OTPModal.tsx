@@ -88,23 +88,39 @@ export default function OTPModal({
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (isNaN(Number(value))) return;
+    // Strip non-numeric characters (handles mobile autocomplete/suggestions)
+    const numeric = value.replace(/[^0-9]/g, "");
+    if (!numeric && value !== "") return;
+    // Take only the last digit entered
+    const digit = numeric.slice(-1);
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[index] = digit;
     setOtp(newOtp);
     setError("");
 
     // Auto focus next
-    if (value && index < 5) {
+    if (digit && index < 5) {
       document.getElementById(`otp-${index + 1}`)?.focus();
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    setError(""); // Clear error on any key down in OTP fields
+    setError("");
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       document.getElementById(`otp-${index - 1}`)?.focus();
     }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/[^0-9]/g, "").slice(0, 6);
+    if (!pasted) return;
+    const newOtp = [...otp];
+    pasted.split("").forEach((char, i) => { newOtp[i] = char; });
+    setOtp(newOtp);
+    setError("");
+    const nextIndex = Math.min(pasted.length, 5);
+    document.getElementById(`otp-${nextIndex}`)?.focus();
   };
 
   return (
@@ -148,21 +164,19 @@ export default function OTPModal({
                   <div className="flex bg-zinc-950 p-1 rounded-xl">
                     <button
                       onClick={() => setMethod("email")}
-                      className={`flex-1 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all ${
-                        method === "email"
+                      className={`flex-1 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all ${method === "email"
                           ? "bg-zinc-800 text-white shadow-lg"
                           : "text-zinc-500 hover:text-zinc-300"
-                      }`}
+                        }`}
                     >
                       <Mail className="h-4 w-4" /> Email
                     </button>
                     <button
                       onClick={() => setMethod("phone")}
-                      className={`flex-1 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all ${
-                        method === "phone"
+                      className={`flex-1 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all ${method === "phone"
                           ? "bg-zinc-800 text-white shadow-lg"
                           : "text-zinc-500 hover:text-zinc-300"
-                      }`}
+                        }`}
                     >
                       <Smartphone className="h-4 w-4" /> Phone
                     </button>
@@ -217,14 +231,17 @@ export default function OTPModal({
                       <input
                         key={i}
                         id={`otp-${i}`}
-                        type="text"
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoComplete={i === 0 ? "one-time-code" : "off"}
                         maxLength={1}
                         value={digit}
                         onChange={(e) => handleOtpChange(i, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(i, e)}
-                        className={`w-12 h-14 bg-zinc-950 border ${
-                          error ? "border-red-500/50" : "border-zinc-800"
-                        } rounded-xl text-center text-xl font-bold text-white focus:border-blue-500 outline-none transition-colors`}
+                        onPaste={i === 0 ? handlePaste : undefined}
+                        className={`w-12 h-14 bg-zinc-950 border ${error ? "border-red-500/50" : "border-zinc-800"
+                          } rounded-xl text-center text-xl font-bold text-white focus:border-blue-500 outline-none transition-colors`}
                       />
                     ))}
                   </div>

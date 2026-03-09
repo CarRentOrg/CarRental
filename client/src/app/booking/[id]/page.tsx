@@ -97,7 +97,7 @@ function BookingContent() {
         const end = new Date(booking.endDate);
         const interval = eachDayOfInterval({ start, end });
         dates.push(...interval);
-      } catch (e) {}
+      } catch (e) { }
     });
     return dates;
   }, [existingBookings]);
@@ -419,7 +419,7 @@ function BookingContent() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-black md:bg-zinc-900/20 md:backdrop-blur-sm md:rounded-[40px] md:p-8 md:border md:border-white/5"
+              className="bg-black md:bg-zinc-900/20 md:backdrop-blur-sm md:rounded-[40px] md:p-8 md:border md:border-white/5 pb-[350px] md:pb-0"
             >
               {/* Form */}
               <div className="flex flex-col gap-6 px-4 md:px-0">
@@ -489,24 +489,21 @@ function BookingContent() {
                       <div className="flex gap-3">
                         <button
                           onClick={() => setWithDriver(false)}
-                          className={`flex-1 py-3 px-4 rounded-2xl border font-bold text-sm transition-all ${
-                            !withDriver
+                          className={`flex-1 py-3 px-4 rounded-2xl border font-bold text-sm transition-all ${!withDriver
                               ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20"
                               : "bg-zinc-900 border-white/10 text-zinc-400 hover:border-white/20"
-                          }`}
+                            }`}
                         >
                           🚗 {t("booking.withoutDriver")}
                         </button>
                         <button
                           onClick={() => setWithDriver(true)}
-                          className={`flex-1 py-3 px-4 rounded-2xl border font-bold text-sm transition-all ${
-                            withDriver
+                          className={`flex-1 py-3 px-4 rounded-2xl border font-bold text-sm transition-all ${withDriver
                               ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20"
                               : "bg-zinc-900 border-white/10 text-zinc-400 hover:border-white/20"
-                          }`}
+                            }`}
                         >
-                          👨‍✈️ {t("booking.withDriver")} (+₮
-                          {formatCurrency(car.driver_fee)})
+                          👨‍✈️ {t("booking.withDriver")} (+{formatCurrency(car.driver_fee)})
                         </button>
                       </div>
                     </div>
@@ -533,11 +530,10 @@ function BookingContent() {
                     <div className="space-y-1 pb-2 md:pb-0">
                       <div className="flex justify-between items-center text-sm md:text-base text-gray-400">
                         <span>
-                          {priceDetails.rateName} (₮
-                          {formatCurrency(priceDetails.rate)} x{" "}
+                          {priceDetails.rateName} ({formatCurrency(priceDetails.rate)} x{" "}
                           {priceDetails.days} days)
                         </span>
-                        <span>₮{formatCurrency(priceDetails.total)}</span>
+                        <span>{formatCurrency(priceDetails.total)}</span>
                       </div>
                       {priceDetails.discount > 0 && (
                         <div className="flex justify-between items-center text-xs text-green-400">
@@ -549,7 +545,7 @@ function BookingContent() {
                         <div className="flex justify-between items-center text-sm text-gray-400">
                           <span>👨‍✈️ Driver Fee ({priceDetails.days} days)</span>
                           <span>
-                            +₮{formatCurrency(priceDetails.totalDriverFee)}
+                            +{formatCurrency(priceDetails.totalDriverFee)}
                           </span>
                         </div>
                       )}
@@ -557,7 +553,7 @@ function BookingContent() {
                         <div className="flex justify-between items-center text-sm text-emerald-400">
                           <span>Deposit (paid at booking)</span>
                           <span>
-                            ₮{formatCurrency(priceDetails.depositAmount)}
+                            {formatCurrency(priceDetails.depositAmount)}
                           </span>
                         </div>
                       )}

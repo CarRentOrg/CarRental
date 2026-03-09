@@ -93,7 +93,7 @@ export default function CarCard({ car, onBook }: CarCardProps) {
             <div className="absolute bottom-4 left-5">
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-bold text-white drop-shadow-lg">
-                  ₮{formatCurrency(price)}
+                  {formatCurrency(price)}
                 </span>
                 <span className="text-xs text-white/60 font-medium">
                   /{t("cars.perDay").replace("per ", "")}

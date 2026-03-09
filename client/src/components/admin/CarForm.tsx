@@ -983,7 +983,7 @@ export default function CarForm({
                       </div>
                       <div className="text-right flex flex-col justify-end">
                         <p className="text-blue-600 font-black text-xl leading-none">
-                          ₮{formatCurrency(formData.price_per_day)}
+                          {formatCurrency(formData.price_per_day)}
                         </p>
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wide mt-1 text-right">
                           өдөрт
@@ -995,7 +995,7 @@ export default function CarForm({
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-500">Барьцаа:</span>
                         <span className="font-bold text-gray-900">
-                          ₮{formatCurrency(formData.deposit)}
+                          {formatCurrency(formData.deposit)}
                         </span>
                       </div>
 
@@ -1003,7 +1003,7 @@ export default function CarForm({
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-gray-500">Жолооч:</span>
                           <span className="font-bold text-gray-900">
-                            (₮{formatCurrency(formData.driver_fee_per_day)}/
+                            ({formatCurrency(formData.driver_fee_per_day)}/
                             өдөрт)
                           </span>
                         </div>
@@ -1013,8 +1013,7 @@ export default function CarForm({
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-gray-500">Хөнгөлөлт:</span>
                           <span className="font-bold text-emerald-600">
-                            {formData.discount_days}+ өдөр → ₮
-                            {formatCurrency(formData.discount_price_per_day)}
+                            {formData.discount_days}+ өдөр → {formatCurrency(formData.discount_price_per_day)}
                             /өдөр
                           </span>
                         </div>

@@ -71,7 +71,7 @@ const BookingCard = ({ booking, onClick }: BookingCardProps) => {
             <div className="flex items-center gap-2 text-zinc-400 text-sm">
               <DollarSign className="h-3.5 w-3.5" />
               <span className="font-medium text-white">
-                ₮{formatCurrency(booking.totalPrice)}
+                {formatCurrency(booking.totalPrice)}
               </span>
               {booking.rateApplied && (
                 <span className="text-[10px] text-zinc-500">

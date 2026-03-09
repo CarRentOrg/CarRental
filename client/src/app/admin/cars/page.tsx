@@ -188,7 +188,7 @@ export default function AdminCarsPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-blue-600 font-black text-xl">
-                          ₮{formatCurrency(car.price_per_day)}
+                          {formatCurrency(car.price_per_day)}
                         </p>
                         <p className="text-gray-400 text-[10px] font-bold uppercase">
                           / өдөр

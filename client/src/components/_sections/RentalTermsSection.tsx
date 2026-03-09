@@ -12,10 +12,10 @@ const RentalTermsSection = () => {
       {/* Section header */}
       <div className="mb-10 sm:mb-14">
         <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 mb-3">
-          Before you book
+          {t("terms.subtitle")}
         </p>
         <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-          Rental Terms
+          {t("terms.title")}
         </h2>
       </div>
 
@@ -103,7 +103,7 @@ const RentalTermsSection = () => {
                            transition-all duration-300
                            shadow-lg shadow-black/20"
               >
-                <span>{t("terms.callUs")}</span>
+                <span>{t("terms.callUsBtn")}</span>
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
               </button>
             </div>
