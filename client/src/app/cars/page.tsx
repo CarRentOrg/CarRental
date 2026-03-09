@@ -145,21 +145,21 @@ export default function CarsPage() {
         {/* Filters */}
         <div className="mb-12 grid w-full grid-cols-2 gap-3 sm:gap-4 md:flex md:flex-wrap md:items-center md:justify-center">
           <MultiSelectDropdown
-            label="Brands"
+            label={t("cars.brands") || "Brands"}
             options={brands}
             selected={selectedBrands}
             onChange={setSelectedBrands}
           />
 
           <MultiSelectDropdown
-            label="Fuel"
+            label={t("cars.fuelType") || "Fuel"}
             options={fuelTypes}
             selected={selectedFuelTypes}
             onChange={setSelectedFuelTypes}
           />
 
           <MultiSelectDropdown
-            label="Transmission"
+            label={t("cars.transmission") || "Transmission"}
             options={transmissions}
             selected={selectedTransmissions}
             onChange={setSelectedTransmissions}
@@ -175,10 +175,10 @@ export default function CarsPage() {
               className="w-full cursor-pointer appearance-none rounded-full border border-white/10 bg-white/5 py-3 pl-6 pr-10 text-sm font-medium text-gray-300 transition-all hover:border-white/20 hover:bg-white/10 focus:border-white/30 focus:outline-none focus:ring-1 focus:ring-white/30"
             >
               <option value="relevant" className="bg-gray-900">
-                Most Relevant
+                {t("cars.mostRelevant") || "Most Relevant"}
               </option>
               <option value="price_asc" className="bg-gray-900">
-                Price: Low to High
+                {t("cars.priceAsc") || "Price: Low to High"}
               </option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -228,10 +228,11 @@ export default function CarsPage() {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all ${currentPage === page
+                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all ${
+                      currentPage === page
                         ? "bg-white text-black"
                         : "text-gray-400 hover:bg-white/10 hover:text-white"
-                      }`}
+                    }`}
                   >
                     {page}
                   </button>

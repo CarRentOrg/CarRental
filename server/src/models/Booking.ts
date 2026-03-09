@@ -13,11 +13,28 @@ export interface IBooking extends Document {
   endDate: Date;
   totalPrice: number;
   note?: string;
-  status: "pending" | "confirmed" | "cancelled" | "completed" | "locked";
+  status:
+    | "draft"
+    | "pending"
+    | "payment_pending"
+    | "confirmed"
+    | "rejected"
+    | "cancelled"
+    | "completed"
+    | "expired";
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
   rateApplied?: "daily" | "weekly" | "monthly";
   transactionId?: string;
   expiresAt?: Date;
+  startTime?: string;
+  endTime?: string;
+  // Payment: Deposit + Driver
+  withDriver: boolean;
+  driverFee: number;
+  depositAmount: number;
+  depositTransactionId?: string;
+  finalTransactionId?: string;
+  finalPaymentStatus?: "pending" | "paid";
 }
 
 const bookingSchema = new Schema<IBooking>(
@@ -54,14 +71,30 @@ const bookingSchema = new Schema<IBooking>(
       type: String,
       required: false,
     },
+    startTime: {
+      type: String,
+      required: false,
+    },
+    endTime: {
+      type: String,
+      required: false,
+    },
     totalPrice: {
       type: Number,
       required: true,
     },
     status: {
       type: String,
-      // 'locked' = reserved for short time while paying
-      enum: ["pending", "confirmed", "cancelled", "completed", "locked"],
+      enum: [
+        "draft",
+        "pending",
+        "payment_pending",
+        "confirmed",
+        "rejected",
+        "cancelled",
+        "completed",
+        "expired",
+      ],
       default: "pending",
     },
     paymentStatus: {
@@ -75,11 +108,8 @@ const bookingSchema = new Schema<IBooking>(
     },
     expiresAt: {
       type: Date,
-      // TTL Index: Specific method to auto-delete documents that have expired
-      // But we only want to expire 'locked' ones.
-      // MongoDB TTL removes docs where field > now.
-      // We will set this field ONLY for 'locked' bookings.
-      index: { expireAfterSeconds: 0 },
+      // Standard date field for tracking expiry. No TTL index to avoid unpredictable deletion.
+      // We will handle expiry via cron or lazy evaluation.
     },
     car_id: {
       type: String,
@@ -87,6 +117,17 @@ const bookingSchema = new Schema<IBooking>(
     rateApplied: {
       type: String,
       enum: ["daily", "weekly", "monthly"],
+    },
+    // ── Payment: Deposit + Driver ──
+    withDriver: { type: Boolean, default: false },
+    driverFee: { type: Number, default: 0 },
+    depositAmount: { type: Number, default: 0 },
+    depositTransactionId: { type: String },
+    finalTransactionId: { type: String },
+    finalPaymentStatus: {
+      type: String,
+      enum: ["pending", "paid"],
+      default: "pending",
     },
   },
   {

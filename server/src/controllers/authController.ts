@@ -10,7 +10,7 @@ import OTP from "../models/OTP";
 const generateToken = (
   id: string,
   role: string,
-  expiresIn: string | number = "1d",
+  expiresIn: string | number = "7d",
 ) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET as string, {
     expiresIn: expiresIn as any, // Cast to any to avoid complex MS type issues in SignOptions

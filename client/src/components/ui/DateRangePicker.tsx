@@ -113,30 +113,39 @@ export default function DateRangePicker({
     if (isBefore(clickedDate, today)) return;
     if (disabledDates.some((d) => isSameDay(d, clickedDate))) return;
 
-    if (!startDate || endDate) {
-      // Start new range
-      onChange(clickedDate, null);
-    } else {
-      // Complete range
-      let newStart = startDate;
-      let newEnd = clickedDate;
-
-      if (isBefore(clickedDate, startDate)) {
-        newStart = clickedDate;
-        newEnd = startDate;
-      }
-
-      // CHECK BLOCKAGE
-      if (isRangeBlocked(newStart, newEnd)) {
-        // Option 1: Reset and start new range at clicked date
-        onChange(clickedDate, null);
-        // Option 2: Show error? (Component is controlled, so we just don't set the range)
-        // Let's go with Option 1: The user likely wants to pick this date, so start a new range.
-      } else {
-        onChange(newStart, newEnd);
-        if (!inline) setIsOpen(false);
-      }
+    // State 1: Nothing selected
+    if (!startDate || !endDate) {
+      onChange(clickedDate, clickedDate);
+      return;
     }
+
+    // State 2: Single day selected
+    if (isSameDay(startDate, endDate)) {
+      if (isSameDay(clickedDate, startDate)) {
+        // Deselect
+        onChange(null, null);
+      } else {
+        // Form a range
+        let newStart = startDate;
+        let newEnd = clickedDate;
+
+        if (isBefore(clickedDate, startDate)) {
+          newStart = clickedDate;
+          newEnd = startDate;
+        }
+
+        if (isRangeBlocked(newStart, newEnd)) {
+          onChange(clickedDate, clickedDate);
+        } else {
+          onChange(newStart, newEnd);
+          if (!inline) setIsOpen(false);
+        }
+      }
+      return;
+    }
+
+    // State 3: Multi-day range currently selected. Start a new selection.
+    onChange(clickedDate, clickedDate);
   };
 
   const isSelected = (day: number) => {

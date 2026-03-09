@@ -6,7 +6,7 @@ import { Request, Response } from "express";
  */
 export const createPaymentIntent = async (req: Request, res: Response) => {
   try {
-    const { amount, bookingData } = req.body;
+    const { amount, bookingData, type = "deposit" } = req.body;
 
     if (!amount) {
       res.status(400).json({ success: false, message: "Amount required" });
@@ -15,13 +15,56 @@ export const createPaymentIntent = async (req: Request, res: Response) => {
 
     // Mock Payment ID
     const paymentId = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const invoiceId = `INV-${Date.now()}`;
 
-    // Return Mock QPay Data
+    // Mock QPay-structured response
     res.status(200).json({
       success: true,
       paymentId,
-      qrData: `QPAY://merc/123/amt/${amount}/ref/${paymentId}`, // Mock QR string
+      invoiceId,
       amount,
+      type, // "deposit" or "final"
+      qrImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=QPAY-${paymentId}-${amount}`,
+      qrText: `QPAY://merc/123/amt/${amount}/ref/${paymentId}`,
+      qPayShortUrl: `https://qpay.mn/payment/${paymentId}`,
+      deeplinks: [
+        { name: "qPay", icon: "qpay", link: `qpay://payment?id=${paymentId}` },
+        {
+          name: "Хаан банк",
+          icon: "khan",
+          link: `khanbank://payment?id=${paymentId}`,
+        },
+        {
+          name: "Голомт банк",
+          icon: "golomt",
+          link: `golomtbank://payment?id=${paymentId}`,
+        },
+        {
+          name: "Хас банк",
+          icon: "khas",
+          link: `khasbank://payment?id=${paymentId}`,
+        },
+        {
+          name: "TDB online",
+          icon: "tdb",
+          link: `tdb://payment?id=${paymentId}`,
+        },
+        {
+          name: "Төрийн банк",
+          icon: "state",
+          link: `statebank://payment?id=${paymentId}`,
+        },
+        {
+          name: "М банк",
+          icon: "mbank",
+          link: `mbank://payment?id=${paymentId}`,
+        },
+        {
+          name: "Ард Апп",
+          icon: "ard",
+          link: `ardapp://payment?id=${paymentId}`,
+        },
+      ],
       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins to pay
     });
   } catch (error) {
@@ -43,10 +86,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
       return;
     }
 
-    // MOCK LOGIC: Valid payment IDs starting with PAY- are considered paid
-    // In real wold, we would check DB or call QPay API to verify status
-
-    // Simulate processing delay
+    // MOCK: All PAY- IDs are considered paid
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     res.status(200).json({

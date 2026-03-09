@@ -22,6 +22,12 @@ function getChangedFields(
     "fuel_type",
     "seats",
     "price_per_day",
+    "deposit",
+    "enable_discount",
+    "discount_days",
+    "discount_price_per_day",
+    "has_driver",
+    "driver_fee_per_day",
     "location",
     "description",
     "is_available",
@@ -32,19 +38,6 @@ function getChangedFields(
     const newVal = (updated as any)[key];
     if (origVal !== newVal && newVal !== undefined) {
       changes[key] = newVal;
-    }
-  }
-
-  // Compare price_rates (nested object)
-  if (updated.price_rates) {
-    const origRates = original.price_rates || ({} as any);
-    const newRates = updated.price_rates;
-    if (
-      Number(origRates.daily) !== newRates.daily ||
-      Number(origRates.hourly || 0) !== Number(newRates.hourly || 0) ||
-      Number(origRates.weekly || 0) !== Number(newRates.weekly || 0)
-    ) {
-      changes.price_rates = newRates;
     }
   }
 
@@ -102,7 +95,7 @@ export default function AdminEditCarPage({
     const hasNewFiles = !!thumbnailFile || galleryFiles.length > 0;
 
     if (!hasFieldChanges && !hasNewFiles) {
-      showToast.info("No changes detected", { icon: "ℹ️" });
+      showToast.info("No changes detected");
       return;
     }
 

@@ -179,28 +179,65 @@ export const api = {
         { returnNullOn404: true },
       ),
 
-    checkAvailability: (data: {
+    checkAvailability: async (data: {
       carId: string;
       startDate: string;
       endDate: string;
-    }) =>
-      fetchAPI<{ success: boolean; available: boolean }>(
-        "/bookings/check-availability",
+      startTime?: string;
+      endTime?: string;
+    }) => {
+      const response = await fetch(
+        `${API_Base_URL}/bookings/check-availability`,
         {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         },
-      ),
+      );
+      // Assuming the response will be JSON and needs to be parsed
+      // and that the original fetchAPI wrapper's error handling and return type
+      // are desired, this direct fetch would need more logic.
+      // For now, returning the JSON response as-is to match the original fetchAPI's behavior
+      // for successful responses.
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
 
     init: (data: {
       carId: string;
       startDate: string;
       endDate: string;
+      startTime?: string;
+      endTime?: string;
       totalPrice: number;
       note?: string;
+      withDriver?: boolean;
+      driverFee?: number;
+      depositAmount?: number;
     }) =>
       fetchAPI<Booking>("/bookings/init", {
         method: "POST",
+        body: JSON.stringify(data),
+      }),
+
+    updateDraft: (
+      id: string,
+      data: {
+        startDate: string;
+        endDate: string;
+        startTime?: string;
+        endTime?: string;
+        totalPrice: number;
+        note?: string;
+        withDriver?: boolean;
+        driverFee?: number;
+        depositAmount?: number;
+      },
+    ) =>
+      fetchAPI<Booking>(`/bookings/draft/${id}`, {
+        method: "PUT",
         body: JSON.stringify(data),
       }),
 
@@ -208,6 +245,12 @@ export const api = {
       fetchAPI<Booking>("/bookings/confirm", {
         method: "POST",
         body: JSON.stringify(data),
+      }),
+
+    cancel: (bookingId: string) =>
+      fetchAPI<Booking>("/bookings/cancel", {
+        method: "POST",
+        body: JSON.stringify({ bookingId }),
       }),
 
     approve: (bookingId: string) =>
@@ -223,9 +266,25 @@ export const api = {
       }),
 
     complete: (bookingId: string) =>
-      fetchAPI<Booking>("/bookings/complete", {
+      fetchAPI<{
+        success: boolean;
+        data: Booking;
+        requiresPayment?: boolean;
+        breakdown?: {
+          rentalTotal: number;
+          driverFee: number;
+          depositPaid: number;
+          remainingPayment: number;
+        };
+      }>("/bookings/complete", {
         method: "POST",
         body: JSON.stringify({ bookingId }),
+      }),
+
+    finishPayment: (data: { bookingId: string; paymentId: string }) =>
+      fetchAPI<Booking>("/bookings/finish-payment", {
+        method: "POST",
+        body: JSON.stringify(data),
       }),
 
     update: (

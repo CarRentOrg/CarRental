@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Pagination } from "@/components/ui/Pagination";
 import { api } from "@/lib/api";
 import { Car } from "@/types";
+import { formatCurrency } from "@/lib/utils";
 
 export default function AdminCarsPage() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -172,7 +173,7 @@ export default function AdminCarsPage() {
                           : "bg-red-500 text-white"
                       }`}
                     >
-                      {car.is_available ? "Available" : "Rented"}
+                      {car.is_available ? "идэвхтэй " : "түрээслэгдсэн"}
                     </div>
                   </div>
                   <div className="p-6">
@@ -187,10 +188,10 @@ export default function AdminCarsPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-blue-600 font-black text-xl">
-                          ₮{car.price_rates?.daily ?? car.price_per_day}
+                          ₮{formatCurrency(car.price_per_day)}
                         </p>
                         <p className="text-gray-400 text-[10px] font-bold uppercase">
-                          / хоног
+                          / өдөр
                         </p>
                       </div>
                     </div>
@@ -211,7 +212,7 @@ export default function AdminCarsPage() {
                       <div className="flex flex-col items-center p-2 bg-gray-50 rounded-xl border border-gray-100">
                         <Users className="h-4 w-4 text-gray-400 mb-1" />
                         <span className="text-[10px] font-bold text-gray-600">
-                          {car.seats} Seats
+                          {car.seats} суудалтай
                         </span>
                       </div>
                     </div>
@@ -234,16 +235,14 @@ export default function AdminCarsPage() {
                           <Power className="h-3.5 w-3.5" />
                         )}
                         <span className="hidden sm:inline">
-                          {car.is_available
-                            ? "Set Unavailable"
-                            : "Set Available"}
+                          {car.is_available ? "Идэвхгүй" : "Идэвхтэй"}
                         </span>
                       </button>
                       <Link
                         href={`/admin/cars/${car._id}/edit`}
                         className="flex-1 py-3 text-center rounded-xl text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-all"
                       >
-                        Edit Car
+                        Засах
                       </Link>
                       <button
                         onClick={() => setDeleteId(car._id)}
@@ -292,24 +291,24 @@ export default function AdminCarsPage() {
                 <Trash2 className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
-                Delete Car?
+                Устгах уу?
               </h3>
               <p className="text-center text-gray-500 text-sm mb-8">
-                This action cannot be undone. This car will be permanently
-                removed from your fleet.
+                Энэ үйлдлийг буцаах боломжгүй. Энэ машин таны авто паркаас
+                байнгын устгагдана.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteId(null)}
                   className="flex-1 py-3 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  Болих
                 </button>
                 <button
                   onClick={confirmDelete}
                   className="flex-1 py-3 rounded-xl font-bold text-sm bg-red-500 text-white hover:bg-red-600 transition-colors shadow-lg shadow-red-200"
                 >
-                  Delete
+                  Устгах
                 </button>
               </div>
             </motion.div>

@@ -263,7 +263,7 @@ export default function AdminBookingsPage() {
           >
             <Eye className="h-4 w-4" />
           </button>
-          {row.status === "pending" && (
+          {(row.status === "payment_pending" || row.status === "pending") && (
             <>
               <button
                 onClick={() => openApproveModal(row)}
@@ -441,6 +441,7 @@ export default function AdminBookingsPage() {
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                       Машины мэдээлэл
                     </h4>
+
                     <div className="flex gap-3">
                       <div className="h-12 w-16 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-200">
                         <Image
@@ -523,7 +524,8 @@ export default function AdminBookingsPage() {
                 </section>
               </div>
 
-              {viewBooking.status === "pending" && (
+              {(viewBooking.status === "payment_pending" ||
+                viewBooking.status === "pending") && (
                 <div className="p-6 border-t border-gray-100 grid grid-cols-2 gap-3 bg-white">
                   <button
                     onClick={() => {
