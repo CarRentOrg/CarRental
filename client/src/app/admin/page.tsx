@@ -56,7 +56,7 @@ export default function AdminDashboard() {
   const statCards = [
     {
       title: "Нийт орлого",
-      value: stats ? `$${stats.totalRevenue.toLocaleString()}` : "...",
+      value: stats ? `${stats.totalRevenue.toLocaleString()}` : "...",
       icon: DollarSign,
       color: "emerald",
       bg: "bg-emerald-50",

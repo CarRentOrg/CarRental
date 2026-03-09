@@ -14,7 +14,10 @@ import {
   approveBooking,
   rejectBooking,
   completeBooking,
+  finishTripPayment,
   createBooking,
+  updateDraftBooking,
+  cancelBooking,
 } from "../controllers/bookingController";
 import { protect } from "../middlewares/auth";
 
@@ -24,6 +27,7 @@ router.get("/owner", protect, getAllOwnerBookings as any);
 router.post("/approve", protect, approveBooking);
 router.post("/reject", protect, rejectBooking);
 router.post("/complete", protect, completeBooking);
+router.post("/finish-payment", protect, finishTripPayment);
 
 router.post("/check-availability", checkAvailabilityofCar);
 router.post("/change-status", protect, changeBookingStatus);
@@ -35,11 +39,14 @@ router.get("/car/:carId", getCarBookings);
 // Two-Phase Booking
 router.post("/init", protect, initBooking as any);
 router.post("/confirm", protect, confirmBooking as any);
+router.post("/cancel", protect, cancelBooking as any);
 
 router
   .route("/")
   .get(getBookings)
   .post(protect, createBooking as any);
+
+router.put("/draft/:id", protect, updateDraftBooking as any);
 
 router
   .route("/:id")

@@ -16,6 +16,7 @@ import { useApp } from "@/contexts/AppContext";
 import ConfirmModal from "../shared/ConfirmModal";
 import { api } from "@/lib/api";
 import { Booking } from "@/types";
+import { formatCurrency } from "@/lib/utils";
 
 interface BookingDetailModalProps {
   booking: Booking | null;
@@ -42,11 +43,11 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
     setShowConfirmCancel(false);
     setIsCancelling(true);
     try {
-      await api.bookings.reject(booking._id);
+      await api.bookings.cancel(booking._id);
       await fetchMyBookings();
       onClose();
-    } catch (error) {
-      alert("Failed to cancel booking");
+    } catch (error: any) {
+      alert(error.message || "Failed to cancel booking");
     } finally {
       setIsCancelling(false);
     }
@@ -155,7 +156,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-white">Total</span>
                   <span className="text-2xl font-black text-blue-500">
-                    ${booking.totalPrice.toLocaleString()}
+                    ₮{formatCurrency(booking.totalPrice)}
                   </span>
                 </div>
               </div>
@@ -163,7 +164,9 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
 
             {/* Actions */}
             <div className="flex flex-col gap-3">
-              {booking.status === "pending" && (
+              {(booking.status === "payment_pending" ||
+                booking.status === "pending" ||
+                booking.status === "confirmed") && (
                 <button
                   onClick={handleCancelClick}
                   disabled={isCancelling}

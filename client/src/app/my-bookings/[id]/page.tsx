@@ -12,12 +12,14 @@ import {
   ChevronLeft,
   X,
   Check,
+  Flag,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Booking } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import Returnbutton from "@/components/shared/returnbutton";
 import { showToast } from "@/lib/toast";
+import FinishTripModal from "@/components/booking/FinishTripModal";
 
 export default function BookingDetailPage() {
   const params = useParams();
@@ -28,6 +30,7 @@ export default function BookingDetailPage() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showFinishTrip, setShowFinishTrip] = useState(false);
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -180,6 +183,25 @@ export default function BookingDetailPage() {
                     {booking.rateApplied || "Standard"}
                   </span>
                 </div>
+
+                {booking.withDriver && (booking.driverFee || 0) > 0 && (
+                  <div className="flex justify-between items-center text-zinc-400">
+                    <span>👨‍✈️ Driver Fee</span>
+                    <span className="font-medium text-white">
+                      {(booking.driverFee || 0).toLocaleString()}₮
+                    </span>
+                  </div>
+                )}
+
+                {(booking.depositAmount || 0) > 0 && (
+                  <div className="flex justify-between items-center text-emerald-400">
+                    <span>Deposit Paid</span>
+                    <span className="font-medium">
+                      -{(booking.depositAmount || 0).toLocaleString()}₮
+                    </span>
+                  </div>
+                )}
+
                 {booking.note && (
                   <div className="flex flex-col gap-1 text-zinc-400">
                     <span>Note:</span>
@@ -193,17 +215,26 @@ export default function BookingDetailPage() {
 
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-white">
-                    Total Amount
+                    {(booking.depositAmount || 0) > 0
+                      ? "Remaining"
+                      : "Total Amount"}
                   </span>
                   <span className="text-3xl font-black text-white">
-                    ${booking.totalPrice.toLocaleString()}
+                    {(booking.depositAmount || 0) > 0
+                      ? (
+                          booking.totalPrice +
+                          (booking.driverFee || 0) -
+                          (booking.depositAmount || 0)
+                        ).toLocaleString()
+                      : booking.totalPrice.toLocaleString()}
+                    ₮
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Actions */}
-            {booking.status === "pending" && (
+            {booking.status === "payment_pending" && (
               <div className="pt-6">
                 <button
                   onClick={handleCancelBooking}
@@ -226,16 +257,45 @@ export default function BookingDetailPage() {
             )}
 
             {booking.status === "confirmed" && (
-              <div className="pt-6">
-                <div className="w-full py-4 bg-green-500/10 border border-green-500/20 text-green-500 rounded-2xl font-bold flex items-center justify-center gap-2 cursor-default">
-                  <Check className="h-5 w-5" />
-                  Booking Confirmed
-                </div>
+              <div className="pt-6 space-y-3">
+                {new Date() >= new Date(booking.startDate) ? (
+                  <button
+                    onClick={() => setShowFinishTrip(true)}
+                    className="w-full py-4 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl font-bold hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                  >
+                    <Flag className="h-5 w-5" />
+                    Finish Trip
+                  </button>
+                ) : (
+                  <div className="w-full py-4 bg-green-500/10 border border-green-500/20 text-green-500 rounded-2xl font-bold flex items-center justify-center gap-2 cursor-default">
+                    <Check className="h-5 w-5" />
+                    Booking Confirmed
+                  </div>
+                )}
+                <p className="text-center text-zinc-500 text-xs">
+                  {new Date() >= new Date(booking.startDate)
+                    ? "You can finish your trip early or on schedule."
+                    : "Your trip hasn't started yet. Come back after the pickup date."}
+                </p>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Finish Trip Modal */}
+      {booking && (
+        <FinishTripModal
+          isOpen={showFinishTrip}
+          onClose={() => setShowFinishTrip(false)}
+          booking={booking}
+          onCompleted={async () => {
+            const updated = await api.bookings.getById(id);
+            setBooking(updated);
+            await fetchMyBookings();
+          }}
+        />
+      )}
     </div>
   );
 }

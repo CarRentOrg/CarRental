@@ -23,7 +23,7 @@ A modern, production-ready car rental web application built with Next.js and Nod
 - Booking management — approve, reject, and complete rentals
 - Customer management with booking and spending statistics
 - Revenue analytics with visual charts (Recharts)
-- Image upload and management via ImageKi
+- Image upload and management via ImageKit
 - Role-based access control (user / owner)
 
 ---

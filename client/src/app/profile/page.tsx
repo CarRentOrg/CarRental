@@ -156,7 +156,7 @@ export default function ProfilePage() {
     },
     {
       label: "Хүлээгдэж буй",
-      value: myBookings.filter((b) => b.status === "pending").length,
+      value: myBookings.filter((b) => b.status === "payment_pending").length,
       icon: Clock,
     },
   ];

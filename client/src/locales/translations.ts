@@ -1,5 +1,3 @@
-import { Car, Clock, CreditCard, Shield } from "lucide-react";
-
 export const translations = {
   en: {
     nav: {
@@ -90,9 +88,17 @@ export const translations = {
       reviews: "reviews",
     },
     booking: {
+      selectDates: "Select Dates",
       title: "Book Your Car",
       pickupDate: "Pickup Date",
       returnDate: "Return Date",
+      pickupTime: "Pickup Time",
+      returnTime: "Return Time",
+      driverOption: "Driver Option",
+      withoutDriver: "Without Driver",
+      withDriver: " With Driver",
+      additionalNotes: " Additional Notes (Optional)",
+      selectDatesToSeePrice: "Select dates to see price",
       pickupLocation: "Pickup Location",
       returnLocation: "Return Location",
       dropoffLocation: "Return Location",
@@ -102,8 +108,12 @@ export const translations = {
       lastName: "Last Name",
       processing: "Processing...",
       cityOrAirport: "City or Airport",
+      rentalRates: "Rental Rates",
+      daily: "Daily",
+      weekly: "(+5) Weekly",
       totalPrice: "Total Price",
       confirmBooking: "Confirm Booking",
+      completeReservation: "Complete Reservation",
       yourInformation: "Your Information",
       name: "Full Name",
       email: "Email",
@@ -150,14 +160,21 @@ export const translations = {
       documentsDesc: "Passport and Driver's License",
       experience: "1 year",
       experienceDesc: "Of driving experience",
-      deposit: "From 1000$",
+      deposit: "From ₮",
       depositDesc: "Security deposit",
       callUs: "Call Us Now",
       assistant: "Your Personal Rental Assistant",
+      assistantDesc: "Your Personal Rental Assistant",
+      callUsBtn: "Call Us Now",
+      needHelp: "Need help choosing",
+      ourTeam:
+        "Our team is ready to assist you — finding the perfect car that matches your needs and budget.",
+      agreement:
+        "I have read and agree to the rental terms and conditions including the insurance policy, payment terms, and vehicle return requirements.",
+      continue: "Continue to Booking",
     },
-    termsList: [
-      {
-        icon: Clock,
+    termsList: {
+      rentalPolicy: {
         title: "Rental Policy",
         items: [
           "Minimum rental period: 24 hours",
@@ -166,8 +183,7 @@ export const translations = {
           "International license accepted with translation",
         ],
       },
-      {
-        icon: Shield,
+      insurance: {
         title: "Insurance & Protection",
         items: [
           "Basic insurance included in rental price",
@@ -176,8 +192,7 @@ export const translations = {
           "Maximum liability: $5,000 deductible",
         ],
       },
-      {
-        icon: CreditCard,
+      payment: {
         title: "Payment Terms",
         items: [
           "Security deposit: $500 (refundable)",
@@ -186,8 +201,7 @@ export const translations = {
           "Full refund for early cancellations",
         ],
       },
-      {
-        icon: Car,
+      vehicle: {
         title: "Vehicle Condition",
         items: [
           "Pre-rental inspection documented",
@@ -196,7 +210,7 @@ export const translations = {
           "Additional mileage: $0.50/km",
         ],
       },
-    ],
+    },
     faq: {
       title: "Frequently Asked Questions",
       q1: "What are the terms and conditions for using the car?",
@@ -213,6 +227,8 @@ export const translations = {
       a6: "If you return the car late, an hourly late fee will be charged as specified in the rental agreement.",
     },
     common: {
+      currency: "$/day",
+      currency_symbol: "$",
       loading: "Loading...",
       error: "Error",
       success: "Success",
@@ -230,6 +246,8 @@ export const translations = {
       getStarted: "Get Started",
       from: "from",
       clearAll: "Clear all",
+      bookNow: "Book Now",
+      viewDetails: "View Details",
     },
     footer: {
       company: "Company",
@@ -305,6 +323,8 @@ export const translations = {
       },
     },
     notFound: {
+      title: "Page Not Found",
+      message: "The page you are looking for does not exist.",
       backHome: "Back to Home",
     },
     benefits: {
@@ -321,7 +341,60 @@ export const translations = {
       desc4:
         "Whatever happens on the road, we're here to help at any time, day or night.",
     },
+    privacyPolicy: {
+      a1: {
+        title: "1. Introduction",
+        content:
+          "Welcome to our car rental marketplace. We value your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard your data when you use our platform to browse cars, make bookings, or communicate with car owners.",
+      },
+      a2: {
+        title: "2. Information We Collect",
+        content:
+          "We collect various types of information such as personal information (name, email, phone number), account information, booking details, payment-related information, and device usage data.",
+      },
+      a3: {
+        title: "3. How We Use Information",
+        content:
+          "We use the collected information to process bookings, communicate with users, improve the platform, and prevent fraud or suspicious activities.",
+      },
+      a4: {
+        title: "4. Sharing Information",
+        content:
+          "We may share necessary information with car owners, payment providers, and legal authorities when required.",
+      },
+      a5: {
+        title: "5. Data Security",
+        content:
+          "We implement strong security measures to protect your personal information from unauthorized access or misuse.",
+      },
+      a6: {
+        title: "6. User Rights",
+        content:
+          "Users can access their personal data, update their account information, or request deletion of their data.",
+      },
+      a7: {
+        title: "7. Cookies",
+        content:
+          "Our website uses cookies to improve user experience and analyze website traffic.",
+      },
+      a8: {
+        title: "8. Data Retention",
+        content:
+          "We keep user and booking data only as long as necessary for legal and operational purposes.",
+      },
+      a9: {
+        title: "9. Changes to Privacy Policy",
+        content:
+          "We may update this policy from time to time and will notify users of significant changes.",
+      },
+      a10: {
+        title: "10. Contact Information",
+        content:
+          "If you have questions about this Privacy Policy, please contact us at privacy@luxerra.com.",
+      },
+    },
   },
+
   mn: {
     nav: {
       home: "Нүүр",
@@ -371,7 +444,7 @@ export const translations = {
       perDay: "өдөрт",
       viewDetails: "Дэлгэрэнгүй",
       rentNow: "Түрээслэх",
-      available: "Боломжтой",
+      available: "Бэлэн",
       booked: "Захиалагдсан",
       seats: "Суудал",
       transmission: "Хурдны Хайрцаг",
@@ -399,7 +472,8 @@ export const translations = {
       daily: "өдөрт",
       backToResults: "Буцах",
       reserveCar: "Захиалга хийх",
-      freeCancellation: "48 цагийн дотор цуцлах боломжтой",
+      freeCancellation: "24 цагийн дотор цуцлах боломжтой",
+
       termsDescription:
         "Бид танд туслахад бэлэн — таны хэрэгцээнд нийцсэн төгс машиныг олоход тусална.",
       stepsTitle: "4 Алхамаар Аялалаа Эхлээрэй",
@@ -408,11 +482,22 @@ export const translations = {
       fuelType: "Түлшний Төрөл",
       performance: "Үзүүлэлт",
       reviews: "сэтгэгдэл",
+      brands: "Брэнд",
+      mostRelevant: "Үнэ: Ихээс Бага",
+      priceAsc: "Үнэ: Багаас Их",
     },
     booking: {
+      selectDates: "Огноо сонгох",
       title: "Машин Захиалах",
       pickupDate: "Авах Огноо",
       returnDate: "Буцаах Огноо",
+      pickupTime: "Авах цаг",
+      returnTime: "Буцаах цаг",
+      driverOption: "Жолоочийн сонголт",
+      withoutDriver: "Жолоочгүй",
+      withDriver: "Жолоочтой ",
+      additionalNotes: "Нэмэлт тэмдэглэл (сонголттой)",
+      selectDatesToSeePrice: "Үнэ харахын тулд огноогоо сонгоно уу",
       pickupLocation: "Авах Байршил",
       returnLocation: "Буцаах Байршил",
       dropoffLocation: "Буцаах Байршил",
@@ -422,7 +507,10 @@ export const translations = {
       lastName: "Овог",
       processing: "Боловсруулж байна...",
       cityOrAirport: "Хот эсвэл Нисэх буудал",
+      rentalRates: "",
       totalPrice: "Нийт Үнэ",
+      daily: "Өдөр тутам",
+      weekly: "(+5) хоногт",
       confirmBooking: "Захиалга Баталгаажуулах",
       yourInformation: "Таны Мэдээлэл",
       name: "Бүтэн Нэр",
@@ -474,6 +562,14 @@ export const translations = {
       depositDesc: "Барьцаа",
       callUs: "Бидэнтэй Холбогдох",
       assistant: "Таны Түрээсийн Туслах",
+      assistantDesc: "Таны Түрээсийн Туслах",
+      callUsBtn: "Бидэнтэй Холбогдох",
+      needHelp: "Машинаа сонгоход тусламж хэрэгтэй юу?",
+      ourTeam:
+        "Манайх таны хэрэгцээ, төсөвт хамгийн сайн тохирох машиныг олоход тань туслахад бэлэн.",
+      agreement:
+        "Би түрээсийн нөхцөл болон нөхөн төлбөрийн бодлого, төлбөрийн нөхцөл, автомашин буцаах шаардлагыг уншиж, зөвшөөрч байна.",
+      continue: "Захиалга үргэлжлүүлэх",
     },
 
     termsList: {
@@ -530,6 +626,8 @@ export const translations = {
       a6: "Та  машиныг тогтоосон цагаас хоцорвол түрээсийн гэрээнд заасан цаг тутмын нэмэлт төлбөр ногдуулж бодно.",
     },
     common: {
+      currency: "₮/өдөрт",
+      currency_symbol: "₮",
       loading: "Уншиж байна...",
       error: "Алдаа",
       success: "Амжилттай",
@@ -547,6 +645,8 @@ export const translations = {
       getStarted: "Эхлэх",
       from: "Эхлэх үнэ",
       clearAll: "Бүгдийг цэвэрлэх",
+      bookNow: "Захиалах",
+      viewDetails: "Дэлгэрэнгүй харах",
     },
     footer: {
       company: "Компани",
@@ -621,6 +721,8 @@ export const translations = {
       },
     },
     notFound: {
+      title: "Хуудас Олдсонгүй",
+      message: "Таны хайж буй хуудас байхгүй байна.",
       backHome: "Нүүр Хуудас руу Буцах",
     },
     benefits: {
@@ -636,6 +738,57 @@ export const translations = {
       title4: "24/7 хэрэглэгчийн тусламж",
       desc4:
         "Зам дээр юу ч тохиолдсон, бид өдөр шөнийн аль ч цагт танд туслахад бэлэн байна.",
+    },
+    privacyPolicy: {
+      a1: {
+        title: "1. Танилцуулга",
+        content:
+          "Манай автомашин түрээсийн платформд тавтай морилно уу. Бид таны хувийн мэдээллийг хамгаалахыг чухалчилдаг. Энэхүү Нууцлалын бодлого нь манай платформыг ашиглах үед таны мэдээллийг хэрхэн цуглуулж, ашиглаж, хамгаалдаг талаар тайлбарлана.",
+      },
+      a2: {
+        title: "2. Бид ямар мэдээлэл цуглуулдаг вэ",
+        content:
+          "Бид таны нэр, и-мэйл, утасны дугаар зэрэг хувийн мэдээлэл, аккаунтын мэдээлэл, захиалгын дэлгэрэнгүй, төлбөрийн мэдээлэл болон вебсайт ашиглалтын мэдээллийг цуглуулж болно.",
+      },
+      a3: {
+        title: "3. Мэдээллийг хэрхэн ашигладаг вэ",
+        content:
+          "Цуглуулсан мэдээллийг захиалга боловсруулах, хэрэглэгчтэй холбогдох, платформыг сайжруулах, аюулгүй байдлыг хангах зорилгоор ашиглана.",
+      },
+      a4: {
+        title: "4. Мэдээлэл хуваалцах",
+        content:
+          "Захиалга хийх үед шаардлагатай мэдээллийг машины эзэн, төлбөрийн үйлчилгээ үзүүлэгч эсвэл хууль эрх зүйн байгууллагуудтай хуваалцаж болно.",
+      },
+      a5: {
+        title: "5. Мэдээллийн аюулгүй байдал",
+        content:
+          "Бид таны хувийн мэдээллийг зөвшөөрөлгүй нэвтрэлт болон ашиглалтаас хамгаалах аюулгүй байдлын арга хэмжээг хэрэгжүүлдэг.",
+      },
+      a6: {
+        title: "6. Хэрэглэгчийн эрх",
+        content:
+          "Та өөрийн мэдээлэлд хандах, шинэчлэх эсвэл устгах хүсэлт гаргах эрхтэй.",
+      },
+      a7: {
+        title: "7. Cookies",
+        content:
+          "Манай вэбсайт хэрэглэгчийн туршлагыг сайжруулах болон хэрэглээг шинжлэх зорилгоор cookie ашигладаг.",
+      },
+      a8: {
+        title: "8. Мэдээлэл хадгалах хугацаа",
+        content:
+          "Бид хэрэглэгчийн мэдээллийг зөвхөн шаардлагатай хугацаанд хадгалж, дараа нь аюулгүй устгана.",
+      },
+      a9: {
+        title: "9. Нууцлалын бодлогын өөрчлөлт",
+        content: "Бид энэхүү бодлогыг шаардлагатай үед шинэчилж болно.",
+      },
+      a10: {
+        title: "10. Холбоо барих",
+        content:
+          "Хэрэв танд асуулт байвал privacy@luxerra.com хаягаар холбогдоно уу.",
+      },
     },
   },
 } as const;

@@ -11,12 +11,12 @@ export interface ICar extends Omit<Document, "model"> {
   fuel_type: "petrol" | "diesel" | "electric" | "hybrid";
   seats: number;
   price_per_day: number;
-  price_rates: {
-    hourly: number;
-    daily: number;
-    weekly: number;
-    monthly: number;
-  };
+  deposit: number;
+  enable_discount?: boolean;
+  discount_days?: number;
+  discount_price_per_day?: number;
+  has_driver?: boolean;
+  driver_fee_per_day?: number;
   is_available: boolean;
   thumbnail: { url: string; fileId: string };
   images?: { url: string; fileId: string }[];
@@ -46,14 +46,12 @@ const carSchema = new Schema<ICar>(
     },
     seats: { type: Number, required: true },
     price_per_day: { type: Number, required: true },
-    price_rates: {
-      type: {
-        hourly: { type: Number, required: false },
-        daily: { type: Number, required: false },
-        weekly: { type: Number, required: false },
-        monthly: { type: Number, required: false },
-      },
-    },
+    deposit: { type: Number, required: true },
+    enable_discount: { type: Boolean, default: false },
+    discount_days: { type: Number, required: false },
+    discount_price_per_day: { type: Number, required: false },
+    has_driver: { type: Boolean, default: false },
+    driver_fee_per_day: { type: Number, required: false },
     is_available: { type: Boolean, default: true },
     thumbnail: {
       url: { type: String, required: true },
