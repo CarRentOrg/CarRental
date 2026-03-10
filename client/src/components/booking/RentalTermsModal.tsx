@@ -2,7 +2,15 @@
 
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Clock, Shield, CreditCard, Car, Check, ChevronDown } from "lucide-react";
+import {
+  X,
+  Clock,
+  Shield,
+  CreditCard,
+  Car,
+  Check,
+  ChevronDown,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -28,7 +36,10 @@ export default function RentalTermsModal({
     const el = contentRef.current;
     if (!el) return;
     const { scrollTop, scrollHeight, clientHeight } = el;
-    const progress = Math.min(100, Math.round((scrollTop / (scrollHeight - clientHeight)) * 100));
+    const progress = Math.min(
+      100,
+      Math.round((scrollTop / (scrollHeight - clientHeight)) * 100),
+    );
     setScrollProgress(progress);
     if (scrollHeight - scrollTop - clientHeight < 40) {
       setHasScrolledToBottom(true);
@@ -115,10 +126,10 @@ export default function RentalTermsModal({
               <div className="flex items-center justify-between p-6 md:p-8 border-b border-zinc-800">
                 <div>
                   <h2 className="text-2xl md:text-3xl font-bold text-white">
-                    Rental Terms & Conditions
+                    {t("common.rentalTermsAndConditions")}
                   </h2>
                   <p className="text-sm text-zinc-400 mt-1">
-                    Please review before proceeding
+                    {t("common.pleaseReviewBeforeProceeding")}
                   </p>
                 </div>
                 <button
@@ -179,26 +190,14 @@ export default function RentalTermsModal({
               {/* Footer - Sticky */}
               <div className="p-6 md:p-8 border-t border-zinc-800 bg-zinc-950 space-y-4">
                 {/* Scroll progress bar */}
-                <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 transition-all duration-200 ease-out"
-                    style={{ width: `${scrollProgress}%` }}
-                  />
-                </div>
-                {!hasScrolledToBottom && (
-                  <p className="text-xs text-zinc-500 text-center">
-                    Read all terms to enable checkbox ({scrollProgress}%)
-                  </p>
-                )}
                 {/* Checkbox */}
-                <label className={`flex items-start gap-3 cursor-pointer group ${!hasScrolledToBottom ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                <label className="flex items-start gap-3 cursor-pointer group">
                   <div className="relative flex items-center justify-center mt-0.5">
                     <input
                       type="checkbox"
                       checked={accepted}
-                      disabled={!hasScrolledToBottom}
                       onChange={(e) => setAccepted(e.target.checked)}
-                      className="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-zinc-700 bg-zinc-900 checked:bg-white checked:border-white transition-all disabled:cursor-not-allowed"
+                      className="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-zinc-700 bg-zinc-900 checked:bg-white checked:border-white transition-all"
                     />
                     <Check className="absolute h-3 w-3 text-black opacity-0 peer-checked:opacity-100 pointer-events-none" />
                   </div>
@@ -207,11 +206,19 @@ export default function RentalTermsModal({
                   </span>
                 </label>
 
+                {/* Scroll progress indicator (заавал харагдаж байж болно) */}
+                {/* <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-200 ease-out"
+                    style={{ width: `${scrollProgress}%` }}
+                  />
+                </div> */}
+
                 {/* CTA Button */}
                 <button
                   onClick={handleContinue}
                   disabled={!accepted}
-                  className="w-full py-4 bg-white hover:bg-zinc-100 text-black font-bold rounded-xl transition-all shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:shadow-lg"
+                  className="w-full py-4 bg-white hover:bg-zinc-100 text-black font-bold rounded-xl transition-all shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:shadow-lg mt-4"
                 >
                   {t("terms.continue")}
                 </button>

@@ -80,7 +80,7 @@ export default function CarDetailPage() {
   return (
     <div className="min-h-screen bg-black text-white pt-24 px-4 sm:px-12 mx-auto w-full overflow-x-hidden">
       <div className="lg:px-12 pb-6">
-        <Returnbutton href="/cars" text="Back to results" />
+        <Returnbutton href="/cars" text={t("cars.backToResults")} />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">

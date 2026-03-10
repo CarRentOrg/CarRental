@@ -97,7 +97,7 @@ function BookingContent() {
         const end = new Date(booking.endDate);
         const interval = eachDayOfInterval({ start, end });
         dates.push(...interval);
-      } catch (e) { }
+      } catch (e) {}
     });
     return dates;
   }, [existingBookings]);
@@ -113,18 +113,20 @@ function BookingContent() {
     const depositAmount = car.deposit_amount || 0;
 
     let rate: number = dailyRate;
-    let rateName = "Daily Rate";
+    let rateName = t("booking.dailyRate");
     let discount = 0;
 
-    // Simplified rate discount since price_rates is removed
-    if (days >= 30) {
-      rate = dailyRate * 0.7; // Example monthly discount
-      rateName = "Monthly Rate";
-      discount = 30;
-    } else if (days >= 7) {
-      rate = dailyRate * 0.85; // Example weekly discount
-      rateName = "Weekly Rate";
-      discount = 15;
+    if (
+      car.discount_days &&
+      car.discount_price_per_day &&
+      days >= car.discount_days &&
+      car.discount_price_per_day < dailyRate
+    ) {
+      rate = car.discount_price_per_day;
+      rateName = `${t("booking.longTermDiscount")} (${car.discount_days}+ ${t("booking.days")})`;
+      discount = Math.round(
+        ((dailyRate - car.discount_price_per_day) / dailyRate) * 100,
+      );
     }
 
     const rentalTotal = days * rate;
@@ -315,7 +317,10 @@ function BookingContent() {
 
       {/* Mobile Sticky Header */}
       <div className="lg:px-12">
-        <Returnbutton text="Back to Car" onClick={() => router.back()} />
+        <Returnbutton
+          text={t("booking.backToCar")}
+          onClick={() => router.back()}
+        />
       </div>
 
       {/* ... (Rest of existing UI is fine, mainly just the bottom action logic changed) ... */}
@@ -393,21 +398,56 @@ function BookingContent() {
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">
                   {t("cars.rentalRates")}
                 </h3>
-                <div className="space-y-3">
+
+                <div className="space-y-4">
+                  {/* Base Daily Price */}
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">{t("booking.daily")}</span>
-                    <span className="font-bold text-white">
+                    <span className="font-bold text-white text-lg">
                       {t("common.currency_symbol")}
-                      {car.price_per_day}
+                      {formatCurrency(car.price_per_day)} / {t("common.day")}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center text-gray-400">
-                    <span>{t("booking.weekly")}</span>
-                    <span className="font-bold text-white">
-                      {t("common.currency_symbol")}
-                      {car.price_per_day ? car.price_per_day * 7 : 0}
-                    </span>
-                  </div>
+
+                  {/* Discount Section */}
+                  {car.discount_price_per_day &&
+                  car.discount_days &&
+                  car.discount_price_per_day < car.price_per_day ? (
+                    <div className="pt-4 border-t border-white/10">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="text-gray-300 font-medium">
+                            {t("booking.longTermDiscount")}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {t("booking.from")} {car.discount_days}+
+                            {t("booking.days")}
+                          </p>
+                        </div>
+                        <div className="bg-blue-600/20 text-blue-400 text-xs font-bold px-2 py-1 rounded-lg">
+                          {Math.round(
+                            ((car.price_per_day - car.discount_price_per_day) /
+                              car.price_per_day) *
+                              100,
+                          )}
+                          % OFF
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end items-center gap-2 mt-1">
+                        <span className="text-sm text-gray-500 line-through">
+                          {t("common.currency_symbol")}
+                          {formatCurrency(car.price_per_day)}
+                        </span>
+                        <span className="text-gray-500">→</span>
+                        <span className="font-bold text-blue-400 text-lg">
+                          {t("common.currency_symbol")}
+                          {formatCurrency(car.discount_price_per_day)} /{" "}
+                          {t("common.day")}
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -428,8 +468,7 @@ function BookingContent() {
                   <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-400">
                     <AlertCircle className="h-5 w-5 shrink-0" />
                     <p className="text-sm font-medium">
-                      Selected range includes already booked dates. Please
-                      choose different dates.
+                      {t("booking.isSelectionValid")}
                     </p>
                   </div>
                 )}
@@ -438,8 +477,7 @@ function BookingContent() {
                   <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-2xl flex items-center gap-3 text-orange-400">
                     <AlertCircle className="h-5 w-5 shrink-0" />
                     <p className="text-sm font-medium">
-                      Return time must be after pickup time for same-day
-                      bookings.
+                      {t("booking.isTimeValid")}
                     </p>
                   </div>
                 )}
@@ -489,21 +527,24 @@ function BookingContent() {
                       <div className="flex gap-3">
                         <button
                           onClick={() => setWithDriver(false)}
-                          className={`flex-1 py-3 px-4 rounded-2xl border font-bold text-sm transition-all ${!withDriver
+                          className={`flex-1 py-3 px-4 rounded-2xl border font-bold text-sm transition-all ${
+                            !withDriver
                               ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20"
                               : "bg-zinc-900 border-white/10 text-zinc-400 hover:border-white/20"
-                            }`}
+                          }`}
                         >
                           🚗 {t("booking.withoutDriver")}
                         </button>
                         <button
                           onClick={() => setWithDriver(true)}
-                          className={`flex-1 py-3 px-4 rounded-2xl border font-bold text-sm transition-all ${withDriver
+                          className={`flex-1 py-3 px-4 rounded-2xl border font-bold text-sm transition-all ${
+                            withDriver
                               ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20"
                               : "bg-zinc-900 border-white/10 text-zinc-400 hover:border-white/20"
-                            }`}
+                          }`}
                         >
-                          👨‍✈️ {t("booking.withDriver")} (+{formatCurrency(car.driver_fee)})
+                          👨‍✈️ {t("booking.withDriver")} (+
+                          {formatCurrency(car.driver_fee)})
                         </button>
                       </div>
                     </div>
@@ -530,8 +571,9 @@ function BookingContent() {
                     <div className="space-y-1 pb-2 md:pb-0">
                       <div className="flex justify-between items-center text-sm md:text-base text-gray-400">
                         <span>
-                          {priceDetails.rateName} ({formatCurrency(priceDetails.rate)} x{" "}
-                          {priceDetails.days} days)
+                          {priceDetails.rateName} (
+                          {formatCurrency(priceDetails.rate)} x{" "}
+                          {priceDetails.days} {t("booking.day")})
                         </span>
                         <span>{formatCurrency(priceDetails.total)}</span>
                       </div>
@@ -543,7 +585,7 @@ function BookingContent() {
                       )}
                       {withDriver && priceDetails.totalDriverFee > 0 && (
                         <div className="flex justify-between items-center text-sm text-gray-400">
-                          <span>👨‍✈️ Driver Fee ({priceDetails.days} days)</span>
+                          <span>{t("booking.driverFee")}</span>
                           <span>
                             +{formatCurrency(priceDetails.totalDriverFee)}
                           </span>
@@ -551,7 +593,7 @@ function BookingContent() {
                       )}
                       {priceDetails.depositAmount > 0 && (
                         <div className="flex justify-between items-center text-sm text-emerald-400">
-                          <span>Deposit (paid at booking)</span>
+                          <span>{t("booking.deposit")}</span>
                           <span>
                             {formatCurrency(priceDetails.depositAmount)}
                           </span>
@@ -559,7 +601,9 @@ function BookingContent() {
                       )}
                       <div className="flex justify-between items-center border-t border-white/10 pt-2 mt-2">
                         <span className="text-lg font-bold text-white">
-                          {priceDetails.depositAmount > 0 ? "Deposit" : "Total"}
+                          {priceDetails.depositAmount > 0
+                            ? t("booking.depositDesc")
+                            : "booking.totalPrice"}
                         </span>
                         <span className="text-2xl font-black text-blue-500">
                           ₮
@@ -588,7 +632,7 @@ function BookingContent() {
                     {isSubmitting ? (
                       <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
-                      "Book Now"
+                      t("common.bookNow")
                     )}
                   </button>
                 </div>
