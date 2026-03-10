@@ -1,10 +1,10 @@
-"use client";
-
 import { RENTAL_TERMS } from "@/constants";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Phone, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const RentalTermsSection = () => {
+  const router = useRouter();
   const { t } = useLanguage();
 
   return (
@@ -96,6 +96,7 @@ const RentalTermsSection = () => {
               </div>
 
               <button
+                onClick={() => router.push("/contact")}
                 className="group/btn w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl
                            bg-white text-black font-semibold text-sm
                            hover:bg-zinc-100 hover:scale-[1.02]

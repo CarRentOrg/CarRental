@@ -37,13 +37,13 @@ export const sendOTP = async (email: string, otp: string): Promise<boolean> => {
     await getTransporter().sendMail({
       from: `"Car Rental" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "Your Verification Code",
+      subject: "Баталгаажуулах код",
       html: otpEmail(otp),
     });
-    console.log(`[EmailService] OTP sent to ${email}`);
+    console.log(`[EmailService] OTP илгээгдлээ ${email}`);
     return true;
   } catch (error) {
-    console.error("[EmailService] OTP email failed:", error);
+    console.error("[EmailService] OTP илгээхэд алдаа гарлаа:", error);
     return false;
   }
 };
@@ -59,13 +59,16 @@ export const sendBookingConfirmation = async (
     await getTransporter().sendMail({
       from: `"Car Rental" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: `Booking Confirmed — ${data.bookingId}`,
+      subject: `Захиалга баталгаажлаа — ${data.bookingId}`,
       html: bookingConfirmedEmail(data),
     });
-    console.log(`[EmailService] Booking confirmation sent to ${email}`);
+    console.log(`[EmailService] Захиалга баталгаажлаа ${email}`);
     return true;
   } catch (error) {
-    console.error("[EmailService] Booking confirmation failed:", error);
+    console.error(
+      "[EmailService] Захиалга баталгаажуулахад алдаа гарлаа:",
+      error,
+    );
     return false;
   }
 };
@@ -81,13 +84,16 @@ export const sendBookingRejection = async (
     await getTransporter().sendMail({
       from: `"Car Rental" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: `Booking Not Approved — ${data.bookingId}`,
+      subject: `Захиалга баталгаажаагүй байна — ${data.bookingId}`,
       html: bookingRejectedEmail(data),
     });
-    console.log(`[EmailService] Booking rejection sent to ${email}`);
+    console.log(`[EmailService] Захиалгын цуцлалт илгээгдлээ: ${email}`);
     return true;
   } catch (error) {
-    console.error("[EmailService] Booking rejection failed:", error);
+    console.error(
+      "[EmailService] Захиалгын цуцлалт илгээхэд алдаа гарлаа:",
+      error,
+    );
     return false;
   }
 };

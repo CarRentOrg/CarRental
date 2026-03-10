@@ -17,6 +17,7 @@ import ConfirmModal from "../shared/ConfirmModal";
 import { api } from "@/lib/api";
 import { Booking } from "@/types";
 import { formatCurrency } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BookingDetailModalProps {
   booking: Booking | null;
@@ -24,6 +25,7 @@ interface BookingDetailModalProps {
 }
 
 const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
+  const { t } = useLanguage();
   const { fetchMyBookings } = useApp();
   const [isCancelling, setIsCancelling] = useState(false);
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
@@ -120,7 +122,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-white/5 rounded-2xl space-y-1">
                 <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">
-                  Pickup
+                  {t("booking.pickupDate")}
                 </span>
                 <p className="font-bold text-white">
                   {format(new Date(booking.startDate), "MMM d, yyyy")}
@@ -128,7 +130,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
               </div>
               <div className="p-4 bg-white/5 rounded-2xl space-y-1">
                 <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">
-                  Return
+                  {t("booking.returnDate")}
                 </span>
                 <p className="font-bold text-white">
                   {format(new Date(booking.endDate), "MMM d, yyyy")}
@@ -139,22 +141,26 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
             {/* Price Breakdown */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                <Info className="h-3 w-3" /> Price Details
+                <Info className="h-3 w-3" /> {t("common.priceDetails")}
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-zinc-400">
-                  <span>Duration</span>
-                  <span className="font-medium text-white">{days} Days</span>
+                  <span>{t("booking.duration")}</span>
+                  <span className="font-medium text-white">
+                    {days} {t("booking.days")}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-zinc-400">
-                  <span>Rate Applied</span>
+                  <span>{t("common.rateApplied")}</span>
                   <span className="font-medium text-white capitalize">
                     {booking.rateApplied}
                   </span>
                 </div>
                 <div className="h-px bg-white/5" />
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-white">Total</span>
+                  <span className="text-lg font-bold text-white">
+                    {t("booking.totalPrice")}
+                  </span>
                   <span className="text-2xl font-black text-blue-500">
                     {formatCurrency(booking.totalPrice)}
                   </span>
@@ -177,7 +183,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
                   ) : (
                     <>
                       <AlertCircle className="h-5 w-5" />
-                      Cancel Booking
+                      {t("common.cancelBooking")}
                     </>
                   )}
                 </button>
@@ -186,7 +192,7 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
                 onClick={onClose}
                 className="w-full py-4 bg-white/5 text-white/50 hover:text-white rounded-2xl font-bold transition-all"
               >
-                Close
+                {t("common.close")}
               </button>
             </div>
           </div>
@@ -198,9 +204,9 @@ const BookingDetailModal = ({ booking, onClose }: BookingDetailModalProps) => {
         isOpen={showConfirmCancel}
         onClose={() => setShowConfirmCancel(false)}
         onConfirm={handleCancelConfirm}
-        title="Cancel Booking"
-        message="Are you sure you want to cancel this booking? This action cannot be undone."
-        confirmText="Yes, Cancel"
+        title={t("common.cancelBooking")}
+        message={t("common.cancelBookingMessage")}
+        confirmText={t("common.cancelBookingConfirm")}
         type="danger"
         isLoading={isCancelling}
       />

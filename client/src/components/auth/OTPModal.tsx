@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Smartphone, ArrowRight, Loader2 } from "lucide-react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { showToast } from "@/lib/toast";
+import OTPInput from "@/components/ui/OTPInput";
+
+// Simple validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface OTPModalProps {
   isOpen: boolean;
@@ -24,7 +28,7 @@ export default function OTPModal({
   const [step, setStep] = useState<Step>("method");
   const [method, setMethod] = useState<"email" | "phone">("email");
   const [identifier, setIdentifier] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [timer, setTimer] = useState(0);
@@ -41,14 +45,42 @@ export default function OTPModal({
   useEffect(() => {
     if (isOpen) {
       setStep("method");
+      setMethod("email");
       setIdentifier("");
-      setOtp(["", "", "", "", "", ""]);
+      setOtp("");
       setError("");
     }
   }, [isOpen]);
 
+  const handleMethodChange = (newMethod: "email" | "phone") => {
+    if (method === newMethod) return;
+    setMethod(newMethod);
+    setIdentifier("");
+    setError("");
+  };
+
+  const validateIdentifier = (): string | null => {
+    if (!identifier) return "Мэдээллээ оруулна уу";
+
+    if (method === "email") {
+      if (!EMAIL_REGEX.test(identifier)) {
+        return "И-мэйл хаяг буруу байна";
+      }
+    } else {
+      if (identifier.length !== 8) {
+        return "Утасны дугаар буруу байна";
+      }
+    }
+
+    return null;
+  };
+
   const handleSendOTP = async () => {
-    if (!identifier) return showToast.error("Please enter your details");
+    const validationError = validateIdentifier();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -65,13 +97,12 @@ export default function OTPModal({
   };
 
   const handleVerify = async () => {
-    const code = otp.join("");
-    if (code.length < 6) return showToast.error("Enter full code");
+    if (otp.length < 6) return showToast.error("Enter full code");
 
     setLoading(true);
     setError("");
     try {
-      const user = await verifyOTP(identifier, code);
+      const user = await verifyOTP(identifier, otp);
       if (user) {
         showToast.success("Verified!");
         onSuccess();
@@ -85,42 +116,6 @@ export default function OTPModal({
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleOtpChange = (index: number, value: string) => {
-    // Strip non-numeric characters (handles mobile autocomplete/suggestions)
-    const numeric = value.replace(/[^0-9]/g, "");
-    if (!numeric && value !== "") return;
-    // Take only the last digit entered
-    const digit = numeric.slice(-1);
-    const newOtp = [...otp];
-    newOtp[index] = digit;
-    setOtp(newOtp);
-    setError("");
-
-    // Auto focus next
-    if (digit && index < 5) {
-      document.getElementById(`otp-${index + 1}`)?.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    setError("");
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      document.getElementById(`otp-${index - 1}`)?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/[^0-9]/g, "").slice(0, 6);
-    if (!pasted) return;
-    const newOtp = [...otp];
-    pasted.split("").forEach((char, i) => { newOtp[i] = char; });
-    setOtp(newOtp);
-    setError("");
-    const nextIndex = Math.min(pasted.length, 5);
-    document.getElementById(`otp-${nextIndex}`)?.focus();
   };
 
   return (
@@ -150,12 +145,12 @@ export default function OTPModal({
 
             <div className="mt-2">
               <h2 className="text-2xl font-bold text-white mb-2">
-                {step === "method" ? "Login / Register" : "Verify OTP"}
+                {step === "method" ? "Нэвтрэх" : "Баталгаажуулах код"}
               </h2>
               <p className="text-zinc-400 text-sm mb-6">
                 {step === "method"
-                  ? "Enter your details to continue booking."
-                  : `Enter the code sent to ${identifier}`}
+                  ? "Захиалгаа үргэлжлүүлэхийн тулд мэдээллээ оруулна уу."
+                  : `${identifier} рүү илгээсэн кодыг оруулна уу`}
               </p>
 
               {step === "method" && (
@@ -163,22 +158,24 @@ export default function OTPModal({
                   {/* Tabs */}
                   <div className="flex bg-zinc-950 p-1 rounded-xl">
                     <button
-                      onClick={() => setMethod("email")}
-                      className={`flex-1 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all ${method === "email"
+                      onClick={() => handleMethodChange("email")}
+                      className={`flex-1 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all ${
+                        method === "email"
                           ? "bg-zinc-800 text-white shadow-lg"
                           : "text-zinc-500 hover:text-zinc-300"
-                        }`}
+                      }`}
                     >
                       <Mail className="h-4 w-4" /> Email
                     </button>
                     <button
-                      onClick={() => setMethod("phone")}
-                      className={`flex-1 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all ${method === "phone"
+                      onClick={() => handleMethodChange("phone")}
+                      className={`flex-1 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all ${
+                        method === "phone"
                           ? "bg-zinc-800 text-white shadow-lg"
                           : "text-zinc-500 hover:text-zinc-300"
-                        }`}
+                      }`}
                     >
-                      <Smartphone className="h-4 w-4" /> Phone
+                      <Smartphone className="h-4 w-4" /> Утасны дугаар
                     </button>
                   </div>
 
@@ -190,14 +187,43 @@ export default function OTPModal({
                     )}
                     <input
                       type={method === "email" ? "email" : "tel"}
+                      inputMode={method === "email" ? "email" : "numeric"}
                       placeholder={
                         method === "email" ? "name@example.com" : "99112233"
                       }
                       value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-zinc-600 focus:border-blue-500 transition-colors outline-none"
+                      maxLength={method === "phone" ? 8 : undefined}
+                      onChange={(e) => {
+                        let val = e.target.value;
+                        if (method === "phone") {
+                          val = val.replace(/[^0-9]/g, "");
+                        }
+                        setIdentifier(val);
+                        if (error) setError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && identifier) {
+                          e.preventDefault();
+                          handleSendOTP();
+                        }
+                      }}
+                      className={`w-full bg-zinc-950 border rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-zinc-600 transition-colors outline-none ${
+                        error && step === "method"
+                          ? "border-red-500/50 focus:border-red-500"
+                          : "border-zinc-800 focus:border-blue-500"
+                      }`}
                     />
                   </div>
+
+                  {error && step === "method" && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-xs font-bold px-1"
+                    >
+                      {error}
+                    </motion.p>
+                  )}
 
                   {method === "phone" && (
                     <div className="text-xs text-zinc-500 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800">
@@ -217,7 +243,7 @@ export default function OTPModal({
                       <Loader2 className="animate-spin h-5 w-5" />
                     ) : (
                       <>
-                        Continue <ArrowRight className="h-4 w-4" />
+                        Нэвтрэх <ArrowRight className="h-4 w-4" />
                       </>
                     )}
                   </button>
@@ -226,25 +252,16 @@ export default function OTPModal({
 
               {step === "otp" && (
                 <div className="space-y-6">
-                  <div className="flex gap-2 justify-between">
-                    {otp.map((digit, i) => (
-                      <input
-                        key={i}
-                        id={`otp-${i}`}
-                        type="tel"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        autoComplete={i === 0 ? "one-time-code" : "off"}
-                        maxLength={1}
-                        value={digit}
-                        onChange={(e) => handleOtpChange(i, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(i, e)}
-                        onPaste={i === 0 ? handlePaste : undefined}
-                        className={`w-12 h-14 bg-zinc-950 border ${error ? "border-red-500/50" : "border-zinc-800"
-                          } rounded-xl text-center text-xl font-bold text-white focus:border-blue-500 outline-none transition-colors`}
-                      />
-                    ))}
-                  </div>
+                  <OTPInput
+                    value={otp}
+                    onChange={(val) => {
+                      setOtp(val);
+                      setError("");
+                    }}
+                    onSubmit={handleVerify}
+                    error={error}
+                    disabled={loading}
+                  />
 
                   {error && (
                     <motion.p
@@ -264,22 +281,22 @@ export default function OTPModal({
                     {loading ? (
                       <Loader2 className="animate-spin h-5 w-5" />
                     ) : (
-                      "Verify & Login"
+                      "Баталгаажуулах"
                     )}
                   </button>
 
                   <div className="text-center">
                     {timer > 0 ? (
                       <p className="text-sm text-zinc-500">
-                        Resend in{" "}
-                        <span className="text-white font-mono">{timer}s</span>
+                        дахин илгээх{" "}
+                        <span className="text-white font-mono">{timer}с</span>
                       </p>
                     ) : (
                       <button
                         onClick={handleSendOTP}
                         className="text-sm text-blue-500 hover:underline"
                       >
-                        Resend OTP
+                        Үндсэн код илгээх
                       </button>
                     )}
                   </div>
@@ -288,7 +305,7 @@ export default function OTPModal({
                     onClick={() => setStep("method")}
                     className="w-full text-zinc-500 text-sm hover:text-white"
                   >
-                    Go Back
+                    Буцах
                   </button>
                 </div>
               )}

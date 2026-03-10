@@ -77,7 +77,7 @@ export const translations = {
 
       backToResults: "Back to results",
       reserveCar: "Book Now",
-      freeCancellation: "Free cancellation up to 48h",
+      freeCancellation: "Free cancellation up to 24h",
       termsDescription:
         "We're here for you — ready to help find the perfect car that matches your needs.",
       stepsTitle: "Get Rolling in 4 Steps",
@@ -99,10 +99,15 @@ export const translations = {
       withDriver: " With Driver",
       additionalNotes: " Additional Notes (Optional)",
       selectDatesToSeePrice: "Select dates to see price",
+      backToCar: "Back to Car",
       pickupLocation: "Pickup Location",
       returnLocation: "Return Location",
       dropoffLocation: "Return Location",
       details: "Booking Details",
+      longTermDiscount: "Long-term discount",
+      from: "From",
+      days: "days",
+      day: "day",
       personalInfo: "Personal Information",
       firstName: "First Name",
       lastName: "Last Name",
@@ -126,6 +131,14 @@ export const translations = {
       duration: "Duration",
       basePrice: "Base Price",
       insurance: "Insurance",
+      isSelectionValid:
+        "Selected range includes already booked dates. Please choose different dates.",
+      isTimeValid:
+        "Return time must be after pickup time for same-day bookings.",
+      appliedDiscount: "Applied Discount",
+      driverFee: "Driver Fee",
+      deposit: "Deposit (paid at booking)",
+      dailyRate: "Daily Rate",
       tax: "Tax",
       includes: {
         upgrade: "Free upgrade if available",
@@ -214,7 +227,8 @@ export const translations = {
     faq: {
       title: "Frequently Asked Questions",
       subtitle: "Common questions",
-      description: "Everything you need to know before renting. Can't find what you're looking for? Feel free to contact us.",
+      description:
+        "Everything you need to know before renting. Can't find what you're looking for? Feel free to contact us.",
       answersReady: "answers ready",
       q1: "What are the terms and conditions for using the car?",
       a1: "You must have a valid driver's license, meet the minimum age requirements, and adhere to all terms and conditions of the rental agreement during the rental period.",
@@ -231,6 +245,7 @@ export const translations = {
     },
     common: {
       currency: "₮/day",
+      day: "day",
       currency_symbol: "₮",
       loading: "Loading...",
       error: "Error",
@@ -250,7 +265,17 @@ export const translations = {
       from: "from",
       clearAll: "Clear all",
       bookNow: "Book Now",
+      rateApplied: "Rate Applied",
+      duraction: "Duration",
+      priceDetails: "Price Details",
       viewDetails: "View Details",
+      cancelBooking: "Cancel Booking",
+      close: "Close",
+      cancelBookingMessage:
+        "Are you sure you want to cancel this booking? This action cannot be undone.",
+      cancelBookingConfirm: "Yes, Cancel",
+      rentalTermsAndConditions: "Rental Terms & Conditions",
+      pleaseReviewBeforeProceeding: "Please Review Before Proceeding",
     },
     footer: {
       company: "Company",
@@ -322,8 +347,9 @@ export const translations = {
         office: "Main Office",
         phone: "Phone Support",
         email: "Email Us",
-        mapTitle: "Visit Our Location",
       },
+      successMessage: "Message Sent Successfully!",
+      sending: "Sending...",
     },
     notFound: {
       title: "Page Not Found",
@@ -504,6 +530,7 @@ export const translations = {
       pickupLocation: "Авах Байршил",
       returnLocation: "Буцаах Байршил",
       dropoffLocation: "Буцаах Байршил",
+      backToCar: "Машин руу буцах",
       details: "Захиалгын Мэдээлэл",
       personalInfo: "Хувийн Мэдээлэл",
       firstName: "Нэр",
@@ -521,13 +548,26 @@ export const translations = {
       phone: "Утасны Дугаар",
       completeBooking: "Захиалгаа Дуусгах",
       safeSecure: "Аюулгүй & Найдвартай",
+      from: "",
+      days: "хоног",
+      day: "өдөр",
       safeSecureDesc:
         "Таны мэдээлэл салбарын тэргүүлэх шифрээр хамгаалагдсан. Бид гуравдагч этгээдэд мэдээллийг дамжуулахгүй.",
       rentalSummary: "Түрээсийн Хураангуй",
+      longTermDiscount: "Урт хугацааны хөнгөлөлт",
+      dailyRate: "Өдөр тутам",
       duration: "Хугацаа",
       basePrice: "Үндсэн Үнэ",
       insurance: "Даатгал",
       tax: "Татвар",
+      isSelectionValid:
+        "Сонгосон хугацаанд аль хэдийн захиалсан огноонууд орсон байна. Өөр огноонуудыг сонгоно уу.",
+      isTimeValid:
+        "Ижил өдөрт хийх түрээсийн хувьд буцах цаг нь авах цагаас хойш байх ёстой.",
+      appliedDiscount: "Өргөдсөн хөнгөлөлт",
+      driverFee: "Жолоочийн төлбөр",
+      deposit: "Урьдчилгаа төлбөр (захиалгын үед төлөгдөнө)",
+      depositDesc: "Урьдчилгаа төлбөр",
       includes: {
         upgrade: "Боломжтой бол үнэгүй зэрэглэл ахиулах",
         mileage: "Хязгааргүй миль",
@@ -616,7 +656,8 @@ export const translations = {
     faq: {
       title: "Түгээмэл Асуулт",
       subtitle: "Түгээмэл асуултууд",
-      description: "Түрээсийн өмнө таны мэдэх шаардлагатай бүх зүйл. Хүссэн мэдээллээ олсонгүй юу? Бидэнтэй холбогдоорой.",
+      description:
+        "Түрээсийн өмнө таны мэдэх шаардлагатай бүх зүйл. Хүссэн мэдээллээ олсонгүй юу? Бидэнтэй холбогдоорой.",
       answersReady: "хариулт бэлэн",
       q1: "Машин ашиглах нөхцөл, дүрэм юу вэ?",
       a1: "Танд хүчинтэй жолоочийн үнэмлэх байх, жолоочийн насны шаардлагыг хангах, мөн түрээсийн хугацаанд бүх түрээсийн гэрээний нөхцлийг дагах шаардлагатай.",
@@ -633,6 +674,7 @@ export const translations = {
     },
     common: {
       currency: "₮/өдөрт",
+      day: "өдөрт",
       currency_symbol: "₮",
       loading: "Уншиж байна...",
       error: "Алдаа",
@@ -652,7 +694,17 @@ export const translations = {
       from: "Эхлэх үнэ",
       clearAll: "Бүгдийг цэвэрлэх",
       bookNow: "Захиалах",
+      duration: "Хугацаа",
+      rateApplied: "Төлбөрийн хэлбэр",
+      priceDetails: "Үнийн мэдээлэл",
       viewDetails: "Дэлгэрэнгүй харах",
+      cancelBooking: "Захиалга цуцлах",
+      close: "Хаах",
+      cancelBookingMessage:
+        "Та энэ захиалгыг цуцлахдаа итгэлтэй байна уу? Энэ үйлдлийг буцааж болохгүй.",
+      cancelBookingConfirm: "Тийм, цуцлах",
+      rentalTermsAndConditions: "Түрээсийн нөхцөл ба шаардлага",
+      pleaseReviewBeforeProceeding: "Үргэлжлүүлэхээс өмнө шалгана уу",
     },
     footer: {
       company: "Компани",
@@ -713,6 +765,7 @@ export const translations = {
       title: "Холбоо Барих",
       subtitle: "Бид танд туслахад хэзээд бэлэн",
       phoneNumber: "Утасны Дугаар",
+      email: "Имэйл Хаяг",
       form: {
         name: "Таны Нэр",
         email: "Имэйл Хаяг",
@@ -723,8 +776,9 @@ export const translations = {
         office: "Төв Оффис",
         phone: "Утас",
         email: "Имэйл",
-        mapTitle: "Манай Байршил",
       },
+      successMessage: "Амжилттай илгээгдлээ!",
+      sending: "Илгээж байна...",
     },
     notFound: {
       title: "Хуудас Олдсонгүй",

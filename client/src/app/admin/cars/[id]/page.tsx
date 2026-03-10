@@ -88,11 +88,6 @@ export default function EditCarPage() {
         brand: data.brand,
         type: data.type,
         price_per_day: Number(data.pricePerDay),
-        price_rates: {
-          daily: Number(data.pricePerDay),
-          weekly: Number(data.pricePerDay) * 7 * 0.9, // Default 10% discount
-          monthly: Number(data.pricePerDay) * 30 * 0.8, // Default 20% discount
-        },
         transmission: data.transmission.toLowerCase(),
         fuel_type: data.fuelType.toLowerCase(),
         seats: Number(data.seats),
