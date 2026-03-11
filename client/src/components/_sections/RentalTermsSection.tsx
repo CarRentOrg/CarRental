@@ -1,11 +1,14 @@
 import { RENTAL_TERMS } from "@/constants";
+import { useApp } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Phone, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const RentalTermsSection = () => {
   const router = useRouter();
+  const { availableCars: cars, loading } = useApp();
   const { t } = useLanguage();
+  const deposit = cars?.[0]?.deposit;
 
   return (
     <section id="rental-terms" className="mt-16 sm:mt-28">
@@ -23,34 +26,40 @@ const RentalTermsSection = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Terms grid — spans 3 cols */}
         <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {RENTAL_TERMS.map((term, i) => (
-            <div
-              key={i}
-              className="group relative p-5 sm:p-6 rounded-2xl
-                         bg-zinc-900/40 border border-zinc-800/60
-                         hover:bg-zinc-900/70 hover:border-zinc-700/80
-                         transition-all duration-500"
-            >
-              {/* Numbering accent */}
-              <span className="absolute top-5 right-5 text-[10px] font-mono text-zinc-700 tabular-nums">
-                0{i + 1}
-              </span>
+          {RENTAL_TERMS.map((term, i) => {
+            const isDeposit = term.title === "terms.deposit";
 
+            return (
               <div
-                className="w-9 h-9 rounded-xl bg-zinc-800/80 flex items-center justify-center mb-4
-                            group-hover:bg-white/10 transition-colors duration-500"
+                key={i}
+                className="group relative p-5 sm:p-6 rounded-2xl
+                 bg-zinc-900/40 border border-zinc-800/60
+                 hover:bg-zinc-900/70 hover:border-zinc-700/80
+                 transition-all duration-500"
               >
-                <term.icon className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors duration-500" />
-              </div>
+                <span className="absolute top-5 right-5 text-[10px] font-mono text-zinc-700 tabular-nums">
+                  0{i + 1}
+                </span>
 
-              <p className="text-[15px] font-semibold text-white mb-1 leading-snug">
-                {t(term.title)}
-              </p>
-              <p className="text-sm text-zinc-500 leading-relaxed">
-                {t(term.subtitle)}
-              </p>
-            </div>
-          ))}
+                <div
+                  className="w-9 h-9 rounded-xl bg-zinc-800/80 flex items-center justify-center mb-4
+                    group-hover:bg-white/10 transition-colors duration-500"
+                >
+                  <term.icon className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors duration-500" />
+                </div>
+
+                <p className="text-[15px] font-semibold text-white mb-1 leading-snug">
+                  {isDeposit && deposit
+                    ? `${deposit.toLocaleString()} MNT`
+                    : t(term.title)}
+                </p>
+
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  {t(term.subtitle)}
+                </p>
+              </div>
+            );
+          })}
         </div>
 
         {/* CTA card — spans 2 cols */}
