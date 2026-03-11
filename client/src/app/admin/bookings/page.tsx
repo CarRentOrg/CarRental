@@ -460,7 +460,7 @@ export default function AdminBookingsPage() {
                           {viewBooking.car?.brand} {viewBooking.car?.model}
                         </span>
                         <span className="text-xs text-gray-500">
-                          ${viewBooking.car?.price_per_day} / хоног
+                          ₮{viewBooking.car?.price_per_day} / өдөр
                         </span>
                       </div>
                     </div>
@@ -499,7 +499,7 @@ export default function AdminBookingsPage() {
                       Нийт төлбөр
                     </span>
                     <span className="text-2xl font-black">
-                      ${viewBooking.totalPrice?.toLocaleString()}
+                      ₮{viewBooking.totalPrice?.toLocaleString()}
                     </span>
                   </div>
                   <div className="h-px bg-white/10 w-full" />

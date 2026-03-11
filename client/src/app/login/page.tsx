@@ -70,7 +70,11 @@ export default function LoginPage() {
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-lg bg-zinc-950/50 backdrop-blur-xl border border-zinc-800 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-blue-600 via-indigo-600 to-blue-600" />
+        <div
+          className="absolute top-0 left-0 w-full h-1 
+bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 
+shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+        />
 
         <div className="text-center space-y-4 mb-10">
           <div className="inline-flex p-4 bg-zinc-900 border border-zinc-800 rounded-3xl mb-4 group transition-all hover:border-blue-500/50">
@@ -82,12 +86,12 @@ export default function LoginPage() {
             )}
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-none">
-            {step === "EMAIL" && "Welcome Back"}
-            {step === "PASSWORD" && "Enter Password"}
+            {step === "EMAIL" && "Тавтай морил"}
+            {step === "PASSWORD" && "Нууц үгээ оруулна уу"}
           </h1>
           <p className="text-zinc-500 font-medium text-lg">
-            {step === "EMAIL" && "Sign in to your owner dashboard"}
-            {step === "PASSWORD" && "Verify your identity"}
+            {step === "EMAIL" && "Удирдлагын самбартаа нэвтрэх"}
+            {step === "PASSWORD" && "Нууц үгээ оруулна уу"}
           </p>
         </div>
 
@@ -121,7 +125,14 @@ export default function LoginPage() {
                   disabled={loading}
                   className="w-full py-5 bg-white text-black rounded-2xl font-black text-xl hover:bg-zinc-100 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {loading ? "Checking..." : "Continue"}
+                  {loading ? "Үргэлжлүүлэх..." : "Үргэлжлүүлэх"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="w-full text-zinc-500 font-bold text-sm hover:text-white transition-colors"
+                >
+                  Буцах
                 </button>
               </form>
             )}
@@ -130,7 +141,7 @@ export default function LoginPage() {
               <form onSubmit={handlePasswordSubmit} className="space-y-6">
                 <div className="space-y-2 group">
                   <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1 group-focus-within:text-indigo-500 transition-colors">
-                    Password
+                    Нууц үг
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-indigo-500 transition-colors" />
@@ -149,14 +160,14 @@ export default function LoginPage() {
                   disabled={loading}
                   className="w-full py-5 bg-white text-black rounded-2xl font-black text-xl hover:bg-zinc-100 transition-all active:scale-[0.98] disabled:opacity-50"
                 >
-                  {loading ? "Signing In..." : "Sign In"}
+                  {loading ? "Нэвтэрч байна..." : "Нэвтрэх"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setStep("EMAIL")}
+                  onClick={() => router.back()}
                   className="w-full text-zinc-500 font-bold text-sm hover:text-white transition-colors"
                 >
-                  Use a different email
+                  Буцах
                 </button>
               </form>
             )}
